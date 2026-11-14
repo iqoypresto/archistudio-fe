@@ -96,7 +96,12 @@ export function AuthBootstrap({
     }
   }, [redirectTarget, router]);
 
-  if (!isHydrated || redirectTarget) {
+  const shouldBlockChildren =
+    scope === "guest"
+      ? Boolean(redirectTarget)
+      : !isHydrated || Boolean(redirectTarget);
+
+  if (shouldBlockChildren) {
     return <SessionCheckingScreen />;
   }
 
