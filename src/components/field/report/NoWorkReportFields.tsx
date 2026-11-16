@@ -1,0 +1,98 @@
+import { useWatch, type UseFormReturn } from "react-hook-form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  NO_WORK_REASONS,
+  type ReportFormValues,
+} from "@/lib/validation/report.validation";
+import { cn } from "@/lib/utils";
+
+export function NoWorkReportFields({
+  form,
+  disabled,
+}: {
+  form: UseFormReturn<ReportFormValues>;
+  disabled?: boolean;
+}) {
+  const {
+    register,
+    control,
+    setValue,
+    formState: { errors },
+  } = form;
+  const currentReason = useWatch({ control, name: "noWorkReason" }) ?? "";
+
+  return (
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <Label className="text-base font-semibold text-text-primary">
+          Alasan Tidak Ada Pekerjaan
+        </Label>
+        <div className="grid grid-cols-2 gap-2.5">
+          {NO_WORK_REASONS.map((reason) => {
+            const active =
+              reason === "Lainnya"
+                ? currentReason.length > 0 &&
+                  !NO_WORK_REASONS.slice(0, 3).includes(
+                    currentReason as (typeof NO_WORK_REASONS)[number]
+                  )
+                : currentReason === reason;
+            return (
+              <button
+                key={reason}
+                type="button"
+                disabled={disabled}
+                onClick={() =>
+                  setValue("noWorkReason", reason === "Lainnya" ? "" : reason, {
+                    shouldValidate: true,
+                  })
+                }
+                className={cn(
+                  "min-h-12 rounded-xl border px-3 py-2 text-base font-medium transition-colors",
+                  active
+                    ? "border-primary bg-primary-soft font-semibold text-primary"
+                    : "border-border bg-surface text-text-secondary hover:bg-secondary"
+                )}
+              >
+                {reason}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="noWorkReason" className="text-base font-semibold text-text-primary">
+          Keterangan Alasan
+        </Label>
+        <textarea
+          id="noWorkReason"
+          rows={3}
+          disabled={disabled}
+          placeholder="Jelaskan kondisi lapangan (wajib disertai minimal 1 foto bukti)"
+          className="w-full rounded-xl border border-border bg-surface p-3 text-base text-text-primary outline-none focus:border-primary"
+          {...register("noWorkReason")}
+        />
+        {errors.noWorkReason && (
+          <p className="text-sm font-medium text-status-danger-fg">
+            {errors.noWorkReason.message}
+          </p>
+        )}
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="locationText" className="text-base font-semibold text-text-primary">
+          Catatan Lokasi (Opsional)
+        </Label>
+        <Input
+          id="locationText"
+          type="text"
+          disabled={disabled}
+          placeholder="Contoh: Gerbang Utama Proyek"
+          className="min-h-12 text-base"
+          {...register("locationText")}
+        />
+      </div>
+    </div>
+  );
+}
