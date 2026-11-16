@@ -63,11 +63,44 @@ export interface DailyReportDetail extends DailyReportListItem {
 export interface ListReportsQuery {
   page?: number;
   pageSize?: number;
+  search?: string;
   projectId?: string;
   areaId?: string;
+  supervisorId?: string;
+  reportDate?: string;
+  dateFrom?: string;
+  dateTo?: string;
   status?: ReportStatus;
   reportType?: ReportType;
   isLate?: boolean;
+  sortBy?: "reportDate" | "createdAt" | "submittedAt";
+  sortOrder?: "asc" | "desc";
+}
+
+export interface ReportRevisionSnapshot {
+  reportType: ReportType;
+  progressText: string | null;
+  obstaclesText: string | null;
+  tomorrowPlanText: string | null;
+  weather: WeatherType | null;
+  workerCount: number | null;
+  noWorkReason: string | null;
+  locationText: string | null;
+  submittedAt: string | null;
+  isLate: boolean;
+  signedByName: string | null;
+  signedByTitle: string | null;
+  photos: Array<{
+    id: string;
+    storageKey: string;
+    caption: string | null;
+    sortOrder: number;
+    takenAt: string | null;
+  }>;
+}
+
+export interface ReviseReportPayload extends UpdateDraftPayload {
+  changeSummary: string;
 }
 
 export interface SaveDraftPayload {

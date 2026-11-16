@@ -3,6 +3,7 @@ import type {
   DailyReportDetail,
   ListReportsQuery,
   PaginatedReportsResponse,
+  ReviseReportPayload,
   SaveDraftPayload,
   UpdateDraftPayload,
 } from "@/types/api/report.types";
@@ -41,6 +42,17 @@ export class ReportApi {
   ): Promise<DailyReportDetail> {
     const res = await api.post<ApiResponse<DailyReportDetail>>(
       `/reports/${reportId}/submit`,
+      payload
+    );
+    return res.data.data;
+  }
+
+  async reviseReport(
+    reportId: string,
+    payload: ReviseReportPayload
+  ): Promise<DailyReportDetail> {
+    const res = await api.patch<ApiResponse<DailyReportDetail>>(
+      `/reports/${reportId}/revise`,
       payload
     );
     return res.data.data;

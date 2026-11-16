@@ -5,6 +5,7 @@ import { reportApi } from "@/lib/api/report.api";
 import { toUpdateDraftPayload } from "@/lib/validation/report.validation";
 import type {
   ListReportsQuery,
+  ReviseReportPayload,
   SaveDraftPayload,
   UpdateDraftPayload,
 } from "@/types/api/report.types";
@@ -22,6 +23,13 @@ export function useReportDetailQuery(reportId?: string | null) {
 export function useMyReportHistoryQuery(query: ListReportsQuery) {
   return useQuery({
     queryKey: [...REPORTS_QUERY_KEY, "history", query],
+    queryFn: () => reportApi.listReports(query),
+  });
+}
+
+export function useOfficeReportsQuery(query: ListReportsQuery) {
+  return useQuery({
+    queryKey: [...REPORTS_QUERY_KEY, "office", query],
     queryFn: () => reportApi.listReports(query),
   });
 }
@@ -76,6 +84,25 @@ export function useSubmitReportMutation() {
     },
     onError: (err) => {
       toast.error(err instanceof Error ? err.message : "Gagal mengirim laporan harian.");
+    },
+  });
+}
+
+export function useReviseReportMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (params: { reportId: string; payload: ReviseReportPayload }) =>
+      reportApi.reviseReport(params.reportId, params.payload),
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({ queryKey: REPORTS_QUERY_KEY });
+      await queryClient.invalidateQueries({
+        queryKey: [...REPORTS_QUERY_KEY, "detail", data.id],
+      });
+      toast.success("Revisi laporan berhasil disimpan dan dicatat ke riwayat.");
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "Gagal merevisi laporan.");
     },
   });
 }
