@@ -9,7 +9,25 @@ import {
   isSupportedImageMime,
   validateSelectedPhotoFiles,
 } from "@/lib/validation/upload.validation";
+import type { DailyReportPhotoDto } from "@/types/api/report.types";
 import type { PhotoQueueItem, SupportedImageMime } from "@/types/api/upload.types";
+
+function mapInitialPhotos(photos?: DailyReportPhotoDto[]): PhotoQueueItem[] {
+  if (!photos || photos.length === 0) return [];
+  return photos.map((photo, index) => ({
+    id: photo.id,
+    fileName: `Foto #${index + 1}`,
+    contentType: "image/jpeg",
+    previewUrl: photo.signedViewUrl,
+    file: new Blob(),
+    status: "uploaded",
+    progress: 100,
+    caption: photo.caption ?? "",
+    storageKey: photo.storageKey,
+    takenAt: photo.takenAt ?? new Date().toISOString(),
+    errorMessage: null,
+  }));
+}
 
 export function applyQueueItemPatch(
   items: PhotoQueueItem[],
@@ -66,8 +84,14 @@ async function compressPhotoBlob(
   });
 }
 
-export function usePhotoUploadQueue(params: { areaId: string; reportDate: string }) {
-  const [items, setItems] = useState<PhotoQueueItem[]>([]);
+export function usePhotoUploadQueue(params: {
+  areaId: string;
+  reportDate: string;
+  initialPhotos?: DailyReportPhotoDto[];
+}) {
+  const [items, setItems] = useState<PhotoQueueItem[]>(() =>
+    mapInitialPhotos(params.initialPhotos)
+  );
   const patchItem = useCallback((itemId: string, patch: Partial<PhotoQueueItem>) => {
     setItems((prev) => applyQueueItemPatch(prev, itemId, patch));
   }, []);
