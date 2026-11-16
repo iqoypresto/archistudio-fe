@@ -1,0 +1,71 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { projectApi } from "@/lib/api/project.api";
+import type {
+  CreateProjectPayload,
+  ProjectFilterParams,
+  UpdateProjectPayload,
+} from "@/types/api/project.types";
+
+export const PROJECTS_QUERY_KEY = ["projects"] as const;
+
+export function useProjectsQuery(params: ProjectFilterParams) {
+  return useQuery({
+    queryKey: [...PROJECTS_QUERY_KEY, params],
+    queryFn: () => projectApi.getProjects(params),
+  });
+}
+
+export function useProjectDetailQuery(id: string) {
+  return useQuery({
+    queryKey: [...PROJECTS_QUERY_KEY, "detail", id],
+    queryFn: () => projectApi.getProjectById(id),
+    enabled: Boolean(id),
+  });
+}
+
+export function useCreateProjectMutation(onSuccessCallback?: () => void) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: CreateProjectPayload) => projectApi.createProject(payload),
+    onSuccess: () => {
+      toast.success("Project baru berhasil dibuat.");
+      queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
+      onSuccessCallback?.();
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Gagal membuat project.");
+    },
+  });
+}
+
+export function useUpdateProjectMutation(onSuccessCallback?: () => void) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: UpdateProjectPayload }) =>
+      projectApi.updateProject(id, payload),
+    onSuccess: () => {
+      toast.success("Data project berhasil diperbarui.");
+      queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
+      onSuccessCallback?.();
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Gagal memperbarui data project.");
+    },
+  });
+}
+
+export function useArchiveProjectMutation(onSuccessCallback?: () => void) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => projectApi.archiveProject(id),
+    onSuccess: () => {
+      toast.success("Project berhasil diarsipkan.");
+      queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
+      onSuccessCallback?.();
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Gagal mengarsipkan project.");
+    },
+  });
+}
