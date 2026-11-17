@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -50,7 +50,10 @@ export function AreaFormModal({
     pageSize: 100,
   });
 
-  const supervisors = usersData?.data ?? [];
+  const supervisors = useMemo(
+    () => usersData?.data ?? [],
+    [usersData?.data]
+  );
 
   const {
     register,

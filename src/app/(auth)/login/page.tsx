@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { LoginFormCard } from "@/components/auth/LoginFormCard";
 
+export const instant = true;
+
 export const metadata: Metadata = {
   title: "Masuk | ArchiStudio Internal Office",
 };

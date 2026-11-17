@@ -106,7 +106,7 @@ export function MemberTable({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8"
+              className="min-h-11 min-w-11"
               onClick={() => onEdit(row)}
               title="Ubah Anggota"
             >
@@ -115,7 +115,7 @@ export function MemberTable({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8"
+              className="min-h-11 min-w-11"
               onClick={() => onResetPassword(row)}
               title="Reset Sandi"
             >
@@ -124,7 +124,7 @@ export function MemberTable({
             <Button
               variant="ghost"
               size="icon"
-              className="text-status-danger-fg hover:bg-status-danger-bg/50 h-8 w-8 disabled:opacity-40"
+              className="text-status-danger-fg hover:bg-status-danger-bg/50 min-h-11 min-w-11 disabled:opacity-40"
               onClick={() => onToggleStatus(row)}
               disabled={isSelf}
               title={

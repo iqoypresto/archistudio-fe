@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { ReportDetailContent } from "@/components/office/report/ReportDetailContent";
 
+export const instant = false;
+
 export const metadata: Metadata = {
   title: "Detail Laporan | ArchiStudio Office",
 };

@@ -92,10 +92,10 @@ export function DashboardAreaTable({ areas, onOpenUnlockModal }: DashboardAreaTa
                   <div className="flex items-center justify-end gap-2">
                     {area.isOverdueMoreThan3Days && (
                       <Button
-                        size="xs"
+                        size="sm"
                         variant="outline"
                         onClick={() => onOpenUnlockModal(area)}
-                        className="gap-1 border-rose-300 text-rose-700 hover:bg-rose-50"
+                        className="min-h-11 gap-1.5 border-rose-300 px-3 text-rose-700 hover:bg-rose-50"
                       >
                         <KeyRound className="h-3.5 w-3.5" />
                         Buka Kunci
@@ -104,7 +104,7 @@ export function DashboardAreaTable({ areas, onOpenUnlockModal }: DashboardAreaTa
                     {area.reportId ? (
                       <Link
                         href={`/reports/${area.reportId}`}
-                        className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-text-secondary hover:bg-surface-secondary hover:text-text-primary"
+                        className="inline-flex min-h-11 items-center gap-1 rounded-md px-3 text-xs font-medium text-text-secondary hover:bg-surface-secondary hover:text-text-primary"
                       >
                         Detail
                         <ExternalLink className="h-3 w-3" />

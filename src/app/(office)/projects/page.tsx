@@ -1,6 +1,8 @@
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ProjectListContent } from "@/components/office/project/ProjectListContent";
 
+export const instant = false;
+
 export default function ProjectsPage() {
   return (
     <div className="space-y-6">

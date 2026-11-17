@@ -1,5 +1,7 @@
 import { ProjectDetailContent } from "@/components/office/project/ProjectDetailContent";
 
+export const instant = false;
+
 interface ProjectDetailPageProps {
   params: Promise<{
     projectId: string;
