@@ -67,7 +67,7 @@ export function AreaCard({
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 gap-1 px-2 text-xs"
+            className="min-h-11 gap-1 px-2.5 text-xs"
             onClick={() => onEdit(area)}
             title="Ubah nama atau kode area"
           >
@@ -77,7 +77,7 @@ export function AreaCard({
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 gap-1 px-2 text-xs"
+            className="min-h-11 gap-1 px-2.5 text-xs"
             onClick={() => onViewHistory(area)}
             title="Lihat kronologis penugasan"
           >
@@ -89,7 +89,7 @@ export function AreaCard({
         <Button
           size="sm"
           variant="outline"
-          className="h-8 gap-1.5 text-xs"
+          className="min-h-11 gap-1.5 px-3 text-xs"
           onClick={() => onAssignSupervisor(area)}
         >
           <UserCheck className="h-3.5 w-3.5" />

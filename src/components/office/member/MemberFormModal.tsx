@@ -4,12 +4,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +29,27 @@ interface MemberFormModalProps {
   isSubmitting: boolean;
 }
 
+const EMPTY_MEMBER_VALUES: MemberFormValues = {
+  name: "",
+  username: "",
+  phone: "",
+  role: "SUPERVISOR",
+  jobTitle: "Supervisor",
+  password: "",
+};
+
+function buildMemberDefaults(userToEdit: UserListItem | null): MemberFormValues {
+  if (!userToEdit) return EMPTY_MEMBER_VALUES;
+  return {
+    name: userToEdit.name,
+    username: userToEdit.username,
+    phone: userToEdit.phone,
+    role: userToEdit.role === "ADMIN" ? "ADMIN" : "SUPERVISOR",
+    jobTitle: userToEdit.jobTitle,
+    password: "",
+  };
+}
+
 export function MemberFormModal({
   isOpen,
   onClose,
@@ -55,36 +71,11 @@ export function MemberFormModal({
     formState: { errors },
   } = useForm<MemberFormValues>({
     resolver: zodResolver(memberFormSchema),
-    defaultValues: {
-      name: "",
-      username: "",
-      phone: "",
-      role: "SUPERVISOR",
-      jobTitle: "Supervisor",
-      password: "",
-    },
+    defaultValues: EMPTY_MEMBER_VALUES,
   });
 
   useEffect(() => {
-    if (userToEdit) {
-      reset({
-        name: userToEdit.name,
-        username: userToEdit.username,
-        phone: userToEdit.phone,
-        role: userToEdit.role === "ADMIN" ? "ADMIN" : "SUPERVISOR",
-        jobTitle: userToEdit.jobTitle,
-        password: "",
-      });
-    } else {
-      reset({
-        name: "",
-        username: "",
-        phone: "",
-        role: "SUPERVISOR",
-        jobTitle: "Supervisor",
-        password: "",
-      });
-    }
+    reset(buildMemberDefaults(userToEdit));
   }, [userToEdit, reset, isOpen]);
 
   const onFormSubmit = (data: MemberFormValues) => {
@@ -189,10 +180,10 @@ export function MemberFormModal({
           )}
 
           <DialogFooter className="pt-2">
-            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting} className="min-h-11">
               Batal
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} className="min-h-11">
               {isSubmitting ? "Menyimpan..." : isEditing ? "Simpan Perubahan" : "Buat Akun"}
             </Button>
           </DialogFooter>

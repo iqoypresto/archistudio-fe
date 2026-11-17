@@ -53,7 +53,7 @@ export function AssignmentHistoryDrawer({
             </div>
           ) : (
             <div className="space-y-3">
-              {history.map((item, idx) => {
+              {history.map((item) => {
                 const isActive = !item.endDate;
                 return (
                   <div

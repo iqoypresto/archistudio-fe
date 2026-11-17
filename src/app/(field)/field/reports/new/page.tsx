@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { DailyReportFormShell } from "@/components/field/report/DailyReportFormShell";
 import { Skeleton } from "@/components/ui/skeleton";
 
+export const instant = false;
+
 export const metadata: Metadata = {
   title: "Isi Laporan Harian | ArchiStudio Lapangan",
 };

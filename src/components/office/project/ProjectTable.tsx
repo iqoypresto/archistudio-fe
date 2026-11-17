@@ -115,7 +115,7 @@ export function ProjectTable({
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8"
+            className="min-h-11 min-w-11"
             onClick={() => onEdit(row)}
             title="Ubah Data Project"
           >
@@ -124,7 +124,7 @@ export function ProjectTable({
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-status-danger-fg hover:bg-status-danger-bg/50"
+            className="min-h-11 min-w-11 text-status-danger-fg hover:bg-status-danger-bg/50"
             onClick={() => onArchive(row)}
             title="Arsipkan Project"
           >
@@ -132,7 +132,7 @@ export function ProjectTable({
           </Button>
           <a
             href={`/projects/${row.id}`}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-lg hover:bg-surface-subtle"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg hover:bg-surface-subtle"
             title="Lihat Detail Area"
           >
             <ChevronRight className="h-4 w-4 text-text-secondary" />

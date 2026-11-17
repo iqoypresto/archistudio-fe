@@ -14,8 +14,15 @@
   --color-primary-soft: var(--primary-soft);
   --color-canvas: var(--canvas);
   --color-surface: var(--surface);
+  --color-surface-primary: var(--surface);
+  --color-surface-secondary: var(--secondary);
+  --color-surface-subtle: var(--secondary);
+  --color-surface-hover: var(--border);
+  --color-brand-primary: var(--primary);
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--status-muted-fg);
+  --color-text-tertiary: var(--status-muted-fg);
   --color-status-success-fg: var(--status-success-fg);
   --color-status-success-bg: var(--status-success-bg);
   --color-status-warning-fg: var(--status-warning-fg);

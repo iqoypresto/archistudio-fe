@@ -1,6 +1,8 @@
 import { PageHeader } from "@/components/ui/PageHeader";
 import { MemberContent } from "@/components/office/member/MemberContent";
 
+export const instant = false;
+
 export default function MembersPage() {
   return (
     <div className="space-y-6">
