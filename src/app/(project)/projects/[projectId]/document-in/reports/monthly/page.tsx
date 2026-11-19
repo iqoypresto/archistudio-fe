@@ -1,5 +1,6 @@
-import { WorkspaceRouteSlot } from "@/components/shared/WorkspaceRouteSlot";
+import { PeriodPdfExportContent } from "@/components/office/report/PeriodPdfExportContent";
 
-export default function ProjectMonthlyReportsPage() {
-  return <WorkspaceRouteSlot title="Monthly Report" description="Ringkasan laporan project per bulan kalender." />;
+export default async function ProjectMonthlyReportsPage({ params }: { params: Promise<{ projectId: string }> }) {
+  const { projectId } = await params;
+  return <PeriodPdfExportContent projectId={projectId} mode="monthly" />;
 }

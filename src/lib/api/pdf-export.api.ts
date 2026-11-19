@@ -1,5 +1,5 @@
-import { api } from "@/lib/api/axios";
 import { ApiError } from "@/lib/api/api-error";
+import { api } from "@/lib/api/axios";
 
 export interface ExportPdfParams {
   projectId: string;
@@ -7,52 +7,61 @@ export interface ExportPdfParams {
   projectCode?: string;
 }
 
-function extractFilename(contentDisposition?: string, fallback = "laporan-harian.pdf"): string {
-  if (!contentDisposition) return fallback;
-  const match = contentDisposition.match(/filename="?([^"]+)"?/);
-  return match?.[1] ?? fallback;
+export interface MonthlyPdfParams {
+  projectId: string;
+  month: string;
 }
 
-function triggerBrowserDownload(blob: Blob, filename: string): void {
+export interface DailyRangePdfParams {
+  projectId: string;
+  fromDate: string;
+  toDate: string;
+}
+
+function extractFilename(contentDisposition?: string, fallback = "laporan.pdf"): string {
+  return contentDisposition?.match(/filename="?([^";]+)"?/)?.[1] ?? fallback;
+}
+
+function savePdf(blob: Blob, filename: string): void {
   const url = window.URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
   link.download = filename;
   document.body.appendChild(link);
   link.click();
-  document.body.removeChild(link);
+  link.remove();
   window.URL.revokeObjectURL(url);
 }
 
+async function requestPdf(path: string, params: Record<string, string>, fallback: string): Promise<void> {
+  const response = await api.get(path, { params, responseType: "blob", validateStatus: () => true });
+  if (response.status >= 400) await throwPdfError(response.data as Blob, response.status);
+  savePdf(new Blob([response.data as BlobPart], { type: "application/pdf" }),
+    extractFilename(response.headers["content-disposition"] as string | undefined, fallback));
+}
+
+async function throwPdfError(blob: Blob, status: number): Promise<never> {
+  type PdfErrorPayload = { error?: { code?: string; message?: string; fields?: Record<string, string[]> } };
+  const payload: PdfErrorPayload = await blob.text().then((value) => JSON.parse(value) as PdfErrorPayload)
+    .catch((): PdfErrorPayload => ({}));
+  const error = payload.error;
+  const fields = Object.entries(error?.fields ?? {}).flatMap(([field, messages]) =>
+    messages.map((message) => ({ field, message })));
+  throw new ApiError(error?.code ?? "UNKNOWN_ERROR", error?.message ?? "Gagal membuat PDF.", status, fields);
+}
+
 export const pdfExportApi = {
-  /** Mengunduh file PDF Laporan Harian Opsi A per project per tanggal (US-15, BR-29). */
   async downloadDailyReportPdf(params: ExportPdfParams): Promise<void> {
-    const response = await api.get("/exports/daily-report-pdf", {
-      params: {
-        projectId: params.projectId,
-        date: params.date,
-      },
-      responseType: "blob",
-      validateStatus: () => true,
-    });
-
-    if (response.status >= 400) {
-      const errorText = await (response.data as Blob).text();
-      const payload = JSON.parse(errorText) as {
-        error?: { code?: string; message?: string; fields?: Record<string, string[]> };
-      };
-      const error = payload.error;
-      const missingAreas = error?.fields?.missingAreas ?? [];
-      throw new ApiError(error?.code ?? "UNKNOWN_ERROR", error?.message ?? "Gagal membuat PDF.", response.status,
-        missingAreas.map((message) => ({ field: "missingAreas", message })));
-    }
-
-    const fallbackName = `LH-${params.projectCode ?? "PROJ"}-${params.date.replace(/-/g, "")}.pdf`;
-    const filename = extractFilename(
-      response.headers["content-disposition"] as string | undefined,
-      fallbackName,
-    );
-    const blob = new Blob([response.data as BlobPart], { type: "application/pdf" });
-    triggerBrowserDownload(blob, filename);
+    await requestPdf("/exports/daily-report-pdf", { projectId: params.projectId, date: params.date },
+      `LH-${params.projectCode ?? "PROJ"}-${params.date.replace(/-/g, "")}.pdf`);
+  },
+  async downloadMonthlyReportPdf(params: MonthlyPdfParams): Promise<void> {
+    await requestPdf("/exports/monthly-report-pdf", { projectId: params.projectId, month: params.month },
+      `laporan-bulanan-${params.month}.pdf`);
+  },
+  async downloadDailyReportRangePdf(params: DailyRangePdfParams): Promise<void> {
+    await requestPdf("/exports/daily-report-range-pdf", {
+      projectId: params.projectId, fromDate: params.fromDate, toDate: params.toDate,
+    }, `laporan-harian-${params.fromDate}-${params.toDate}.pdf`);
   },
 };
