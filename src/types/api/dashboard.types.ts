@@ -56,7 +56,7 @@ export interface SupervisorLatenessItem {
 
 export interface UnlockAreaPayload {
   unlockedThroughDate: string;
-  reason: string;
+  reason?: string;
 }
 
 export interface UnlockAreaResponse {

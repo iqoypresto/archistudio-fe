@@ -21,27 +21,30 @@ interface AreaUnlockModalProps {
 }
 
 export function AreaUnlockModal({ isOpen, area, onClose }: AreaUnlockModalProps) {
-  const [unlockedThroughDate, setUnlockedThroughDate] = useState("");
+  const [dateSelection, setDateSelection] = useState<{ areaId: string; value: string } | null>(null);
   const [reason, setReason] = useState("");
   const unlockMutation = useUnlockAreaMutation();
 
   if (!area) return null;
+  const initialUnlockDate = area.oldestOverdueDate ?? "";
+  const selectedUnlockDate =
+    dateSelection?.areaId === area.areaId ? dateSelection.value : initialUnlockDate;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!unlockedThroughDate || reason.trim().length < 5) return;
+    if (!selectedUnlockDate) return;
     unlockMutation.mutate(
       {
         areaId: area.areaId,
         payload: {
-          unlockedThroughDate,
-          reason: reason.trim(),
+          unlockedThroughDate: selectedUnlockDate,
+          ...(reason.trim() ? { reason: reason.trim() } : {}),
         },
       },
       {
         onSuccess: () => {
           setReason("");
-          setUnlockedThroughDate("");
+          setDateSelection(null);
           onClose();
         },
       },
@@ -83,21 +86,20 @@ export function AreaUnlockModal({ isOpen, area, onClose }: AreaUnlockModalProps)
               id="unlockedThroughDate"
               type="date"
               required
-              value={unlockedThroughDate}
-              onChange={(e) => setUnlockedThroughDate(e.target.value)}
+              value={selectedUnlockDate}
+              onChange={(e) => setDateSelection({ areaId: area.areaId, value: e.target.value })}
             />
             <p className="text-[11px] text-text-muted">
-              Supervisor akan dapat mengisi laporan mulai dari tanggal setelah tanggal ini.
+              Tanggal awal tunggakan terisi otomatis. Supervisor tetap mengisi tanggal tertua lebih dahulu.
             </p>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="reason" className="text-xs font-semibold">
-              Alasan Dispensasi Pembukaan Kunci
+              Alasan (Opsional)
             </Label>
             <textarea
               id="reason"
-              required
               rows={3}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
@@ -113,7 +115,7 @@ export function AreaUnlockModal({ isOpen, area, onClose }: AreaUnlockModalProps)
             <Button
               type="submit"
               size="sm"
-              disabled={unlockMutation.isPending || reason.trim().length < 5 || !unlockedThroughDate}
+              disabled={unlockMutation.isPending || !selectedUnlockDate}
               className="bg-rose-600 text-white hover:bg-rose-700"
             >
               {unlockMutation.isPending ? "Membuka..." : "Buka Kunci Area"}

@@ -87,6 +87,11 @@ export function DashboardAreaTable({ areas, onOpenUnlockModal }: DashboardAreaTa
                   ) : (
                     <span className="text-xs text-emerald-600">Tidak ada tunggakan</span>
                   )}
+                  {area.latestUnlock && (
+                    <p className="mt-1 text-[11px] text-text-muted">
+                      Dibuka hingga {area.latestUnlock.unlockedThroughDate}
+                    </p>
+                  )}
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2">
