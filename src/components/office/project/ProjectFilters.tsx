@@ -10,6 +10,7 @@ interface ProjectFiltersProps {
   onFilterChange: (updates: Partial<ProjectFilterParams>) => void;
   onReset: () => void;
   onOpenCreateModal: () => void;
+  canManage: boolean;
 }
 
 export function ProjectFilters({
@@ -17,6 +18,7 @@ export function ProjectFilters({
   onFilterChange,
   onReset,
   onOpenCreateModal,
+  canManage,
 }: ProjectFiltersProps) {
   const hasActiveFilters = Boolean(filters.search || filters.status);
 
@@ -63,10 +65,12 @@ export function ProjectFilters({
         )}
       </div>
 
-      <Button onClick={onOpenCreateModal} className="h-9 gap-1.5 self-start sm:self-auto">
-        <FolderPlus className="h-4 w-4" />
-        Tambah Project
-      </Button>
+      {canManage && (
+        <Button onClick={onOpenCreateModal} className="h-9 gap-1.5 self-start sm:self-auto">
+          <FolderPlus className="h-4 w-4" />
+          Tambah Project
+        </Button>
+      )}
     </div>
   );
 }

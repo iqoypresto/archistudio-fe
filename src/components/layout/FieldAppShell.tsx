@@ -3,7 +3,7 @@
 import { useSyncExternalStore, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ClipboardList, History, LogOut, Wifi, WifiOff } from "lucide-react";
+import { ClipboardList, FolderKanban, History, LogOut, Wifi, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { useLogoutMutation } from "@/hooks/auth.hooks";
@@ -30,6 +30,7 @@ function useOnlineStatus(): boolean {
 const FIELD_TABS = [
   { href: "/field/tasks", label: "Tugas Lapor", icon: ClipboardList },
   { href: "/field/history", label: "Riwayat Saya", icon: History },
+  { href: "/projects", label: "Project", icon: FolderKanban },
 ] as const;
 
 export function FieldAppShell({ children }: { children: ReactNode }) {
@@ -85,7 +86,7 @@ export function FieldAppShell({ children }: { children: ReactNode }) {
 
       <nav
         aria-label="Navigasi lapangan"
-        className="fixed bottom-0 left-1/2 z-30 grid w-full max-w-md -translate-x-1/2 grid-cols-2 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)]"
+        className="fixed bottom-0 left-1/2 z-30 grid w-full max-w-md -translate-x-1/2 grid-cols-3 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)]"
       >
         {FIELD_TABS.map((tab) => {
           const Icon = tab.icon;
@@ -98,7 +99,7 @@ export function FieldAppShell({ children }: { children: ReactNode }) {
               className={cn(
                 "flex min-h-14 flex-col items-center justify-center gap-1 text-sm font-semibold transition-colors",
                 isActive
-                  ? "bg-primary-soft text-primary"
+                  ? "bg-primary-soft text-text-primary"
                   : "text-text-secondary hover:bg-secondary"
               )}
             >

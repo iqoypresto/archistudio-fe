@@ -2,13 +2,11 @@ import { ProjectDetailContent } from "@/components/office/project/ProjectDetailC
 
 export const instant = false;
 
-interface ProjectDetailPageProps {
-  params: Promise<{
-    projectId: string;
-  }>;
-}
-
-export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
+export default async function ProjectDetailPage({
+  params,
+}: {
+  params: Promise<{ projectId: string }>;
+}) {
   const { projectId } = await params;
   return <ProjectDetailContent projectId={projectId} />;
 }

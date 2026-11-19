@@ -8,14 +8,14 @@ import { ApiError } from "@/lib/api/api-error";
 import { getDefaultRouteForRole, useAuthStore } from "@/stores/auth.store";
 import type { UserRole } from "@/types/api/auth.types";
 
-export type AuthScope = "guest" | "office" | "field" | "root";
+export type AuthScope = "guest" | "office" | "field" | "project" | "root";
 
 function computeRedirectPath(
   scope: AuthScope,
   role: UserRole | null
 ): string | null {
   if (!role) {
-    return scope === "office" || scope === "field" || scope === "root"
+    return scope === "office" || scope === "field" || scope === "project" || scope === "root"
       ? "/login"
       : null;
   }
