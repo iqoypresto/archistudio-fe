@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { useExportDailyReportPdfMutation } from "@/hooks/dashboard.hooks";
 import { useProjectsQuery } from "@/hooks/project.hooks";
+import { ApiError } from "@/lib/api/api-error";
 
 interface PdfExportDialogProps {
   isOpen: boolean;
@@ -39,6 +40,12 @@ export function PdfExportDialog({
   const { data: projectsRes } = useProjectsQuery({ page: 1, pageSize: 100 });
   const exportMutation = useExportDailyReportPdfMutation();
   const projects = projectsRes?.data ?? [];
+  const missingAreas = exportMutation.error instanceof ApiError
+    ? exportMutation.error.fields?.filter((field) => field.field === "missingAreas") ?? []
+    : [];
+  const exportErrorMessage = exportMutation.error instanceof Error
+    ? exportMutation.error.message
+    : "Gagal membuat PDF laporan.";
 
   const handleDownload = (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,6 +111,13 @@ export function PdfExportDialog({
               </SelectContent>
             </Select>
           </div>
+
+          {exportMutation.isError && <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+            <p>{exportErrorMessage}</p>
+            {missingAreas.length > 0 && <ul className="mt-2 list-inside list-disc">
+              {missingAreas.map((area, index) => <li key={`${area.message}-${index}`}>{area.message}</li>)}
+            </ul>}
+          </div>}
 
           <div className="space-y-2">
             <Label htmlFor="pdfDate" className="text-xs font-semibold">
