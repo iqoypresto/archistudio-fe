@@ -10,7 +10,8 @@ interface AreaCardProps {
   onEdit: (area: AreaListItem) => void;
   onAssignSupervisor: (area: AreaListItem) => void;
   onViewHistory: (area: AreaListItem) => void;
-  canManage: boolean;
+  canEditArea: boolean;
+  canViewHistory: boolean;
 }
 
 export function AreaCard({
@@ -18,9 +19,11 @@ export function AreaCard({
   onEdit,
   onAssignSupervisor,
   onViewHistory,
-  canManage,
+  canEditArea,
+  canViewHistory,
 }: AreaCardProps) {
   const active = area.activeAssignment;
+  const showFooter = canEditArea || canViewHistory;
 
   return (
     <div className="flex flex-col justify-between rounded-xl border border-border bg-surface p-4 shadow-xs transition-shadow hover:shadow-sm">
@@ -38,7 +41,9 @@ export function AreaCard({
         </div>
 
         <div className="rounded-lg bg-surface-subtle p-3 text-xs">
-          <span className="font-medium text-text-secondary">Supervisor Lapangan (BR-08):</span>
+          <span className="font-medium text-text-secondary">
+            Supervisor Aktif (BR-08 / BR-09):
+          </span>
           {active ? (
             <div className="mt-1 space-y-0.5">
               <div className="flex items-center gap-1.5 font-semibold text-text-primary">
@@ -64,40 +69,48 @@ export function AreaCard({
         </div>
       </div>
 
-      {canManage && <div className="mt-4 flex items-center justify-between border-t border-border/60 pt-3">
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="min-h-11 gap-1 px-2.5 text-xs"
-            onClick={() => onEdit(area)}
-            title="Ubah nama atau kode area"
-          >
-            <Pencil className="h-3.5 w-3.5" />
-            Ubah
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="min-h-11 gap-1 px-2.5 text-xs"
-            onClick={() => onViewHistory(area)}
-            title="Lihat kronologis penugasan"
-          >
-            <History className="h-3.5 w-3.5" />
-            Riwayat
-          </Button>
-        </div>
+      {showFooter && (
+        <div className="mt-4 flex items-center justify-between border-t border-border/60 pt-3">
+          <div className="flex items-center gap-1">
+            {canEditArea && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="min-h-11 gap-1 px-2.5 text-xs"
+                onClick={() => onEdit(area)}
+                title="Ubah nama atau kode area"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                Ubah
+              </Button>
+            )}
+            {canViewHistory && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="min-h-11 gap-1 px-2.5 text-xs"
+                onClick={() => onViewHistory(area)}
+                title="Lihat kronologis penugasan"
+              >
+                <History className="h-3.5 w-3.5" />
+                Riwayat
+              </Button>
+            )}
+          </div>
 
-        <Button
-          size="sm"
-          variant="outline"
-          className="min-h-11 gap-1.5 px-3 text-xs"
-          onClick={() => onAssignSupervisor(area)}
-        >
-          <UserCheck className="h-3.5 w-3.5" />
-          {active ? "Ganti Pengawas" : "Tugaskan"}
-        </Button>
-      </div>}
+          {canEditArea && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="min-h-11 gap-1.5 px-3 text-xs"
+              onClick={() => onAssignSupervisor(area)}
+            >
+              <UserCheck className="h-3.5 w-3.5" />
+              {active ? "Ganti Pengawas" : "Tugaskan"}
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

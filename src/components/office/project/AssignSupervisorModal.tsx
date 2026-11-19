@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useUsersQuery } from "@/hooks/user.hooks";
+import { filterAssignableSupervisors } from "@/lib/validation/area-access";
 import {
   assignSupervisorFormSchema,
   type AssignSupervisorFormValues,
@@ -36,14 +37,16 @@ export function AssignSupervisorModal({
   onSubmit,
   isSubmitting,
 }: AssignSupervisorModalProps) {
-  const { data: usersData } = useUsersQuery({
-    role: "SUPERVISOR",
-    isActive: true,
-    pageSize: 100,
-  });
+  const { data: usersData, isLoading, isError, refetch } = useUsersQuery(
+    { role: "SUPERVISOR", isActive: true, pageSize: 100 },
+    { enabled: isOpen },
+  );
 
-  const supervisors = usersData?.data ?? [];
   const activeAssignment = targetArea?.activeAssignment;
+  const assignableSupervisors = filterAssignableSupervisors(
+    usersData?.data ?? [],
+    activeAssignment?.supervisorId,
+  );
 
   const {
     register,
@@ -67,6 +70,7 @@ export function AssignSupervisorModal({
 
   if (!targetArea) return null;
 
+  const isReplacing = Boolean(activeAssignment);
   const onFormSubmit = (data: AssignSupervisorFormValues) => {
     onSubmit(targetArea.id, data);
   };
@@ -75,9 +79,11 @@ export function AssignSupervisorModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Ganti Supervisor Area {targetArea.code}</DialogTitle>
+          <DialogTitle>
+            {isReplacing ? "Ganti" : "Tugaskan"} Supervisor Area {targetArea.code}
+          </DialogTitle>
           <DialogDescription>
-            Tugaskan supervisor baru untuk area <strong>{targetArea.name}</strong> (BR-10).
+            Pilih supervisor aktif untuk area <strong>{targetArea.name}</strong> (BR-09, BR-10).
           </DialogDescription>
         </DialogHeader>
 
@@ -85,29 +91,48 @@ export function AssignSupervisorModal({
           <div className="rounded-lg bg-surface-subtle p-3 text-xs">
             <span className="font-semibold text-text-primary">Supervisor Aktif Saat Ini:</span>
             <div className="mt-1 text-text-secondary">
-              {activeAssignment.supervisor.name} (@{activeAssignment.supervisor.username}) • Bertugas sejak{" "}
-              {activeAssignment.startDate.slice(0, 10)}
+              {activeAssignment.supervisor.name} (@{activeAssignment.supervisor.username}) • Bertugas
+              sejak {activeAssignment.startDate.slice(0, 10)}
             </div>
           </div>
         )}
 
         <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-3.5 py-1">
           <div className="space-y-1">
-            <Label htmlFor="supervisorId">Supervisor Baru</Label>
+            <Label htmlFor="supervisorId">
+              {isReplacing ? "Supervisor Baru" : "Supervisor Aktif"}
+            </Label>
             <select
               id="supervisorId"
               {...register("supervisorId")}
-              className="border-border bg-surface text-text-primary focus:ring-primary h-9 w-full rounded-lg border px-3 text-sm focus:outline-none focus:ring-2"
+              disabled={isLoading || isError}
+              className="border-border bg-surface text-text-primary focus:ring-primary h-11 w-full rounded-lg border px-3 text-sm focus:outline-none focus:ring-2"
             >
-              <option value="">-- Pilih Supervisor Baru --</option>
-              {supervisors
-                .filter((s) => s.id !== activeAssignment?.supervisorId)
-                .map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name} (@{s.username}) — {s.jobTitle}
-                  </option>
-                ))}
+              <option value="">
+                {isLoading ? "Memuat daftar supervisor..." : "-- Pilih Supervisor Aktif --"}
+              </option>
+              {assignableSupervisors.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name} (@{s.username}) — {s.jobTitle}
+                </option>
+              ))}
             </select>
+            <p className="text-text-secondary text-xs">
+              Supervisor yang sedang aktif di area atau project lain tetap dapat dipilih (BR-09).
+            </p>
+            {isError && (
+              <div className="flex items-center gap-2 text-xs text-status-danger-fg">
+                <span>Gagal memuat daftar supervisor.</span>
+                <button type="button" onClick={() => refetch()} className="underline">
+                  Coba lagi
+                </button>
+              </div>
+            )}
+            {!isLoading && !isError && assignableSupervisors.length === 0 && (
+              <p className="text-status-warning-fg text-xs">
+                Tidak ada kandidat supervisor aktif lain yang tersedia.
+              </p>
+            )}
             {errors.supervisorId && (
               <p className="text-status-danger-fg text-xs">{errors.supervisorId.message}</p>
             )}
@@ -115,7 +140,12 @@ export function AssignSupervisorModal({
 
           <div className="space-y-1">
             <Label htmlFor="effectiveStartDate">Tanggal Efektif Bertugas</Label>
-            <Input id="effectiveStartDate" type="date" {...register("effectiveStartDate")} />
+            <Input
+              id="effectiveStartDate"
+              type="date"
+              className="h-11"
+              {...register("effectiveStartDate")}
+            />
             {errors.effectiveStartDate && (
               <p className="text-status-danger-fg text-xs">
                 {errors.effectiveStartDate.message}
@@ -124,15 +154,16 @@ export function AssignSupervisorModal({
           </div>
 
           <div className="rounded-lg bg-status-info-bg p-2.5 text-xs text-status-info-fg">
-            Penugasan supervisor sebelumnya akan otomatis ditutup pada H-1 tanggal efektif baru.
-            Seluruh laporan harian yang telah terkirim tetap mencantumkan paraf supervisor sebelumnya (BR-10).
+            {isReplacing
+              ? "Penugasan supervisor sebelumnya otomatis ditutup pada H-1 tanggal efektif baru tanpa mengubah laporan historis (BR-10)."
+              : "Supervisor yang dipilih akan langsung aktif melapor pada area ini mulai tanggal efektif (BR-08, BR-09)."}
           </div>
 
           <DialogFooter className="pt-2">
             <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
               Batal
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting || isLoading}>
               {isSubmitting ? "Menugaskan..." : "Konfirmasi Penugasan"}
             </Button>
           </DialogFooter>

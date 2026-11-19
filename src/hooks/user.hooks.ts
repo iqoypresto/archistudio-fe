@@ -11,10 +11,14 @@ import type {
 
 export const USERS_QUERY_KEY = ["users"] as const;
 
-export function useUsersQuery(params: UserFilterParams) {
+export function useUsersQuery(
+  params: UserFilterParams,
+  options?: { enabled?: boolean },
+) {
   return useQuery({
     queryKey: [...USERS_QUERY_KEY, params],
     queryFn: () => userApi.getUsers(params),
+    enabled: options?.enabled ?? true,
   });
 }
 

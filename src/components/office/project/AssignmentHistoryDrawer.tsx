@@ -1,6 +1,7 @@
 "use client";
 
 import { History } from "lucide-react";
+import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import {
   Dialog,
   DialogContent,
@@ -23,7 +24,7 @@ export function AssignmentHistoryDrawer({
   onClose,
   targetArea,
 }: AssignmentHistoryDrawerProps) {
-  const { data: history = [], isLoading } = useAreaAssignmentsQuery(
+  const historyQuery = useAreaAssignmentsQuery(
     isOpen && targetArea ? targetArea.id : null,
   );
 
@@ -38,63 +39,67 @@ export function AssignmentHistoryDrawer({
             Riwayat Penugasan Area {targetArea.code}
           </DialogTitle>
           <DialogDescription>
-            Kronologis pergantian pengawas lapangan pada area <strong>{targetArea.name}</strong> (BR-10).
+            Kronologis pergantian pengawas lapangan pada area <strong>{targetArea.name}</strong>{" "}
+            (BR-10).
           </DialogDescription>
         </DialogHeader>
 
         <div className="py-2">
-          {isLoading ? (
-            <div className="py-8 text-center text-sm text-text-secondary">
-              Memuat riwayat penugasan...
-            </div>
-          ) : history.length === 0 ? (
-            <div className="py-8 text-center text-sm text-text-secondary">
-              Belum ada data penugasan untuk area ini.
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {history.map((item) => {
-                const isActive = !item.endDate;
-                return (
-                  <div
-                    key={item.id}
-                    className={`relative rounded-lg border p-3 text-sm transition-colors ${
-                      isActive
-                        ? "border-primary/40 bg-primary/5"
-                        : "border-border bg-surface"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-text-primary">
-                            {item.supervisor.name}
-                          </span>
-                          <span className="text-xs text-text-secondary">
-                            @{item.supervisor.username}
-                          </span>
+          <AsyncStateView
+            isLoading={historyQuery.isLoading}
+            isError={historyQuery.isError}
+            error={historyQuery.error}
+            data={historyQuery.data}
+            isEmpty={(items) => items.length === 0}
+            onRetry={() => historyQuery.refetch()}
+            emptyTitle="Belum ada riwayat penugasan"
+            emptyDescription="Area ini belum memiliki catatan penugasan supervisor."
+          >
+            {(history) => (
+              <div className="space-y-3">
+                {history.map((item) => {
+                  const isActive = !item.endDate;
+                  return (
+                    <div
+                      key={item.id}
+                      className={`relative rounded-lg border p-3 text-sm transition-colors ${
+                        isActive
+                          ? "border-primary/40 bg-primary/5"
+                          : "border-border bg-surface"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-text-primary">
+                              {item.supervisor.name}
+                            </span>
+                            <span className="text-xs text-text-secondary">
+                              @{item.supervisor.username}
+                            </span>
+                          </div>
+                          <p className="text-xs text-text-secondary">
+                            {item.supervisor.jobTitle} • {item.supervisor.phone}
+                          </p>
                         </div>
-                        <p className="text-xs text-text-secondary">
-                          {item.supervisor.jobTitle} • {item.supervisor.phone}
-                        </p>
+                        <StatusBadge tone={isActive ? "success" : "muted"}>
+                          {isActive ? "Aktif" : "Selesai"}
+                        </StatusBadge>
                       </div>
-                      <StatusBadge tone={isActive ? "success" : "muted"}>
-                        {isActive ? "Aktif" : "Selesai"}
-                      </StatusBadge>
-                    </div>
 
-                    <div className="mt-2.5 flex flex-wrap items-center justify-between border-t border-border/60 pt-2 text-xs text-text-secondary">
-                      <span>
-                        Periode: <strong>{item.startDate.slice(0, 10)}</strong> s/d{" "}
-                        <strong>{item.endDate ? item.endDate.slice(0, 10) : "Sekarang"}</strong>
-                      </span>
-                      <span>Oleh: {item.assignedBy.name}</span>
+                      <div className="mt-2.5 flex flex-wrap items-center justify-between border-t border-border/60 pt-2 text-xs text-text-secondary">
+                        <span>
+                          Periode: <strong>{item.startDate.slice(0, 10)}</strong> s/d{" "}
+                          <strong>{item.endDate ? item.endDate.slice(0, 10) : "Sekarang"}</strong>
+                        </span>
+                        <span>Oleh: {item.assignedBy.name}</span>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                  );
+                })}
+              </div>
+            )}
+          </AsyncStateView>
         </div>
       </DialogContent>
     </Dialog>

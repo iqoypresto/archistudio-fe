@@ -44,16 +44,12 @@ export function AreaFormModal({
 }: AreaFormModalProps) {
   const isEditing = Boolean(areaToEdit);
 
-  const { data: usersData } = useUsersQuery({
-    role: "SUPERVISOR",
-    isActive: true,
-    pageSize: 100,
-  });
-
-  const supervisors = useMemo(
-    () => usersData?.data ?? [],
-    [usersData?.data]
+  const { data: usersData, isLoading } = useUsersQuery(
+    { role: "SUPERVISOR", isActive: true, pageSize: 100 },
+    { enabled: isOpen && !isEditing },
   );
+
+  const supervisors = useMemo(() => usersData?.data ?? [], [usersData?.data]);
 
   const {
     register,
@@ -91,26 +87,23 @@ export function AreaFormModal({
 
   const onFormSubmit = (data: AreaFormValues) => {
     if (isEditing && areaToEdit) {
-      onSubmitUpdate(areaToEdit.id, {
-        code: data.code,
-        name: data.name,
-      });
-    } else {
-      if (!data.initialSupervisorId) {
-        setError("initialSupervisorId", { message: "Pilih supervisor awal untuk area ini." });
-        return;
-      }
-      if (!data.startDate) {
-        setError("startDate", { message: "Pilih tanggal mulai penugasan." });
-        return;
-      }
-      onSubmitCreate({
-        code: data.code,
-        name: data.name,
-        initialSupervisorId: data.initialSupervisorId,
-        startDate: data.startDate,
-      });
+      onSubmitUpdate(areaToEdit.id, { code: data.code, name: data.name });
+      return;
     }
+    if (!data.initialSupervisorId) {
+      setError("initialSupervisorId", { message: "Pilih supervisor awal untuk area ini." });
+      return;
+    }
+    if (!data.startDate) {
+      setError("startDate", { message: "Pilih tanggal mulai penugasan." });
+      return;
+    }
+    onSubmitCreate({
+      code: data.code,
+      name: data.name,
+      initialSupervisorId: data.initialSupervisorId,
+      startDate: data.startDate,
+    });
   };
 
   return (
@@ -121,7 +114,7 @@ export function AreaFormModal({
           <DialogDescription>
             {isEditing
               ? "Perbarui kode atau nama area pada proyek ini."
-              : "Tambahkan area proyek beserta penugasan supervisor aktif awal (BR-08)."}
+              : "Tambahkan area proyek beserta penugasan supervisor aktif awal (BR-08, BR-09)."}
           </DialogDescription>
         </DialogHeader>
 
@@ -142,19 +135,25 @@ export function AreaFormModal({
           {!isEditing && (
             <>
               <div className="space-y-1">
-                <Label htmlFor="initialSupervisorId">Supervisor Aktif (BR-08)</Label>
+                <Label htmlFor="initialSupervisorId">Supervisor Aktif (BR-08 / BR-09)</Label>
                 <select
                   id="initialSupervisorId"
                   {...register("initialSupervisorId")}
-                  className="border-border bg-surface text-text-primary focus:ring-primary h-9 w-full rounded-lg border px-3 text-sm focus:outline-none focus:ring-2"
+                  disabled={isLoading}
+                  className="border-border bg-surface text-text-primary focus:ring-primary h-11 w-full rounded-lg border px-3 text-sm focus:outline-none focus:ring-2"
                 >
-                  <option value="">-- Pilih Supervisor Lapangan --</option>
+                  <option value="">
+                    {isLoading ? "Memuat supervisor..." : "-- Pilih Supervisor Lapangan --"}
+                  </option>
                   {supervisors.map((s) => (
                     <option key={s.id} value={s.id}>
                       {s.name} (@{s.username}) — {s.jobTitle}
                     </option>
                   ))}
                 </select>
+                <p className="text-text-secondary text-xs">
+                  Supervisor yang sudah bertugas di area/project lain tetap dapat dipilih (BR-09).
+                </p>
                 {errors.initialSupervisorId && (
                   <p className="text-status-danger-fg text-xs">{errors.initialSupervisorId.message}</p>
                 )}
@@ -162,7 +161,7 @@ export function AreaFormModal({
 
               <div className="space-y-1">
                 <Label htmlFor="startDate">Tanggal Mulai Penugasan</Label>
-                <Input id="startDate" type="date" {...register("startDate")} />
+                <Input id="startDate" type="date" className="h-11" {...register("startDate")} />
                 {errors.startDate && (
                   <p className="text-status-danger-fg text-xs">{errors.startDate.message}</p>
                 )}

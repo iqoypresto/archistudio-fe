@@ -25,7 +25,7 @@ export const areaFormSchema = z.object({
 export type AreaFormValues = z.infer<typeof areaFormSchema>;
 
 export const assignSupervisorFormSchema = z.object({
-  supervisorId: z.string().min(1, "Pilih supervisor pengganti."),
+  supervisorId: z.string().min(1, "Pilih supervisor aktif."),
   effectiveStartDate: z
     .string()
     .regex(dateRegex, "Format tanggal efektif harus YYYY-MM-DD."),

@@ -11,6 +11,8 @@ export interface ProjectListItem {
   status: ProjectStatus;
   timezone: string;
   routineHolidays: number[];
+  completedAt?: string | null;
+  archivedAt?: string | null;
   createdAt: string;
   updatedAt: string;
   _count?: {
