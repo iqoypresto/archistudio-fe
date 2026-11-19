@@ -14,6 +14,7 @@ import {
 } from "@/hooks/area.hooks";
 import { useProjectDetailQuery } from "@/hooks/project.hooks";
 import type { AreaListItem } from "@/types/api/area.types";
+import { useAuthStore } from "@/stores/auth.store";
 import { AreaCard } from "./AreaCard";
 import { AreaFormModal } from "./AreaFormModal";
 import { AssignSupervisorModal } from "./AssignSupervisorModal";
@@ -24,6 +25,8 @@ interface ProjectDetailContentProps {
 }
 
 export function ProjectDetailContent({ projectId }: ProjectDetailContentProps) {
+  const role = useAuthStore((state) => state.user?.role);
+  const canManage = role === "OWNER" || role === "ADMIN";
   const [isAreaModalOpen, setIsAreaModalOpen] = useState(false);
   const [areaToEdit, setAreaToEdit] = useState<AreaListItem | null>(null);
   const [areaToAssign, setAreaToAssign] = useState<AreaListItem | null>(null);
@@ -92,7 +95,7 @@ export function ProjectDetailContent({ projectId }: ProjectDetailContentProps) {
           </div>
         </div>
 
-        <Button
+        {canManage && <Button
           onClick={() => {
             setAreaToEdit(null);
             setIsAreaModalOpen(true);
@@ -101,7 +104,7 @@ export function ProjectDetailContent({ projectId }: ProjectDetailContentProps) {
         >
           <Plus className="h-4 w-4" />
           Tambah Area
-        </Button>
+        </Button>}
       </div>
 
       <div className="space-y-4">
@@ -129,6 +132,7 @@ export function ProjectDetailContent({ projectId }: ProjectDetailContentProps) {
                 <AreaCard
                   key={area.id}
                   area={area}
+                  canManage={canManage}
                   onEdit={(a) => {
                     setAreaToEdit(a);
                     setIsAreaModalOpen(true);

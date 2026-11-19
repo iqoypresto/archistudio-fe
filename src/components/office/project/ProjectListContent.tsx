@@ -9,12 +9,15 @@ import {
   useUpdateProjectMutation,
 } from "@/hooks/project.hooks";
 import type { ProjectFilterParams, ProjectListItem } from "@/types/api/project.types";
+import { useAuthStore } from "@/stores/auth.store";
 import { ConfirmArchiveProjectDialog } from "./ConfirmArchiveProjectDialog";
 import { ProjectFilters } from "./ProjectFilters";
 import { ProjectFormModal } from "./ProjectFormModal";
 import { ProjectTable } from "./ProjectTable";
 
 export function ProjectListContent() {
+  const role = useAuthStore((state) => state.user?.role);
+  const canManage = role === "OWNER" || role === "ADMIN";
   const [filters, setFilters] = useState<ProjectFilterParams>({
     page: 1,
     pageSize: 10,
@@ -56,6 +59,7 @@ export function ProjectListContent() {
           setProjectToEdit(null);
           setIsFormModalOpen(true);
         }}
+        canManage={canManage}
       />
 
       <AsyncStateView
@@ -71,6 +75,7 @@ export function ProjectListContent() {
           <ProjectTable
             projects={result.data}
             meta={result.meta}
+            canManage={canManage}
             onPageChange={(page) => handleFilterChange({ page })}
             onEdit={handleOpenEdit}
             onArchive={(project) => setProjectToArchive(project)}
@@ -78,7 +83,7 @@ export function ProjectListContent() {
         )}
       </AsyncStateView>
 
-      <ProjectFormModal
+      {canManage && <ProjectFormModal
         isOpen={isFormModalOpen}
         onClose={() => {
           setIsFormModalOpen(false);
@@ -88,15 +93,15 @@ export function ProjectListContent() {
         onSubmitCreate={(data) => createMutation.mutate(data)}
         onSubmitUpdate={(id, data) => updateMutation.mutate({ id, payload: data })}
         isSubmitting={createMutation.isPending || updateMutation.isPending}
-      />
+      />}
 
-      <ConfirmArchiveProjectDialog
+      {canManage && <ConfirmArchiveProjectDialog
         isOpen={Boolean(projectToArchive)}
         onClose={() => setProjectToArchive(null)}
         targetProject={projectToArchive}
         onConfirm={(projectId) => archiveMutation.mutate(projectId)}
         isSubmitting={archiveMutation.isPending}
-      />
+      />}
     </div>
   );
 }

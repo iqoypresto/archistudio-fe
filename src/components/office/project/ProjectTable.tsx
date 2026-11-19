@@ -13,6 +13,7 @@ interface ProjectTableProps {
   onPageChange: (page: number) => void;
   onEdit: (project: ProjectListItem) => void;
   onArchive: (project: ProjectListItem) => void;
+  canManage: boolean;
 }
 
 const DAY_NAMES = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
@@ -46,6 +47,7 @@ export function ProjectTable({
   onPageChange,
   onEdit,
   onArchive,
+  canManage,
 }: ProjectTableProps) {
   const columns: DataColumn<ProjectListItem>[] = [
     {
@@ -112,24 +114,16 @@ export function ProjectTable({
       headerClassName: "text-right",
       cell: (row) => (
         <div className="flex items-center justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="min-h-11 min-w-11"
-            onClick={() => onEdit(row)}
-            title="Ubah Data Project"
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="min-h-11 min-w-11 text-status-danger-fg hover:bg-status-danger-bg/50"
-            onClick={() => onArchive(row)}
-            title="Arsipkan Project"
-          >
-            <Archive className="h-4 w-4" />
-          </Button>
+          {canManage && (
+            <>
+              <Button variant="ghost" size="icon" className="min-h-11 min-w-11" onClick={() => onEdit(row)} title="Ubah Data Project">
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" className="min-h-11 min-w-11 text-status-danger-fg hover:bg-status-danger-bg/50" onClick={() => onArchive(row)} title="Arsipkan Project">
+                <Archive className="h-4 w-4" />
+              </Button>
+            </>
+          )}
           <a
             href={`/projects/${row.id}`}
             className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg hover:bg-surface-subtle"

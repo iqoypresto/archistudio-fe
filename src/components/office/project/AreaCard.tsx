@@ -10,6 +10,7 @@ interface AreaCardProps {
   onEdit: (area: AreaListItem) => void;
   onAssignSupervisor: (area: AreaListItem) => void;
   onViewHistory: (area: AreaListItem) => void;
+  canManage: boolean;
 }
 
 export function AreaCard({
@@ -17,6 +18,7 @@ export function AreaCard({
   onEdit,
   onAssignSupervisor,
   onViewHistory,
+  canManage,
 }: AreaCardProps) {
   const active = area.activeAssignment;
 
@@ -62,7 +64,7 @@ export function AreaCard({
         </div>
       </div>
 
-      <div className="mt-4 flex items-center justify-between border-t border-border/60 pt-3">
+      {canManage && <div className="mt-4 flex items-center justify-between border-t border-border/60 pt-3">
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"
@@ -95,7 +97,7 @@ export function AreaCard({
           <UserCheck className="h-3.5 w-3.5" />
           {active ? "Ganti Pengawas" : "Tugaskan"}
         </Button>
-      </div>
+      </div>}
     </div>
   );
 }
