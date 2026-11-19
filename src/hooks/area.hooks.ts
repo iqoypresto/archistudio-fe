@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { PROJECTS_QUERY_KEY } from "@/hooks/project.hooks";
 import { areaApi } from "@/lib/api/area.api";
 import type {
   AssignSupervisorPayload,
@@ -32,6 +33,7 @@ export function useCreateAreaMutation(projectId: string, onSuccessCallback?: () 
     onSuccess: () => {
       toast.success("Area baru berhasil ditambahkan.");
       queryClient.invalidateQueries({ queryKey: [...AREAS_QUERY_KEY, "project", projectId] });
+      queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
       onSuccessCallback?.();
     },
     onError: (error: Error) => {
@@ -48,6 +50,7 @@ export function useUpdateAreaMutation(projectId: string, onSuccessCallback?: () 
     onSuccess: () => {
       toast.success("Data area berhasil diperbarui.");
       queryClient.invalidateQueries({ queryKey: [...AREAS_QUERY_KEY, "project", projectId] });
+      queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
       onSuccessCallback?.();
     },
     onError: (error: Error) => {
@@ -73,6 +76,7 @@ export function useAssignSupervisorMutation(
       toast.success("Supervisor berhasil ditugaskan.");
       queryClient.invalidateQueries({ queryKey: [...AREAS_QUERY_KEY, "project", projectId] });
       queryClient.invalidateQueries({ queryKey: [...AREAS_QUERY_KEY, "assignments"] });
+      queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
       onSuccessCallback?.();
     },
     onError: (error: Error) => {
