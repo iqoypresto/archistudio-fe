@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
+import { api } from "@/lib/api/axios";
+import { pdfExportApi } from "@/lib/api/pdf-export.api";
 import {
   calculateOnTimePercentage,
   resolveAreaStatusBadgeTone,
@@ -40,5 +42,27 @@ describe("TASK-08 Frontend Dashboard Monitoring, Buka Kunci & Export PDF", () =>
     assert.equal(resolveAreaStatusBadgeTone("TERLAMBAT"), "warning");
     assert.equal(resolveAreaStatusBadgeTone("BELUM_LAPOR"), "danger");
     assert.equal(resolveAreaStatusBadgeTone("LIBUR_RUTIN"), "muted");
+  });
+
+  it("[AC-27.1 / BR-30] menampilkan error API dan area yang belum lengkap pada respons Blob", async () => {
+    const previous = api.defaults.adapter;
+    api.defaults.adapter = async (config) => ({
+      config,
+      status: 409,
+      statusText: "Conflict",
+      headers: {},
+      data: new Blob([JSON.stringify({ success: false, error: {
+        code: "DAILY_REPORTS_INCOMPLETE",
+        message: "PDF belum dapat dibuat.",
+        fields: { missingAreas: ["A — Struktur"] },
+      } })], { type: "application/json" }),
+    });
+    try {
+      await assert.rejects(pdfExportApi.downloadDailyReportPdf({ projectId: "project-1", date: "2026-11-16" }),
+        (error: unknown) => error instanceof Error && error.message === "PDF belum dapat dibuat." &&
+          "fields" in error && Array.isArray(error.fields) && error.fields[0]?.message === "A — Struktur");
+    } finally {
+      api.defaults.adapter = previous;
+    }
   });
 });

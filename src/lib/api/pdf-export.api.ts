@@ -1,4 +1,5 @@
 import { api } from "@/lib/api/axios";
+import { ApiError } from "@/lib/api/api-error";
 
 export interface ExportPdfParams {
   projectId: string;
@@ -32,7 +33,19 @@ export const pdfExportApi = {
         date: params.date,
       },
       responseType: "blob",
+      validateStatus: () => true,
     });
+
+    if (response.status >= 400) {
+      const errorText = await (response.data as Blob).text();
+      const payload = JSON.parse(errorText) as {
+        error?: { code?: string; message?: string; fields?: Record<string, string[]> };
+      };
+      const error = payload.error;
+      const missingAreas = error?.fields?.missingAreas ?? [];
+      throw new ApiError(error?.code ?? "UNKNOWN_ERROR", error?.message ?? "Gagal membuat PDF.", response.status,
+        missingAreas.map((message) => ({ field: "missingAreas", message })));
+    }
 
     const fallbackName = `LH-${params.projectCode ?? "PROJ"}-${params.date.replace(/-/g, "")}.pdf`;
     const filename = extractFilename(
