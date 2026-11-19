@@ -59,7 +59,7 @@ export const reportFormSchema = z.discriminatedUnion("reportType", [
 
 export type ReportFormValues = z.infer<typeof reportFormSchema>;
 
-/** Mengecek apakah waktu sekarang melewati pukul 17:00 zona waktu project (BR-18). */
+/** Membantu konsumen non-submit membaca cutoff tanpa menetapkan status final laporan. */
 export function isPastProjectCutoff1700(
   now: Date,
   reportDateStr: string,
@@ -73,7 +73,6 @@ export function isPastProjectCutoff1700(
   }).format(now);
   if (businessToday < reportDateStr) return false;
   if (businessToday > reportDateStr) return true;
-
   const parts = new Intl.DateTimeFormat("en-GB", {
     timeZone,
     hour: "2-digit",
@@ -81,10 +80,10 @@ export function isPastProjectCutoff1700(
     second: "2-digit",
     hourCycle: "h23",
   }).formatToParts(now);
-  const hour = Number(parts.find((p) => p.type === "hour")?.value ?? "0");
-  const minute = Number(parts.find((p) => p.type === "minute")?.value ?? "0");
-  const second = Number(parts.find((p) => p.type === "second")?.value ?? "0");
-  return hour > 17 || (hour === 17 && (minute > 0 || second > 0));
+  const value = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((part) => part.type === type)?.value ?? "0");
+  return value("hour") > 17 ||
+    (value("hour") === 17 && (value("minute") > 0 || value("second") > 0));
 }
 
 export function buildDefaultReportValues(

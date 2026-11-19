@@ -1,17 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { Calendar, Edit3, MapPin, ShieldCheck, Users } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { cn } from "@/lib/utils";
 import { canOwnerReviseReport } from "@/lib/validation/report-revision.validation";
 import type { UserRole } from "@/types/api/auth.types";
-import type { DailyReportDetail, DailyReportPhotoDto } from "@/types/api/report.types";
+import type { DailyReportDetail } from "@/types/api/report.types";
+import { ReportPhotoGallery } from "./ReportPhotoGallery";
 
 function formatUtcInTimezone(iso: string | null, timeZone: string): string {
   if (!iso) return "-";
@@ -29,7 +27,7 @@ function ReportStatusBadges({ report }: { report: DailyReportDetail }) {
         {report.status === "DRAFT"
           ? "Draf"
           : report.isLate
-            ? "Terlambat (> 17:00)"
+            ? report.lateLabel ?? "Diunggah terlambat"
             : "Tepat Waktu"}
       </StatusBadge>
       {report.isRevised && (
@@ -51,7 +49,6 @@ export function ReportDetailView({
   userRole?: UserRole | null;
   onOpenReviseModal?: () => void;
 }) {
-  const [zoomPhoto, setZoomPhoto] = useState<DailyReportPhotoDto | null>(null);
   const canRevise = canOwnerReviseReport(userRole, report.status);
 
   return (
@@ -130,35 +127,7 @@ export function ReportDetailView({
         </CardContent>
       </Card>
 
-      <Card className="border border-border bg-surface">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold">
-            Dokumentasi Foto ({report.photos.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {report.photos.map((photo, idx) => (
-            <button
-              key={photo.id}
-              type="button"
-              onClick={() => setZoomPhoto(photo)}
-              className="group overflow-hidden rounded-xl border border-border bg-canvas text-left"
-            >
-              <Image
-                src={photo.signedViewUrl || "/file.svg"}
-                alt={photo.caption ?? `Foto ${idx + 1}`}
-                width={320}
-                height={240}
-                unoptimized
-                className="aspect-4/3 w-full object-cover transition-transform group-hover:scale-105"
-              />
-              <p className="truncate px-2.5 py-2 text-xs text-text-secondary">
-                {photo.caption || `Foto #${idx + 1}`}
-              </p>
-            </button>
-          ))}
-        </CardContent>
-      </Card>
+      <ReportPhotoGallery photos={report.photos} timeZone={report.project.timezone} />
 
       <Card className="border border-border bg-surface">
         <CardContent className="flex items-start gap-3 py-4">
@@ -175,23 +144,6 @@ export function ReportDetailView({
         </CardContent>
       </Card>
 
-      <Dialog open={Boolean(zoomPhoto)} onOpenChange={(open) => !open && setZoomPhoto(null)}>
-        <DialogContent className="sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{zoomPhoto?.caption || "Pratinjau Foto Laporan"}</DialogTitle>
-          </DialogHeader>
-          {zoomPhoto && (
-            <Image
-              src={zoomPhoto.signedViewUrl || "/file.svg"}
-              alt={zoomPhoto.caption ?? "Foto"}
-              width={900}
-              height={675}
-              unoptimized
-              className="max-h-[70vh] w-full rounded-lg object-contain"
-            />
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

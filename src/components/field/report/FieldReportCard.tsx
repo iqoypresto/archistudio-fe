@@ -13,7 +13,7 @@ function resolveStatusBadge(report: DailyReportListItem) {
     return { tone: "info" as const, label: "Direvisi (Owner)" };
   }
   if (report.isLate) {
-    return { tone: "warning" as const, label: "Terlambat (> 17:00)" };
+    return { tone: "warning" as const, label: report.lateLabel ?? "Diunggah terlambat" };
   }
   return { tone: "success" as const, label: "Tepat Waktu" };
 }
