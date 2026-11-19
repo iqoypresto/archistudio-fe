@@ -31,6 +31,7 @@ export interface DailyReportRevisionDto {
 }
 
 export interface DailyReportListItem {
+  archivedAt: string | null;
   id: string;
   reportNumber: string;
   reportDate: string;
@@ -122,3 +123,12 @@ export interface SaveDraftPayload {
 
 export type UpdateDraftPayload = Omit<SaveDraftPayload, "areaId" | "reportDate">;
 export type PaginatedReportsResponse = PaginatedResponse<DailyReportListItem>;
+
+export type ListArchivedReportsQuery = Pick<ListReportsQuery,
+  "page" | "pageSize" | "projectId" | "areaId" | "dateFrom" | "dateTo" | "sortBy" | "sortOrder"
+>;
+export interface ArchivedDailyReportListItem extends DailyReportListItem {
+  status: "SUBMITTED";
+  archivedAt: string;
+}
+export type PaginatedArchivedReportsResponse = PaginatedResponse<ArchivedDailyReportListItem>;
