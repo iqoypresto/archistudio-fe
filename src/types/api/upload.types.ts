@@ -26,6 +26,8 @@ export interface SignedPhotoViewItem {
   viewUrl: string;
   caption: string | null;
   sortOrder: number;
+  takenAt: string | null;
+  uploadedAt: string | null;
 }
 
 export type UploadQueueStatus =
@@ -46,6 +48,6 @@ export interface PhotoQueueItem {
   progress: number;
   caption: string;
   storageKey: string | null;
-  takenAt: string;
+  takenAt: string | null;
   errorMessage: string | null;
 }

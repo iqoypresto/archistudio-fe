@@ -16,7 +16,6 @@ import { cn } from "@/lib/utils";
 import {
   buildDefaultReportValues,
   buildSaveDraftPayload,
-  isPastProjectCutoff1700,
   reportFormSchema,
   toUpdateDraftPayload,
   type ReportFormValues,
@@ -106,7 +105,6 @@ export function DailyReportEditor({
   }
 
   const busy = saveDraftMutation.isPending || submitMutation.isPending;
-  const pastCutoff = isPastProjectCutoff1700(new Date(), reportDate, areaTask.timezone);
 
   return (
     <div className="space-y-4">
@@ -168,7 +166,6 @@ export function DailyReportEditor({
       <ReportSubmitBar
         isSavingDraft={saveDraftMutation.isPending}
         isSubmitting={submitMutation.isPending}
-        isPastCutoff={pastCutoff}
         canSubmitPhotos={photoQueue.submitReadiness.ready}
         photoReadinessReason={photoQueue.submitReadiness.reason}
         onSaveDraft={handleSaveDraft}

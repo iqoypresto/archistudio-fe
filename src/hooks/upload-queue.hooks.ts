@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import imageCompression from "browser-image-compression";
 import { toast } from "sonner";
 import { uploadApi } from "@/lib/api/upload.api";
+import { readPhotoTakenAt } from "@/lib/utils/photo-exif";
 import {
   canSubmitPhotoQueue,
   isSupportedImageMime,
@@ -24,7 +25,7 @@ function mapInitialPhotos(photos?: DailyReportPhotoDto[]): PhotoQueueItem[] {
     progress: 100,
     caption: photo.caption ?? "",
     storageKey: photo.storageKey,
-    takenAt: photo.takenAt ?? new Date().toISOString(),
+    takenAt: photo.takenAt,
     errorMessage: null,
   }));
 }
@@ -63,7 +64,7 @@ function createInitialQueueItem(file: File): PhotoQueueItem {
     progress: 0,
     caption: "",
     storageKey: null,
-    takenAt: new Date(file.lastModified || Date.now()).toISOString(),
+    takenAt: null,
     errorMessage: null,
   };
 }
@@ -100,8 +101,10 @@ export function usePhotoUploadQueue(params: {
     async (item: PhotoQueueItem) => {
       try {
         patchItem(item.id, { status: "compressing", progress: 10, errorMessage: null });
+        const takenAt = await readPhotoTakenAt(item.file as File);
+        patchItem(item.id, { takenAt });
         const compressed = await compressPhotoBlob(item.file, item.contentType);
-        patchItem(item.id, { file: compressed, status: "signing", progress: 25 });
+        patchItem(item.id, { status: "signing", progress: 25 });
         const [signed] = await uploadApi.signUploadUrls({
           areaId: params.areaId,
           reportDate: params.reportDate,
