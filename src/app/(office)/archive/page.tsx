@@ -1,5 +1,5 @@
-import { WorkspaceRouteSlot } from "@/components/shared/WorkspaceRouteSlot";
+import { ProjectArchiveContent } from "@/components/office/project/ProjectArchiveContent";
 
 export default function ProjectArchivePage() {
-  return <WorkspaceRouteSlot title="Archive Project" description="Project selesai atau dihentikan." />;
+  return <ProjectArchiveContent />;
 }

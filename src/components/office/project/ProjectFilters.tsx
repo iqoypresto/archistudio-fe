@@ -3,7 +3,7 @@
 import { FolderPlus, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { ProjectFilterParams, ProjectStatus } from "@/types/api/project.types";
+import type { ActiveProjectStatus, ProjectFilterParams } from "@/types/api/project.types";
 
 interface ProjectFiltersProps {
   filters: ProjectFilterParams;
@@ -39,17 +39,16 @@ export function ProjectFilters({
           value={filters.status ?? ""}
           onChange={(e) =>
             onFilterChange({
-              status: (e.target.value || undefined) as ProjectStatus | undefined,
+              status: (e.target.value || undefined) as ActiveProjectStatus | undefined,
               page: 1,
             })
           }
           className="border-border bg-surface text-text-primary focus:ring-primary h-9 rounded-lg border px-3 text-sm focus:outline-none focus:ring-2"
           aria-label="Filter Status Project"
         >
-          <option value="">Semua Status</option>
+          <option value="">Semua Status Aktif</option>
           <option value="PERSIAPAN">Persiapan</option>
           <option value="BERJALAN">Berjalan</option>
-          <option value="SELESAI">Selesai</option>
         </select>
 
         {hasActiveFilters && (

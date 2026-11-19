@@ -14,6 +14,7 @@ interface ProjectTableProps {
   onEdit: (project: ProjectListItem) => void;
   onArchive: (project: ProjectListItem) => void;
   canManage: boolean;
+  canArchive: boolean;
 }
 
 const DAY_NAMES = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
@@ -48,6 +49,7 @@ export function ProjectTable({
   onEdit,
   onArchive,
   canManage,
+  canArchive,
 }: ProjectTableProps) {
   const columns: DataColumn<ProjectListItem>[] = [
     {
@@ -115,14 +117,14 @@ export function ProjectTable({
       cell: (row) => (
         <div className="flex items-center justify-end gap-1">
           {canManage && (
-            <>
-              <Button variant="ghost" size="icon" className="min-h-11 min-w-11" onClick={() => onEdit(row)} title="Ubah Data Project">
-                <Pencil className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="min-h-11 min-w-11 text-status-danger-fg hover:bg-status-danger-bg/50" onClick={() => onArchive(row)} title="Arsipkan Project">
-                <Archive className="h-4 w-4" />
-              </Button>
-            </>
+            <Button variant="ghost" size="icon" className="min-h-11 min-w-11" onClick={() => onEdit(row)} title="Ubah Data Project">
+              <Pencil className="h-4 w-4" />
+            </Button>
+          )}
+          {canArchive && (
+            <Button variant="ghost" size="icon" className="min-h-11 min-w-11 text-status-danger-fg hover:bg-status-danger-bg/50" onClick={() => onArchive(row)} title="Arsipkan Project (Owner)">
+              <Archive className="h-4 w-4" />
+            </Button>
           )}
           <a
             href={`/projects/${row.id}`}

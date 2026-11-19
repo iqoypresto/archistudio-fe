@@ -18,6 +18,7 @@ import { ProjectTable } from "./ProjectTable";
 export function ProjectListContent() {
   const role = useAuthStore((state) => state.user?.role);
   const canManage = role === "OWNER" || role === "ADMIN";
+  const canArchive = role === "OWNER";
   const [filters, setFilters] = useState<ProjectFilterParams>({
     page: 1,
     pageSize: 10,
@@ -76,6 +77,7 @@ export function ProjectListContent() {
             projects={result.data}
             meta={result.meta}
             canManage={canManage}
+            canArchive={canArchive}
             onPageChange={(page) => handleFilterChange({ page })}
             onEdit={handleOpenEdit}
             onArchive={(project) => setProjectToArchive(project)}
@@ -95,7 +97,7 @@ export function ProjectListContent() {
         isSubmitting={createMutation.isPending || updateMutation.isPending}
       />}
 
-      {canManage && <ConfirmArchiveProjectDialog
+      {canArchive && <ConfirmArchiveProjectDialog
         isOpen={Boolean(projectToArchive)}
         onClose={() => setProjectToArchive(null)}
         targetProject={projectToArchive}

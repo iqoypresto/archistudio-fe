@@ -32,16 +32,16 @@ export function ConfirmArchiveProjectDialog({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Arsipkan Project?</DialogTitle>
+          <DialogTitle>Arsipkan Project Secara Manual?</DialogTitle>
           <DialogDescription className="space-y-2 pt-2 text-sm">
             <span>
-              Anda akan mengarsipkan project <strong>{targetProject.name}</strong> (
-              <span className="font-mono">{targetProject.code}</span>).
+              Project <strong>{targetProject.name}</strong> (
+              <span className="font-mono">{targetProject.code}</span>) akan dipindahkan ke
+              halaman <strong>Archive Project</strong> pada folder tahun ini.
             </span>
             <span className="block rounded-lg bg-status-warning-bg p-2.5 text-xs font-medium text-status-warning-fg">
-              Project yang diarsipkan tidak akan tampil di daftar aktif. Seluruh riwayat
-              area, penugasan, dan laporan harian historis tetap tersimpan utuh di sistem
-              (NFR-05).
+              Project yang diarsipkan menjadi baca saja dan tidak menerima laporan harian baru
+              hingga dipulihkan kembali oleh Owner (BR-12, BR-39).
             </span>
           </DialogDescription>
         </DialogHeader>
@@ -55,7 +55,7 @@ export function ConfirmArchiveProjectDialog({
             onClick={() => onConfirm(targetProject.id)}
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Mengarsipkan..." : "Ya, Arsipkan Project"}
+            {isSubmitting ? "Mengarsipkan..." : "Ya, Arsipkan Manual"}
           </Button>
         </DialogFooter>
       </DialogContent>
