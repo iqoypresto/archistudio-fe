@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   title: "Laporan Harian | ArchiStudio Office",
 };
 
-export default function OfficeReportsPage() {
-  return <OfficeReportListContent />;
+export default async function OfficeReportsPage({ searchParams }: {
+  searchParams: Promise<{ view?: string | string[] }>;
+}) {
+  const { view } = await searchParams;
+  return <OfficeReportListContent view={view === "archive" ? "archive" : "reports"} />;
 }

@@ -5,12 +5,20 @@ import { reportApi } from "@/lib/api/report.api";
 import { toUpdateDraftPayload } from "@/lib/validation/report.validation";
 import type {
   ListReportsQuery,
+  ListArchivedReportsQuery,
   ReviseReportPayload,
   SaveDraftPayload,
   UpdateDraftPayload,
 } from "@/types/api/report.types";
 
 export const REPORTS_QUERY_KEY = ["reports"] as const;
+
+export function useArchivedReportsQuery(query: ListArchivedReportsQuery) {
+  return useQuery({
+    queryKey: [...REPORTS_QUERY_KEY, "archive", query],
+    queryFn: () => reportApi.listArchive(query),
+  });
+}
 
 export function useReportDetailQuery(reportId?: string | null) {
   return useQuery({
@@ -27,9 +35,10 @@ export function useMyReportHistoryQuery(query: ListReportsQuery) {
   });
 }
 
-export function useOfficeReportsQuery(query: ListReportsQuery) {
+export function useOfficeReportsQuery(query: ListReportsQuery, enabled = true) {
   return useQuery({
     queryKey: [...REPORTS_QUERY_KEY, "office", query],
+    enabled,
     queryFn: () => reportApi.listReports(query),
   });
 }

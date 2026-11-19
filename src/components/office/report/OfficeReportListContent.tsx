@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { useAuthStore } from "@/stores/auth.store";
+import { buttonVariants } from "@/components/ui/button";
+import { ArchivedReportList } from "./ArchivedReportList";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -11,9 +15,12 @@ import { OfficeReportTable } from "./OfficeReportTable";
 
 const INITIAL_FILTERS: ListReportsQuery = { page: 1, pageSize: 10 };
 
-export function OfficeReportListContent() {
+export function OfficeReportListContent({ view = "reports" }: { view?: "reports" | "archive" }) {
+  const role = useAuthStore((state) => state.user?.role);
+  const canArchive = role === "OWNER" || role === "ADMIN";
+  const showArchive = canArchive && view === "archive";
   const [filters, setFilters] = useState<ListReportsQuery>(INITIAL_FILTERS);
-  const reportsQuery = useOfficeReportsQuery(filters);
+  const reportsQuery = useOfficeReportsQuery(filters, !showArchive);
 
   function handleFilterPatch(patch: Partial<ListReportsQuery>) {
     setFilters((prev) => ({ ...prev, ...patch, page: 1 }));
@@ -26,7 +33,13 @@ export function OfficeReportListContent() {
         description="Daftar laporan harian lapangan seluruh project beserta detail foto dan riwayat revisi."
       />
 
-      <Card>
+      {canArchive && <nav aria-label="Tampilan laporan" className="flex gap-2">
+        <Link href="/reports" aria-current={!showArchive ? "page" : undefined}
+          className={buttonVariants({ variant: !showArchive ? "default" : "outline" })}>Laporan</Link>
+        <Link href="/reports?view=archive" aria-current={showArchive ? "page" : undefined}
+          className={buttonVariants({ variant: showArchive ? "default" : "outline" })}>Arsip Harian</Link>
+      </nav>}
+      {showArchive ? <ArchivedReportList /> : <Card>
         <CardContent className="space-y-4 pt-6">
           <OfficeReportFilters
             filters={filters}
@@ -53,7 +66,7 @@ export function OfficeReportListContent() {
             )}
           </AsyncStateView>
         </CardContent>
-      </Card>
+      </Card>}
     </div>
   );
 }

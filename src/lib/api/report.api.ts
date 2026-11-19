@@ -1,6 +1,8 @@
 import type { ApiResponse } from "@/types/api";
 import type {
   DailyReportDetail,
+  ListArchivedReportsQuery,
+  PaginatedArchivedReportsResponse,
   ListReportsQuery,
   PaginatedReportsResponse,
   ReviseReportPayload,
@@ -10,6 +12,11 @@ import type {
 import { api } from "./axios";
 
 export class ReportApi {
+  async listArchive(params: ListArchivedReportsQuery): Promise<PaginatedArchivedReportsResponse> {
+    const res = await api.get<PaginatedArchivedReportsResponse>("/reports/archive", { params });
+    return res.data;
+  }
+
   async listReports(params?: ListReportsQuery): Promise<PaginatedReportsResponse> {
     const res = await api.get<PaginatedReportsResponse>("/reports", { params });
     return res.data;
