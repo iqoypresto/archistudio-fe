@@ -87,12 +87,12 @@ describe("TASK-04 Frontend Project Management — Unit Tests", () => {
       const url = config.url ?? "";
       const method = (config.method ?? "get").toLowerCase();
 
-      if (url.includes("/projects/proj-10/archive") && method === "patch") {
+      if (url.includes("/projects/proj-10/archive") && method === "post") {
         return {
           data: {
             success: true,
-            message: "Project berhasil diarsipkan.",
-            data: { id: "proj-10", deletedAt: new Date().toISOString() },
+            message: "Project berhasil diarsipkan secara manual ke Archive.",
+            data: { ...MOCK_PROJECT, archivedAt: new Date().toISOString() },
           },
           status: 200,
           statusText: "OK",

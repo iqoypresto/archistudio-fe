@@ -1,4 +1,6 @@
-export type ProjectStatus = "PERSIAPAN" | "BERJALAN" | "SELESAI";
+export type ActiveProjectStatus = "PERSIAPAN" | "BERJALAN";
+export type ProjectStatus = ActiveProjectStatus | "SELESAI";
+export type ArchiveType = "COMPLETED" | "MANUAL";
 
 export interface ProjectListItem {
   id: string;
@@ -30,6 +32,12 @@ export interface ProjectDetail extends ProjectListItem {
   areas: ProjectAreaSummary[];
 }
 
+export interface ArchivedProjectItem extends ProjectListItem {
+  archiveType: ArchiveType;
+  archiveYear: number;
+  archivedActionAt: string;
+}
+
 export interface CreateProjectPayload {
   code: string;
   name: string;
@@ -37,7 +45,7 @@ export interface CreateProjectPayload {
   clientName: string;
   startDate: string;
   endDate?: string | null;
-  status?: ProjectStatus;
+  status?: ActiveProjectStatus;
   timezone: string;
   routineHolidays: number[];
 }
@@ -49,16 +57,25 @@ export interface UpdateProjectPayload {
   clientName?: string;
   startDate?: string;
   endDate?: string | null;
-  status?: ProjectStatus;
+  status?: ActiveProjectStatus;
   timezone?: string;
   routineHolidays?: number[];
+}
+
+export interface RestoreProjectPayload {
+  status: ActiveProjectStatus;
 }
 
 export interface ProjectFilterParams {
   page?: number;
   pageSize?: number;
   search?: string;
-  status?: ProjectStatus;
+  status?: ActiveProjectStatus;
   sortBy?: "name" | "code" | "startDate" | "createdAt";
   sortOrder?: "asc" | "desc";
+}
+
+export interface ArchiveFilterParams {
+  year?: number;
+  search?: string;
 }

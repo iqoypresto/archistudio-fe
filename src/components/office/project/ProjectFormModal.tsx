@@ -77,7 +77,7 @@ export function ProjectFormModal({
         clientName: projectToEdit.clientName,
         startDate: projectToEdit.startDate?.slice(0, 10) ?? "",
         endDate: projectToEdit.endDate?.slice(0, 10) ?? "",
-        status: projectToEdit.status,
+        status: projectToEdit.status === "BERJALAN" ? "BERJALAN" : "PERSIAPAN",
         timezone: projectToEdit.timezone,
         routineHolidays: projectToEdit.routineHolidays ?? [0],
       });
@@ -149,8 +149,10 @@ export function ProjectFormModal({
               >
                 <option value="PERSIAPAN">Persiapan</option>
                 <option value="BERJALAN">Berjalan</option>
-                <option value="SELESAI">Selesai</option>
               </select>
+              <p className="text-[11px] text-text-secondary">
+                Status Selesai ditetapkan oleh Owner dari detail project (BR-39).
+              </p>
             </div>
             <div className="space-y-1">
               <Label htmlFor="timezone">Zona Waktu (NFR-04)</Label>

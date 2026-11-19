@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Info, MapPin, Plus, User } from "lucide-react";
+import { Archive, ArrowLeft, CheckCircle2, Info, MapPin, Plus, RotateCcw, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import type { ProjectDetail, ProjectStatus } from "@/types/api/project.types";
@@ -9,9 +9,15 @@ import type { ProjectDetail, ProjectStatus } from "@/types/api/project.types";
 interface ProjectDetailHeaderProps {
   project?: ProjectDetail;
   canEditArea: boolean;
+  canCompleteProject: boolean;
+  canArchiveProject: boolean;
+  canRestoreProject: boolean;
   isSupervisorReadOnly: boolean;
   isProjectReadOnly: boolean;
   onAddArea: () => void;
+  onCompleteProject: () => void;
+  onArchiveProject: () => void;
+  onRestoreProject: () => void;
 }
 
 function getStatusTone(status: ProjectStatus): "info" | "success" | "muted" {
@@ -22,18 +28,24 @@ function getStatusTone(status: ProjectStatus): "info" | "success" | "muted" {
 export function ProjectDetailHeader({
   project,
   canEditArea,
+  canCompleteProject,
+  canArchiveProject,
+  canRestoreProject,
   isSupervisorReadOnly,
   isProjectReadOnly,
   onAddArea,
+  onCompleteProject,
+  onArchiveProject,
+  onRestoreProject,
 }: ProjectDetailHeaderProps) {
   return (
     <>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-3">
           <Link
-            href="/projects"
+            href={isProjectReadOnly ? "/archive" : "/projects"}
             className="flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-surface text-text-secondary hover:bg-surface-hover hover:text-text-primary"
-            title="Kembali ke Daftar Project"
+            title={isProjectReadOnly ? "Kembali ke Archive Project" : "Kembali ke Daftar Project"}
           >
             <ArrowLeft className="h-4 w-4" />
           </Link>
@@ -48,6 +60,7 @@ export function ProjectDetailHeader({
               {project && (
                 <StatusBadge tone={getStatusTone(project.status)}>{project.status}</StatusBadge>
               )}
+              {project?.archivedAt && <StatusBadge tone="warning">Arsip Manual</StatusBadge>}
             </div>
             {project && (
               <p className="flex flex-wrap items-center gap-3 text-xs text-text-secondary">
@@ -63,12 +76,32 @@ export function ProjectDetailHeader({
           </div>
         </div>
 
-        {canEditArea && (
-          <Button onClick={onAddArea} className="min-h-11 gap-1.5 self-start sm:self-auto">
-            <Plus className="h-4 w-4" />
-            Tambah Area
-          </Button>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {canCompleteProject && (
+            <Button variant="outline" onClick={onCompleteProject} className="min-h-11 gap-1.5">
+              <CheckCircle2 className="h-4 w-4 text-status-success-fg" />
+              Tandai Selesai
+            </Button>
+          )}
+          {canArchiveProject && (
+            <Button variant="outline" onClick={onArchiveProject} className="min-h-11 gap-1.5">
+              <Archive className="h-4 w-4 text-status-warning-fg" />
+              Arsipkan
+            </Button>
+          )}
+          {canRestoreProject && (
+            <Button onClick={onRestoreProject} className="min-h-11 gap-1.5">
+              <RotateCcw className="h-4 w-4" />
+              Pulihkan Project
+            </Button>
+          )}
+          {canEditArea && (
+            <Button onClick={onAddArea} className="min-h-11 gap-1.5">
+              <Plus className="h-4 w-4" />
+              Tambah Area
+            </Button>
+          )}
+        </div>
       </div>
 
       {(isSupervisorReadOnly || isProjectReadOnly) && (
@@ -77,7 +110,7 @@ export function ProjectDetailHeader({
           <span>
             {isSupervisorReadOnly
               ? "Mode baca saja: hanya area yang sedang ditugaskan kepada Anda pada project ini yang ditampilkan (BR-03, BR-09)."
-              : "Project ini berstatus selesai atau arsip sehingga daftar area dan penugasan bersifat baca saja (BR-12, BR-39)."}
+              : "Project ini berada di Archive (selesai atau arsip manual) sehingga seluruh data bersifat baca saja hingga dipulihkan oleh Owner (BR-12, BR-39)."}
           </span>
         </div>
       )}

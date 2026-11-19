@@ -11,8 +11,14 @@ import {
   useProjectAreasQuery,
   useUpdateAreaMutation,
 } from "@/hooks/area.hooks";
-import { useProjectDetailQuery } from "@/hooks/project.hooks";
+import {
+  useArchiveProjectMutation,
+  useCompleteProjectMutation,
+  useProjectDetailQuery,
+  useRestoreProjectMutation,
+} from "@/hooks/project.hooks";
 import { resolveAreaPermissions } from "@/lib/validation/area-access";
+import { resolveProjectArchiveActions } from "@/lib/validation/project.validation";
 import { useAuthStore } from "@/stores/auth.store";
 import type { AreaListItem } from "@/types/api/area.types";
 import { AreaCard } from "./AreaCard";
@@ -20,6 +26,7 @@ import { AreaFormModal } from "./AreaFormModal";
 import { AssignSupervisorModal } from "./AssignSupervisorModal";
 import { AssignmentHistoryDrawer } from "./AssignmentHistoryDrawer";
 import { ProjectDetailHeader } from "./ProjectDetailHeader";
+import { ProjectLifecycleDialogs } from "./ProjectLifecycleDialogs";
 
 interface ProjectDetailContentProps {
   projectId: string;
@@ -31,12 +38,16 @@ export function ProjectDetailContent({ projectId }: ProjectDetailContentProps) {
   const [areaToEdit, setAreaToEdit] = useState<AreaListItem | null>(null);
   const [areaToAssign, setAreaToAssign] = useState<AreaListItem | null>(null);
   const [areaForHistory, setAreaForHistory] = useState<AreaListItem | null>(null);
+  const [isCompleteOpen, setIsCompleteOpen] = useState(false);
+  const [isArchiveOpen, setIsArchiveOpen] = useState(false);
+  const [isRestoreOpen, setIsRestoreOpen] = useState(false);
 
   const projectQuery = useProjectDetailQuery(projectId);
   const areasQuery = useProjectAreasQuery(projectId);
   const project = projectQuery.data;
   const { isSupervisorReadOnly, isProjectReadOnly, canViewHistory, canEditArea } =
     resolveAreaPermissions(role, project);
+  const archiveActions = resolveProjectArchiveActions(role, project);
 
   const createArea = useCreateAreaMutation(projectId, () => setIsAreaModalOpen(false));
   const updateArea = useUpdateAreaMutation(projectId, () => {
@@ -44,6 +55,9 @@ export function ProjectDetailContent({ projectId }: ProjectDetailContentProps) {
     setAreaToEdit(null);
   });
   const assignSupervisor = useAssignSupervisorMutation(projectId, () => setAreaToAssign(null));
+  const completeProject = useCompleteProjectMutation(() => setIsCompleteOpen(false));
+  const archiveProject = useArchiveProjectMutation(() => setIsArchiveOpen(false));
+  const restoreProject = useRestoreProjectMutation(() => setIsRestoreOpen(false));
 
   if (projectQuery.isError) {
     const message =
@@ -65,12 +79,18 @@ export function ProjectDetailContent({ projectId }: ProjectDetailContentProps) {
       <ProjectDetailHeader
         project={project}
         canEditArea={canEditArea}
+        canCompleteProject={archiveActions.canComplete}
+        canArchiveProject={archiveActions.canArchive}
+        canRestoreProject={archiveActions.canRestore}
         isSupervisorReadOnly={isSupervisorReadOnly}
         isProjectReadOnly={isProjectReadOnly}
         onAddArea={() => {
           setAreaToEdit(null);
           setIsAreaModalOpen(true);
         }}
+        onCompleteProject={() => setIsCompleteOpen(true)}
+        onArchiveProject={() => setIsArchiveOpen(true)}
+        onRestoreProject={() => setIsRestoreOpen(true)}
       />
 
       <div className="space-y-4">
@@ -148,6 +168,25 @@ export function ProjectDetailContent({ projectId }: ProjectDetailContentProps) {
           targetArea={areaForHistory}
         />
       )}
+
+      <ProjectLifecycleDialogs
+        project={project ?? null}
+        canComplete={archiveActions.canComplete}
+        canArchive={archiveActions.canArchive}
+        canRestore={archiveActions.canRestore}
+        isCompleteOpen={isCompleteOpen}
+        isArchiveOpen={isArchiveOpen}
+        isRestoreOpen={isRestoreOpen}
+        onCloseComplete={() => setIsCompleteOpen(false)}
+        onCloseArchive={() => setIsArchiveOpen(false)}
+        onCloseRestore={() => setIsRestoreOpen(false)}
+        onConfirmComplete={(id) => completeProject.mutate(id)}
+        onConfirmArchive={(id) => archiveProject.mutate(id)}
+        onConfirmRestore={(id, payload) => restoreProject.mutate({ id, payload })}
+        isCompleting={completeProject.isPending}
+        isArchiving={archiveProject.isPending}
+        isRestoring={restoreProject.isPending}
+      />
     </div>
   );
 }

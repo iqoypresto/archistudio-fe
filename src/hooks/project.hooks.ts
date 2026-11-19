@@ -2,17 +2,31 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { projectApi } from "@/lib/api/project.api";
 import type {
+  ArchiveFilterParams,
   CreateProjectPayload,
   ProjectFilterParams,
+  RestoreProjectPayload,
   UpdateProjectPayload,
 } from "@/types/api/project.types";
 
 export const PROJECTS_QUERY_KEY = ["projects"] as const;
+export const ARCHIVED_PROJECTS_QUERY_KEY = ["projects", "archive"] as const;
 
 export function useProjectsQuery(params: ProjectFilterParams) {
   return useQuery({
     queryKey: [...PROJECTS_QUERY_KEY, params],
     queryFn: () => projectApi.getProjects(params),
+  });
+}
+
+export function useArchivedProjectsQuery(
+  params?: ArchiveFilterParams,
+  options?: { enabled?: boolean },
+) {
+  return useQuery({
+    queryKey: [...ARCHIVED_PROJECTS_QUERY_KEY, params ?? {}],
+    queryFn: () => projectApi.getArchivedProjects(params),
+    enabled: options?.enabled ?? true,
   });
 }
 
@@ -55,17 +69,48 @@ export function useUpdateProjectMutation(onSuccessCallback?: () => void) {
   });
 }
 
+export function useCompleteProjectMutation(onSuccessCallback?: () => void) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => projectApi.completeProject(id),
+    onSuccess: () => {
+      toast.success("Project ditandai selesai dan dimasukkan ke Archive.");
+      queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
+      onSuccessCallback?.();
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Gagal menandai project selesai.");
+    },
+  });
+}
+
 export function useArchiveProjectMutation(onSuccessCallback?: () => void) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => projectApi.archiveProject(id),
     onSuccess: () => {
-      toast.success("Project berhasil diarsipkan.");
+      toast.success("Project berhasil diarsipkan ke halaman Archive.");
       queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
       onSuccessCallback?.();
     },
     onError: (error: Error) => {
       toast.error(error.message || "Gagal mengarsipkan project.");
+    },
+  });
+}
+
+export function useRestoreProjectMutation(onSuccessCallback?: () => void) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: RestoreProjectPayload }) =>
+      projectApi.restoreProject(id, payload),
+    onSuccess: () => {
+      toast.success("Project berhasil dipulihkan ke daftar aktif.");
+      queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
+      onSuccessCallback?.();
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Gagal memulihkan project.");
     },
   });
 }

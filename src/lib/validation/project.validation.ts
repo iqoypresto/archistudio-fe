@@ -1,4 +1,6 @@
 import { z } from "zod";
+import type { UserRole } from "@/types/api/auth.types";
+import type { ArchivedProjectItem, ProjectStatus } from "@/types/api/project.types";
 
 const projectCodeRegex = /^[a-zA-Z0-9_-]+$/;
 const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
@@ -35,21 +37,13 @@ export const projectFormSchema = z
     endDate: z
       .string()
       .optional()
-      .refine(
-        (val) => !val || dateRegex.test(val),
-        "Format tanggal selesai harus YYYY-MM-DD.",
-      ),
-    status: z.enum(["PERSIAPAN", "BERJALAN", "SELESAI"]),
+      .refine((val) => !val || dateRegex.test(val), "Format tanggal selesai harus YYYY-MM-DD."),
+    status: z.enum(["PERSIAPAN", "BERJALAN"]),
     timezone: z.string().min(1, "Pilih zona waktu project."),
     routineHolidays: z.array(z.number().int().min(0).max(6)),
   })
   .refine(
-    (data) => {
-      if (data.endDate && data.endDate.trim() !== "") {
-        return data.endDate >= data.startDate;
-      }
-      return true;
-    },
+    (data) => !data.endDate || data.endDate.trim() === "" || data.endDate >= data.startDate,
     {
       message: "Tanggal selesai project tidak boleh lebih awal dari tanggal mulai.",
       path: ["endDate"],
@@ -57,3 +51,50 @@ export const projectFormSchema = z
   );
 
 export type ProjectFormValues = z.infer<typeof projectFormSchema>;
+
+export const restoreProjectSchema = z.object({
+  status: z.enum(["PERSIAPAN", "BERJALAN"]),
+});
+
+export type RestoreProjectFormValues = z.infer<typeof restoreProjectSchema>;
+
+export interface ArchivedYearGroup {
+  year: number;
+  projects: ArchivedProjectItem[];
+}
+
+/** Mengelompokkan daftar Archive Project berdasarkan folder tahun tindakan terbaru (BR-39). */
+export function groupArchivedProjectsByYear(items: ArchivedProjectItem[]): ArchivedYearGroup[] {
+  const byYear = new Map<number, ArchivedProjectItem[]>();
+  for (const item of items) {
+    const bucket = byYear.get(item.archiveYear) ?? [];
+    bucket.push(item);
+    byYear.set(item.archiveYear, bucket);
+  }
+  return Array.from(byYear.entries())
+    .sort(([yearA], [yearB]) => yearB - yearA)
+    .map(([year, projects]) => ({ year, projects }));
+}
+
+export interface ProjectArchiveActions {
+  canViewArchive: boolean;
+  canComplete: boolean;
+  canArchive: boolean;
+  canRestore: boolean;
+}
+
+/** Menentukan izin aksi Archive Project per role & status project (BR-12, BR-39). */
+export function resolveProjectArchiveActions(
+  role?: UserRole | null,
+  project?: { status: ProjectStatus; archivedAt?: string | null } | null,
+): ProjectArchiveActions {
+  const isOwner = role === "OWNER";
+  const isArchived = project?.status === "SELESAI" || Boolean(project?.archivedAt);
+
+  return {
+    canViewArchive: role === "OWNER" || role === "ADMIN",
+    canComplete: isOwner && Boolean(project) && !isArchived,
+    canArchive: isOwner && Boolean(project) && !isArchived,
+    canRestore: isOwner && Boolean(project) && isArchived,
+  };
+}
