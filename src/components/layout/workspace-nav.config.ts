@@ -26,16 +26,13 @@ export interface WorkspaceNavGroup {
   items: WorkspaceNavItem[];
 }
 
-export function getGlobalNavGroups(role: UserRole, includeProjects = true): WorkspaceNavGroup[] {
+export function getGlobalNavGroups(role: UserRole): WorkspaceNavGroup[] {
   if (role === "SUPERVISOR") {
     return [
       { label: "Lapangan", items: [
         { href: "/field/tasks", label: "Tugas Lapor", icon: ClipboardList },
         { href: "/field/history", label: "Riwayat Saya", icon: FileText },
       ] },
-      ...(includeProjects ? [{ label: "Project", items: [
-        { href: "/projects", label: "Semua Project", icon: FolderKanban, exact: true },
-      ] }] : []),
     ];
   }
 
@@ -61,34 +58,28 @@ export function getGlobalNavGroups(role: UserRole, includeProjects = true): Work
 
 export function getProjectNavGroups(projectId: string, role: UserRole): WorkspaceNavGroup[] {
   const base = `/projects/${projectId}`;
-  const groups: WorkspaceNavGroup[] = [
-    { label: "Project", items: [
-      { href: base, label: "Overview & Area", icon: FolderKanban, exact: true },
-      { label: "Drawing", icon: FileText, toggleOnly: true, children: [
-        { href: `${base}/drawings?tab=masuk`, label: "Masuk", icon: FileText },
-        { href: `${base}/drawings?tab=keluar`, label: "Keluar", icon: FileText },
-      ] },
+  const items: WorkspaceNavItem[] = [
+    { href: base, label: "Overview & Area", icon: FolderKanban, exact: true },
+    { label: "Drawing", icon: FileText, toggleOnly: true, children: [
+      { href: `${base}/drawings?tab=masuk`, label: "Masuk", icon: FileText },
+      { href: `${base}/drawings?tab=keluar`, label: "Keluar", icon: FileText },
     ] },
   ];
   if (role === "OWNER") {
-    groups.push({ label: "Document Out", items: [
-      { label: "Dokumen Keluar", icon: ReceiptText, toggleOnly: true, children: [
-        { href: `${base}/document-out?tab=quotation`, label: "Quotation", icon: ReceiptText },
-        { href: `${base}/document-out?tab=bast`, label: "BAST", icon: ReceiptText },
-        { href: `${base}/document-out?tab=invoice`, label: "Invoice", icon: ReceiptText },
-      ] },
+    items.push({ label: "Dokumen Keluar", icon: ReceiptText, toggleOnly: true, children: [
+      { href: `${base}/document-out?tab=quotation`, label: "Quotation", icon: ReceiptText },
+      { href: `${base}/document-out?tab=bast`, label: "BAST", icon: ReceiptText },
+      { href: `${base}/document-out?tab=invoice`, label: "Invoice", icon: ReceiptText },
     ] });
   }
   if (role !== "SUPERVISOR") {
-    groups.push({ label: "Document In", items: [
-      { label: "Dokumen Masuk", icon: ClipboardList, toggleOnly: true, children: [
-        { href: `${base}/document-in/reports/daily`, label: "Laporan Proyek · Harian", icon: ClipboardList },
-        { href: `${base}/document-in/reports/monthly`, label: "Laporan Proyek · Bulanan", icon: FileText },
-        ...(role === "OWNER" ? [{ href: `${base}/document-in/comms`, label: "Komunikasi", icon: MessageSquareText }] : []),
-      ] },
+    items.push({ label: "Dokumen Masuk", icon: ClipboardList, toggleOnly: true, children: [
+      { href: `${base}/document-in/reports/daily`, label: "Harian", icon: ClipboardList },
+      { href: `${base}/document-in/reports/monthly`, label: "Bulanan", icon: FileText },
+      ...(role === "OWNER" ? [{ href: `${base}/document-in/comms`, label: "Komunikasi", icon: MessageSquareText }] : []),
     ] });
   }
-  return groups;
+  return [{ label: "", items }];
 }
 
 function getArchiveYearLinks(): WorkspaceNavItem[] {

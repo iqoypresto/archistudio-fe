@@ -13,7 +13,7 @@ import { useLogoutMutation } from "@/hooks/auth.hooks";
 import { useProjectDetailQuery } from "@/hooks/project.hooks";
 import { useAuthStore } from "@/stores/auth.store";
 import { ProjectNavList } from "./ProjectNavList";
-import { ProjectSwitcher } from "./ProjectSwitcher";
+import { ProjectNavigation } from "./ProjectNavigation";
 import { WorkspaceBreadcrumbs } from "./WorkspaceBreadcrumbs";
 import { getGlobalNavGroups, getProjectNavGroups } from "./workspace-nav.config";
 
@@ -38,7 +38,6 @@ export function ProjectWorkspaceShell({
   const navGroups = [...globalNavGroups, ...projectNavGroups];
   const title = project ? `${project.code} · ${project.name}` : projectId ? "Project" : "Semua Project";
   const projectHref = projectId ? `/projects/${projectId}` : undefined;
-  const projectInsertAt = role === "OWNER" ? 3 : role === "SUPERVISOR" ? 1 : 2;
 
   async function handleLogout(): Promise<void> {
     await logoutMutation.mutateAsync();
@@ -64,11 +63,8 @@ export function ProjectWorkspaceShell({
       <aside className="hidden w-80 shrink-0 flex-col border-r border-border bg-surface lg:flex">
         <BrandHeader homeHref={role === "SUPERVISOR" ? "/field/tasks" : "/dashboard"} />
         <div className="flex-1 space-y-5 overflow-y-auto p-4">
-          <ProjectNavList groups={navGroups.slice(0, projectInsertAt)} largeTouchTarget={role === "SUPERVISOR"} layoutGroupId="project-desktop-sidebar" />
-          <ProjectSwitcher activeProject={project} />
-          <div className="border-t border-border pt-4">
-            <ProjectNavList groups={navGroups.slice(projectInsertAt)} largeTouchTarget={role === "SUPERVISOR"} layoutGroupId="project-desktop-sidebar" resetKey={projectId} animateOnMount={Boolean(projectId)} />
-          </div>
+          <ProjectNavList groups={globalNavGroups} largeTouchTarget={role === "SUPERVISOR"} layoutGroupId="project-desktop-sidebar" />
+          <ProjectNavigation projectId={projectId} activeProject={project} role={role} largeTouchTarget={role === "SUPERVISOR"} layoutGroupId="project-desktop-sidebar" />
         </div>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
@@ -84,18 +80,15 @@ export function ProjectWorkspaceShell({
                   <WorkspaceBreadcrumbs groups={navGroups} projectTitle={title} projectHref={projectHref} className="text-left" />
                 </SheetHeader>
                 <div className="space-y-5 p-4">
-                  <ProjectNavList groups={navGroups.slice(0, projectInsertAt)} largeTouchTarget={role === "SUPERVISOR"} layoutGroupId="project-mobile-sidebar" />
-                  <ProjectSwitcher activeProject={project} />
-                  <div className="border-t border-border pt-4">
-                    <ProjectNavList
-                      groups={navGroups.slice(projectInsertAt)}
-                      onNavigate={() => setMobileOpen(false)}
-                      largeTouchTarget={role === "SUPERVISOR"}
-                      layoutGroupId="project-mobile-sidebar"
-                      resetKey={projectId}
-                      animateOnMount={Boolean(projectId)}
-                    />
-                  </div>
+                  <ProjectNavList groups={globalNavGroups} largeTouchTarget={role === "SUPERVISOR"} layoutGroupId="project-mobile-sidebar" />
+                  <ProjectNavigation
+                    projectId={projectId}
+                    activeProject={project}
+                    role={role}
+                    onNavigate={() => setMobileOpen(false)}
+                    largeTouchTarget={role === "SUPERVISOR"}
+                    layoutGroupId="project-mobile-sidebar"
+                  />
                 </div>
               </SheetContent>
             </Sheet>

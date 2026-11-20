@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import type { WorkspaceNavGroup, WorkspaceNavItem } from "./workspace-nav.config";
@@ -24,7 +24,8 @@ export function WorkspaceBreadcrumbs({
   className,
 }: WorkspaceBreadcrumbsProps) {
   const pathname = usePathname();
-  const active = findActiveItem(groups, pathname);
+  const searchParams = useSearchParams();
+  const active = findActiveItem(groups, pathname, searchParams.toString());
   const items = getBreadcrumbItems(pathname, active, projectTitle, projectHref);
 
   return (
@@ -48,14 +49,25 @@ export function WorkspaceBreadcrumbs({
   );
 }
 
-function findActiveItem(groups: WorkspaceNavGroup[], pathname: string): { group: string; item: WorkspaceNavItem } | undefined {
+function findActiveItem(groups: WorkspaceNavGroup[], pathname: string, query: string): { group: string; item: WorkspaceNavItem } | undefined {
   for (const group of groups) {
-    const item = group.items.find((entry) => (
-      pathname === entry.href || (!entry.exact && pathname.startsWith(`${entry.href}/`))
-    ));
+    const item = group.items.find((entry) => matchesHref(entry.href, entry.exact, pathname, query));
     if (item) return { group: group.label, item };
+    for (const entry of group.items) {
+      const child = entry.children?.find((candidate) => matchesHref(candidate.href, candidate.exact, pathname, query));
+      if (child) return { group: group.label, item: child };
+    }
   }
   return undefined;
+}
+
+function matchesHref(href: string | undefined, exact: boolean | undefined, pathname: string, query: string): boolean {
+  if (!href) return false;
+  const [hrefPath, hrefQuery] = href.split("?");
+  const pathMatches = exact
+    ? pathname === hrefPath
+    : pathname === hrefPath || pathname.startsWith(`${hrefPath}/`);
+  return pathMatches && (!hrefQuery || hrefQuery === query);
 }
 
 function getBreadcrumbItems(
