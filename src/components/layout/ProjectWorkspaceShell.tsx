@@ -2,8 +2,9 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Building2, LogOut, Menu } from "lucide-react";
+import { MotionConfig, motion, useReducedMotion } from "motion/react";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -25,6 +26,8 @@ export function ProjectWorkspaceShell({
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
+  const reduceMotion = useReducedMotion();
   const user = useAuthStore((state) => state.user);
   const role = user?.role ?? "SUPERVISOR";
   const projectQuery = useProjectDetailQuery(projectId ?? "");
@@ -62,10 +65,10 @@ export function ProjectWorkspaceShell({
       <aside className="hidden w-80 shrink-0 flex-col border-r border-border bg-surface lg:flex">
         <BrandHeader homeHref={role === "SUPERVISOR" ? "/field/tasks" : "/dashboard"} />
         <div className="flex-1 space-y-5 overflow-y-auto p-4">
-          <ProjectNavList groups={navGroups.slice(0, projectInsertAt)} largeTouchTarget={role === "SUPERVISOR"} />
+          <ProjectNavList groups={navGroups.slice(0, projectInsertAt)} largeTouchTarget={role === "SUPERVISOR"} layoutGroupId="project-desktop-sidebar" />
           <ProjectSwitcher activeProject={project} />
           <div className="border-t border-border pt-4">
-            <ProjectNavList groups={navGroups.slice(projectInsertAt)} largeTouchTarget={role === "SUPERVISOR"} />
+            <ProjectNavList groups={navGroups.slice(projectInsertAt)} largeTouchTarget={role === "SUPERVISOR"} layoutGroupId="project-desktop-sidebar" />
           </div>
         </div>
       </aside>
@@ -82,13 +85,14 @@ export function ProjectWorkspaceShell({
                   <WorkspaceBreadcrumbs groups={navGroups} projectTitle={title} projectHref={projectHref} className="text-left" />
                 </SheetHeader>
                 <div className="space-y-5 p-4">
-                  <ProjectNavList groups={navGroups.slice(0, projectInsertAt)} largeTouchTarget={role === "SUPERVISOR"} />
+                  <ProjectNavList groups={navGroups.slice(0, projectInsertAt)} largeTouchTarget={role === "SUPERVISOR"} layoutGroupId="project-mobile-sidebar" />
                   <ProjectSwitcher activeProject={project} />
                   <div className="border-t border-border pt-4">
                     <ProjectNavList
                       groups={navGroups.slice(projectInsertAt)}
                       onNavigate={() => setMobileOpen(false)}
                       largeTouchTarget={role === "SUPERVISOR"}
+                      layoutGroupId="project-mobile-sidebar"
                     />
                   </div>
                 </div>
@@ -106,7 +110,11 @@ export function ProjectWorkspaceShell({
             </Button>
           </div>
         </header>
-        <main className="w-full flex-1 p-4 sm:p-6">{content}</main>
+        <MotionConfig reducedMotion="user">
+          <motion.main key={pathname} initial={{ opacity: 0, y: reduceMotion ? 0 : 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reduceMotion ? 0 : 0.18, ease: "easeOut" }} className="w-full flex-1 p-4 sm:p-6">
+            {content}
+          </motion.main>
+        </MotionConfig>
       </div>
     </div>
   );

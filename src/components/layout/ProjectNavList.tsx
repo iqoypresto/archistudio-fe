@@ -4,7 +4,7 @@ import { useId, useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { ChevronDown } from "lucide-react";
-import { MotionConfig, motion, useReducedMotion } from "motion/react";
+import { LayoutGroup, MotionConfig, motion, useReducedMotion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { WorkspaceNavGroup } from "./workspace-nav.config";
@@ -13,10 +13,12 @@ export function ProjectNavList({
   groups,
   onNavigate,
   largeTouchTarget = false,
+  layoutGroupId = "workspace-sidebar",
 }: {
   groups: WorkspaceNavGroup[];
   onNavigate?: () => void;
   largeTouchTarget?: boolean;
+  layoutGroupId?: string;
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -30,6 +32,7 @@ export function ProjectNavList({
 
   return (
     <MotionConfig reducedMotion="user">
+    <LayoutGroup id={layoutGroupId}>
     <nav className="space-y-5" aria-label="Navigasi workspace">
       {groups.map((group, index) => {
         const groupKey = `${index}:${group.label}`;
@@ -71,7 +74,7 @@ export function ProjectNavList({
                 return (
                   <div key={item.label}>
                     <motion.div className={cn("group/nav-row relative flex items-center rounded-lg transition-colors hover:bg-surface-active focus-within:bg-surface-active motion-reduce:transition-none", isActive && "text-text-primary")}>
-                      {isActive && <motion.span layoutId={`sidebar-active-${navigationId}`} transition={{ type: "spring", bounce: 0.18, duration: 0.35 }} className="absolute inset-0 rounded-lg bg-primary-soft" aria-hidden="true" />}
+                      {isActive && <motion.span layoutId="sidebar-active-pill" transition={{ type: "spring", bounce: 0.18, duration: 0.35 }} className="absolute inset-0 rounded-lg bg-primary-soft" aria-hidden="true" />}
                       <Link href={item.href} onClick={onNavigate} aria-current={isActive ? "page" : undefined} className={cn("relative z-10 flex min-w-0 flex-1 items-center gap-3 rounded-lg bg-transparent px-3 py-2.5 text-sm font-medium", largeTouchTarget ? "min-h-12" : "min-h-11", isActive ? "font-semibold text-text-primary" : "text-text-secondary group-hover/nav-row:text-text-primary")}>
                         <Icon className="size-5 shrink-0" />
                         <span>{item.label}</span>
@@ -87,7 +90,13 @@ export function ProjectNavList({
                       transition={{ duration: reduceMotion ? 0 : 0.2, ease: "easeInOut" }}
                       className="ml-5 mt-1 space-y-1 overflow-hidden border-l border-border pl-3"
                     >
-                      {item.children.map((child) => <Link key={child.label} href={child.href} onClick={onNavigate} aria-current={currentUrl === child.href ? "page" : undefined} className={cn("flex min-h-10 items-center rounded-lg px-3 text-sm text-text-secondary hover:bg-surface-active hover:text-text-primary motion-reduce:transition-none", currentUrl === child.href && "bg-surface-active text-text-primary")}>{child.label}</Link>)}
+                      {item.children.map((child) => {
+                        const isChildActive = currentUrl === child.href;
+                        return <Link key={child.label} href={child.href} onClick={onNavigate} aria-current={isChildActive ? "page" : undefined} className={cn("relative z-0 flex min-h-10 items-center rounded-lg px-3 text-sm text-text-secondary hover:bg-surface-active hover:text-text-primary motion-reduce:transition-none", isChildActive && "font-semibold text-text-primary")}>
+                          {isChildActive && <motion.span layoutId="sidebar-active-pill" transition={{ type: "spring", bounce: 0.18, duration: 0.35 }} className="absolute inset-0 z-0 rounded-lg bg-primary-soft" aria-hidden="true" />}
+                          <span className="relative z-10">{child.label}</span>
+                        </Link>;
+                      })}
                     </motion.div>}
                   </div>
                 );
@@ -97,6 +106,7 @@ export function ProjectNavList({
         );
       })}
     </nav>
+    </LayoutGroup>
     </MotionConfig>
   );
 }

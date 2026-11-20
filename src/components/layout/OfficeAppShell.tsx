@@ -2,8 +2,9 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Building2, LogOut, Menu } from "lucide-react";
+import { MotionConfig, motion, useReducedMotion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -17,6 +18,8 @@ import { getGlobalNavGroups } from "./workspace-nav.config";
 export function OfficeAppShell({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
+  const reduceMotion = useReducedMotion();
   const user = useAuthStore((state) => state.user);
   const navGroups = getGlobalNavGroups(user?.role ?? "ADMIN", false);
   const projectInsertAt = user?.role === "OWNER" ? 2 : 1;
@@ -32,9 +35,9 @@ export function OfficeAppShell({ children }: { children: ReactNode }) {
       <aside className="hidden w-72 shrink-0 flex-col border-r border-border bg-surface lg:flex">
         <BrandHeader />
         <div className="flex-1 space-y-5 overflow-y-auto p-4">
-          <ProjectNavList groups={navGroups.slice(0, projectInsertAt)} />
+          <ProjectNavList groups={navGroups.slice(0, projectInsertAt)} layoutGroupId="office-desktop-sidebar" />
           <ProjectSwitcher />
-          <div className="border-t border-border pt-4"><ProjectNavList groups={navGroups.slice(projectInsertAt)} /></div>
+          <div className="border-t border-border pt-4"><ProjectNavList groups={navGroups.slice(projectInsertAt)} layoutGroupId="office-desktop-sidebar" /></div>
         </div>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
@@ -50,10 +53,10 @@ export function OfficeAppShell({ children }: { children: ReactNode }) {
                   <WorkspaceBreadcrumbs groups={navGroups} className="text-left" />
                 </SheetHeader>
                 <div className="space-y-5 p-4">
-                  <ProjectNavList groups={navGroups.slice(0, projectInsertAt)} onNavigate={() => setMobileOpen(false)} />
+                  <ProjectNavList groups={navGroups.slice(0, projectInsertAt)} onNavigate={() => setMobileOpen(false)} layoutGroupId="office-mobile-sidebar" />
                   <ProjectSwitcher />
                   <div className="border-t border-border pt-4">
-                    <ProjectNavList groups={navGroups.slice(projectInsertAt)} onNavigate={() => setMobileOpen(false)} />
+                    <ProjectNavList groups={navGroups.slice(projectInsertAt)} onNavigate={() => setMobileOpen(false)} layoutGroupId="office-mobile-sidebar" />
                   </div>
                 </div>
               </SheetContent>
@@ -70,7 +73,11 @@ export function OfficeAppShell({ children }: { children: ReactNode }) {
             </Button>
           </div>
         </header>
-        <main className="mx-auto w-full max-w-7xl flex-1 p-4 sm:p-6">{children}</main>
+        <MotionConfig reducedMotion="user">
+          <motion.main key={pathname} initial={{ opacity: 0, y: reduceMotion ? 0 : 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reduceMotion ? 0 : 0.18, ease: "easeOut" }} className="mx-auto w-full max-w-7xl flex-1 p-4 sm:p-6">
+            {children}
+          </motion.main>
+        </MotionConfig>
       </div>
     </div>
   );
