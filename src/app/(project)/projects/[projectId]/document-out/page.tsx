@@ -1,5 +1,12 @@
-import { WorkspaceRouteSlot } from "@/components/shared/WorkspaceRouteSlot";
+import { DocumentOutContent } from "@/components/project/document-out/DocumentOutContent";
 
-export default function ProjectDocumentsPage() {
-  return <WorkspaceRouteSlot title="Document Out" description="Quotation, BAST, dan Invoice project." />;
+export const instant = false;
+
+export default async function ProjectDocumentsPage({
+  params,
+}: {
+  params: Promise<{ projectId: string }>;
+}) {
+  const { projectId } = await params;
+  return <DocumentOutContent projectId={projectId} />;
 }

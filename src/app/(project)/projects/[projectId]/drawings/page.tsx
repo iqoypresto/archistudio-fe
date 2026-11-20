@@ -1,5 +1,12 @@
-import { WorkspaceRouteSlot } from "@/components/shared/WorkspaceRouteSlot";
+import { DrawingGalleryContent } from "@/components/project/drawing/DrawingGalleryContent";
 
-export default function DrawingsPage() {
-  return <WorkspaceRouteSlot title="Drawing In/Out" description="Galeri gambar acuan project." />;
+export const instant = false;
+
+export default async function DrawingsPage({
+  params,
+}: {
+  params: Promise<{ projectId: string }>;
+}) {
+  const { projectId } = await params;
+  return <DrawingGalleryContent projectId={projectId} />;
 }
