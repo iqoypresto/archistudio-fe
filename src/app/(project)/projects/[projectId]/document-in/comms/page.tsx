@@ -1,5 +1,12 @@
-import { WorkspaceRouteSlot } from "@/components/shared/WorkspaceRouteSlot";
+import { CommsContent } from "@/components/project/comms/CommsContent";
 
-export default function ProjectCommsPage() {
-  return <WorkspaceRouteSlot title="Comms" description="Catatan komunikasi masuk dan keluar project." />;
+export const instant = false;
+
+export default async function ProjectCommsPage({
+  params,
+}: {
+  params: Promise<{ projectId: string }>;
+}) {
+  const { projectId } = await params;
+  return <CommsContent projectId={projectId} />;
 }
