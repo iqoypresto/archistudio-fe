@@ -4,6 +4,7 @@ import { useId, useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { ChevronDown } from "lucide-react";
+import { MotionConfig, motion, useReducedMotion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { WorkspaceNavGroup } from "./workspace-nav.config";
@@ -20,6 +21,7 @@ export function ProjectNavList({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const navigationId = useId();
+  const reduceMotion = useReducedMotion();
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
   function toggleGroup(label: string): void {
@@ -27,6 +29,7 @@ export function ProjectNavList({
   }
 
   return (
+    <MotionConfig reducedMotion="user">
     <nav className="space-y-5" aria-label="Navigasi workspace">
       {groups.map((group, index) => {
         const groupKey = `${index}:${group.label}`;
@@ -49,7 +52,16 @@ export function ProjectNavList({
               <span>{group.label}</span>
               <ChevronDown className={cn("size-4 transition-transform", isOpen && "rotate-180")} aria-hidden="true" />
             </Button>}
-            <div id={groupContentId} hidden={!isOpen} className="mt-1.5 space-y-1">
+            <motion.div
+              id={groupContentId}
+              aria-hidden={!isOpen}
+              inert={!isOpen}
+              initial={false}
+              animate={isOpen ? "open" : "closed"}
+              variants={{ open: { height: "auto", opacity: 1 }, closed: { height: 0, opacity: 0 } }}
+              transition={{ duration: reduceMotion ? 0 : 0.2, ease: "easeInOut" }}
+              className="mt-1.5 space-y-1 overflow-hidden"
+            >
               {group.items.map((item) => {
                 const Icon = item.icon;
                 const isActive = pathname === item.href || (!item.exact && pathname.startsWith(`${item.href}/`));
@@ -58,23 +70,33 @@ export function ProjectNavList({
                 const itemOpen = collapsed[item.label] === undefined ? isItemOpen : !collapsed[item.label];
                 return (
                   <div key={item.label}>
-                    <div className={cn("flex items-center rounded-lg", isActive && "bg-primary-soft")}>
-                      <Link href={item.href} onClick={onNavigate} aria-current={isActive ? "page" : undefined} className={cn("flex min-w-0 flex-1 items-center gap-3 px-3 py-2.5 text-sm font-medium", largeTouchTarget ? "min-h-12" : "min-h-11", isActive ? "font-semibold text-text-primary" : "text-text-secondary hover:text-text-primary")}>
+                    <motion.div className={cn("group/nav-row relative flex items-center rounded-lg transition-colors hover:bg-surface-active focus-within:bg-surface-active motion-reduce:transition-none", isActive && "text-text-primary")}>
+                      {isActive && <motion.span layoutId={`sidebar-active-${navigationId}`} transition={{ type: "spring", bounce: 0.18, duration: 0.35 }} className="absolute inset-0 rounded-lg bg-primary-soft" aria-hidden="true" />}
+                      <Link href={item.href} onClick={onNavigate} aria-current={isActive ? "page" : undefined} className={cn("relative z-10 flex min-w-0 flex-1 items-center gap-3 rounded-lg bg-transparent px-3 py-2.5 text-sm font-medium", largeTouchTarget ? "min-h-12" : "min-h-11", isActive ? "font-semibold text-text-primary" : "text-text-secondary group-hover/nav-row:text-text-primary")}>
                         <Icon className="size-5 shrink-0" />
                         <span>{item.label}</span>
                       </Link>
-                      {item.children && <Button type="button" variant="ghost" size="icon" onClick={() => toggleGroup(item.label)} aria-label={`${itemOpen ? "Tutup" : "Buka"} ${item.label}`} aria-expanded={itemOpen} className="size-10 shrink-0 rounded-lg text-text-secondary hover:bg-surface-active"><ChevronDown className={cn("size-4 transition-transform", itemOpen && "rotate-180")} /></Button>}
-                    </div>
-                    {item.children && <div hidden={!itemOpen} className="ml-5 mt-1 space-y-1 border-l border-border pl-3">
+                      {item.children && <Button type="button" variant="ghost" size="icon" onClick={() => toggleGroup(item.label)} aria-label={`${itemOpen ? "Tutup" : "Buka"} ${item.label}`} aria-expanded={itemOpen} className="relative z-10 size-10 shrink-0 rounded-lg bg-transparent text-text-secondary hover:bg-transparent group-hover/nav-row:text-text-primary"><ChevronDown className={cn("size-4 transition-transform motion-reduce:transition-none", itemOpen && "rotate-180")} /></Button>}
+                    </motion.div>
+                    {item.children && <motion.div
+                      aria-hidden={!itemOpen}
+                      inert={!itemOpen}
+                      initial={false}
+                      animate={itemOpen ? "open" : "closed"}
+                      variants={{ open: { height: "auto", opacity: 1 }, closed: { height: 0, opacity: 0 } }}
+                      transition={{ duration: reduceMotion ? 0 : 0.2, ease: "easeInOut" }}
+                      className="ml-5 mt-1 space-y-1 overflow-hidden border-l border-border pl-3"
+                    >
                       {item.children.map((child) => <Link key={child.label} href={child.href} onClick={onNavigate} aria-current={currentUrl === child.href ? "page" : undefined} className={cn("flex min-h-10 items-center rounded-lg px-3 text-sm text-text-secondary hover:bg-surface-active hover:text-text-primary motion-reduce:transition-none", currentUrl === child.href && "bg-surface-active text-text-primary")}>{child.label}</Link>)}
-                    </div>}
+                    </motion.div>}
                   </div>
                 );
               })}
-            </div>
+            </motion.div>
           </section>
         );
       })}
     </nav>
+    </MotionConfig>
   );
 }
