@@ -1,5 +1,5 @@
-import { WorkspaceRouteSlot } from "@/components/shared/WorkspaceRouteSlot";
+import { PaymentWorkspaceContent } from "@/components/office/payment/PaymentWorkspaceContent";
 
 export default function AgentPaymentPage() {
-  return <WorkspaceRouteSlot title="Agent · Payment" description="Catatan pembayaran Agent." />;
+  return <PaymentWorkspaceContent payeeType="AGENT" />;
 }
