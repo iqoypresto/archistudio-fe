@@ -67,21 +67,32 @@ export function ProjectNavList({
             >
               {group.items.map((item) => {
                 const Icon = item.icon;
-                const isActive = pathname === item.href || (!item.exact && pathname.startsWith(`${item.href}/`));
+                const isActive = Boolean(item.href && (pathname === item.href || (!item.exact && pathname.startsWith(`${item.href}/`))));
                 const currentUrl = `${pathname}${searchParams.size ? `?${searchParams.toString()}` : ""}`;
-                const isItemOpen = item.children?.some((child) => currentUrl === child.href || pathname === child.href.split("?")[0]) ?? false;
+                const isItemOpen = item.children?.some((child) => Boolean(child.href && (currentUrl === child.href || pathname === child.href.split("?")[0]))) ?? false;
                 const itemOpen = collapsed[item.label] === undefined ? isItemOpen : !collapsed[item.label];
                 return (
                   <div key={item.label}>
                     <motion.div className={cn("group/nav-row relative flex items-center rounded-lg transition-colors hover:bg-surface-active focus-within:bg-surface-active motion-reduce:transition-none", isActive && "text-text-primary")}>
                       {isActive && <motion.span layoutId="sidebar-active-pill" transition={{ type: "spring", bounce: 0.18, duration: 0.35 }} className="absolute inset-0 rounded-lg bg-primary-soft" aria-hidden="true" />}
-                      <Link href={item.href} onClick={onNavigate} aria-current={isActive ? "page" : undefined} className={cn("relative z-10 flex min-w-0 flex-1 items-center gap-3 rounded-lg bg-transparent px-3 py-2.5 text-sm font-medium", largeTouchTarget ? "min-h-12" : "min-h-11", isActive ? "font-semibold text-text-primary" : "text-text-secondary group-hover/nav-row:text-text-primary")}>
-                        <Icon className="size-5 shrink-0" />
-                        <span>{item.label}</span>
-                      </Link>
-                      {item.children && <Button type="button" variant="ghost" size="icon" onClick={() => toggleGroup(item.label)} aria-label={`${itemOpen ? "Tutup" : "Buka"} ${item.label}`} aria-expanded={itemOpen} className="relative z-10 size-10 shrink-0 rounded-lg bg-transparent text-text-secondary hover:bg-transparent group-hover/nav-row:text-text-primary"><ChevronDown className={cn("size-4 transition-transform motion-reduce:transition-none", itemOpen && "rotate-180")} /></Button>}
+                      {item.toggleOnly ? (
+                        <Button type="button" variant="ghost" onClick={() => toggleGroup(item.label)} aria-expanded={itemOpen} aria-controls={`${navigationId}-${item.label}`} className={cn("relative z-10 h-auto min-h-11 w-full justify-start gap-3 rounded-lg bg-transparent px-3 py-2.5 text-sm font-medium text-text-secondary hover:bg-transparent group-hover/nav-row:text-text-primary", largeTouchTarget && "min-h-12")}>
+                          <Icon className="size-5 shrink-0" />
+                          <span className="flex-1 text-left">{item.label}</span>
+                          <ChevronDown className={cn("size-4 transition-transform motion-reduce:transition-none", itemOpen && "rotate-180")} aria-hidden="true" />
+                        </Button>
+                      ) : (
+                        <>
+                          {item.href && <Link href={item.href} onClick={onNavigate} aria-current={isActive ? "page" : undefined} className={cn("relative z-10 flex min-w-0 flex-1 items-center gap-3 rounded-lg bg-transparent px-3 py-2.5 text-sm font-medium", largeTouchTarget ? "min-h-12" : "min-h-11", isActive ? "font-semibold text-text-primary" : "text-text-secondary group-hover/nav-row:text-text-primary")}>
+                            <Icon className="size-5 shrink-0" />
+                            <span>{item.label}</span>
+                          </Link>}
+                          {item.children && <Button type="button" variant="ghost" size="icon" onClick={() => toggleGroup(item.label)} aria-label={`${itemOpen ? "Tutup" : "Buka"} ${item.label}`} aria-expanded={itemOpen} className="relative z-10 size-10 shrink-0 rounded-lg bg-transparent text-text-secondary hover:bg-transparent group-hover/nav-row:text-text-primary"><ChevronDown className={cn("size-4 transition-transform motion-reduce:transition-none", itemOpen && "rotate-180")} /></Button>}
+                        </>
+                      )}
                     </motion.div>
                     {item.children && <motion.div
+                      id={item.toggleOnly ? `${navigationId}-${item.label}` : undefined}
                       aria-hidden={!itemOpen}
                       inert={!itemOpen}
                       initial={false}
@@ -91,6 +102,7 @@ export function ProjectNavList({
                       className="ml-5 mt-1 space-y-1 overflow-hidden border-l border-border pl-3"
                     >
                       {item.children.map((child) => {
+                        if (!child.href) return null;
                         const isChildActive = currentUrl === child.href;
                         return <Link key={child.label} href={child.href} onClick={onNavigate} aria-current={isChildActive ? "page" : undefined} className={cn("relative z-0 flex min-h-10 items-center rounded-lg px-3 text-sm text-text-secondary hover:bg-surface-active hover:text-text-primary motion-reduce:transition-none", isChildActive && "font-semibold text-text-primary")}>
                           {isChildActive && <motion.span layoutId="sidebar-active-pill" transition={{ type: "spring", bounce: 0.18, duration: 0.35 }} className="absolute inset-0 z-0 rounded-lg bg-primary-soft" aria-hidden="true" />}

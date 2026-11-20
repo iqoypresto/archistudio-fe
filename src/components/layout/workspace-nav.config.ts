@@ -13,11 +13,12 @@ import {
 import type { UserRole } from "@/types/api/auth.types";
 
 export interface WorkspaceNavItem {
-  href: string;
+  href?: string;
   label: string;
   icon: LucideIcon;
   exact?: boolean;
   children?: WorkspaceNavItem[];
+  toggleOnly?: boolean;
 }
 
 export interface WorkspaceNavGroup {
@@ -46,7 +47,7 @@ export function getGlobalNavGroups(role: UserRole, includeProjects = true): Work
   ];
   if (role === "OWNER") {
     groups.push({ label: "", items: [
-      { href: "/hr/freelance/payment", label: "Human Resource", icon: Wallet, children: [
+      { label: "Human Resource", icon: Wallet, toggleOnly: true, children: [
         { href: "/hr/freelance/payment", label: "Freelance", icon: Wallet },
         { href: "/hr/agent/payment", label: "Agent", icon: ReceiptText },
       ] },
