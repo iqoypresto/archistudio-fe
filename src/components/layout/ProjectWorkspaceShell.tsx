@@ -97,7 +97,6 @@ export function ProjectWorkspaceShell({
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-3">
-            <div className="hidden md:block"><ProjectSwitcher compact activeProject={project} /></div>
             {user && <div className="hidden items-center gap-2 sm:flex"><span className="max-w-40 truncate text-sm font-medium text-text-primary">{user.name}</span><StatusBadge tone="info">{user.role}</StatusBadge></div>}
             <Button type="button" variant="outline" onClick={handleLogout} disabled={logoutMutation.isPending} className="min-h-11 px-3">
               <LogOut className="mr-1.5 size-4" /> Keluar

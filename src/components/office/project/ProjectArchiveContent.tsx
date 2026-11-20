@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Archive, Calendar, ExternalLink, Folder, MapPin, RotateCcw, Search } from "lucide-react";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,10 @@ export function ProjectArchiveContent() {
   const isOwner = role === "OWNER";
 
   const [search, setSearch] = useState("");
-  const [selectedYear, setSelectedYear] = useState<number | undefined>(undefined);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const yearParam = searchParams.get("year");
+  const selectedYear = yearParam ? Number(yearParam) : undefined;
   const [projectToRestore, setProjectToRestore] = useState<ArchivedProjectItem | null>(null);
 
   const archiveQuery = useArchivedProjectsQuery(
@@ -68,9 +72,7 @@ export function ProjectArchiveContent() {
         </div>
         <select
           value={selectedYear ?? ""}
-          onChange={(event) =>
-            setSelectedYear(event.target.value ? Number(event.target.value) : undefined)
-          }
+          onChange={(event) => router.push(event.target.value ? `/archive?year=${event.target.value}` : "/archive")}
           aria-label="Filter Folder Tahun Archive"
           className="border-border bg-surface text-text-primary focus:ring-primary h-11 rounded-lg border px-3 text-sm focus:outline-none focus:ring-2"
         >
