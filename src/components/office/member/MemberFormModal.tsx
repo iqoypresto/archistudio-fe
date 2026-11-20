@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SelectField } from "@/components/ui/SelectField";
 import { useAuthStore } from "@/stores/auth.store";
 import {
   memberFormSchema,
@@ -66,6 +67,7 @@ export function MemberFormModal({
     register,
     handleSubmit,
     reset,
+    control,
     setError,
     clearErrors,
     formState: { errors },
@@ -143,15 +145,12 @@ export function MemberFormModal({
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="role">Peran (Role)</Label>
-              <select
-                id="role"
-                {...register("role")}
-                disabled={isAdminActor}
-                className="border-border bg-surface text-text-primary focus:ring-primary h-9 w-full rounded-lg border px-3 text-sm focus:outline-none focus:ring-2 disabled:opacity-60"
-              >
-                {!isAdminActor && <option value="ADMIN">Admin</option>}
-                <option value="SUPERVISOR">Supervisor</option>
-              </select>
+              <Controller name="role" control={control} render={({ field }) => (
+                <SelectField id="role" value={field.value} onChange={field.onChange} disabled={isAdminActor} placeholder="Pilih peran" className="h-9" options={[
+                  ...(!isAdminActor ? [{ value: "ADMIN", label: "Admin" }] : []),
+                  { value: "SUPERVISOR", label: "Supervisor" },
+                ]} />
+              )} />
               {isAdminActor && (
                 <p className="text-text-secondary text-xs">Admin hanya dapat mengelola Supervisor.</p>
               )}

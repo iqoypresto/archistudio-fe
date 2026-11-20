@@ -1,6 +1,7 @@
 "use client";
 
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { DAY_OF_WEEK_OPTIONS } from "@/lib/validation/project.validation";
 
 interface RoutineHolidaysFieldProps {
@@ -23,9 +24,11 @@ export function RoutineHolidaysField({ value, onChange }: RoutineHolidaysFieldPr
         {DAY_OF_WEEK_OPTIONS.map((day) => {
           const isSelected = value?.includes(day.value);
           return (
-            <button
+            <Button
               key={day.value}
               type="button"
+              variant={isSelected ? "default" : "secondary"}
+              aria-pressed={isSelected}
               onClick={() => toggleDay(day.value)}
               className={`h-8 rounded-md px-2.5 text-xs font-medium transition-colors ${
                 isSelected
@@ -34,7 +37,7 @@ export function RoutineHolidaysField({ value, onChange }: RoutineHolidaysFieldPr
               }`}
             >
               {day.label}
-            </button>
+            </Button>
           );
         })}
       </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SelectField } from "@/components/ui/SelectField";
 import { useUsersQuery } from "@/hooks/user.hooks";
 import {
   areaFormSchema,
@@ -53,6 +54,7 @@ export function AreaFormModal({
 
   const {
     register,
+    control,
     handleSubmit,
     reset,
     setError,
@@ -136,21 +138,7 @@ export function AreaFormModal({
             <>
               <div className="space-y-1">
                 <Label htmlFor="initialSupervisorId">Supervisor Aktif (BR-08 / BR-09)</Label>
-                <select
-                  id="initialSupervisorId"
-                  {...register("initialSupervisorId")}
-                  disabled={isLoading}
-                  className="border-border bg-surface text-text-primary focus:ring-primary h-11 w-full rounded-lg border px-3 text-sm focus:outline-none focus:ring-2"
-                >
-                  <option value="">
-                    {isLoading ? "Memuat supervisor..." : "-- Pilih Supervisor Lapangan --"}
-                  </option>
-                  {supervisors.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name} (@{s.username}) — {s.jobTitle}
-                    </option>
-                  ))}
-                </select>
+                <Controller name="initialSupervisorId" control={control} render={({ field }) => <SelectField id="initialSupervisorId" value={field.value ?? ""} onChange={field.onChange} disabled={isLoading} placeholder={isLoading ? "Memuat supervisor..." : "Pilih Supervisor Lapangan"} options={supervisors.map((s) => ({ value: s.id, label: `${s.name} (@${s.username}) — ${s.jobTitle}` }))} />} />
                 <p className="text-text-secondary text-xs">
                   Supervisor yang sudah bertugas di area/project lain tetap dapat dipilih (BR-09).
                 </p>

@@ -1,7 +1,9 @@
 import { Cloud, CloudRain, Sun } from "lucide-react";
 import { useWatch, type UseFormReturn } from "react-hook-form";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import type { ReportFormValues } from "@/lib/validation/report.validation";
 import { cn } from "@/lib/utils";
 import type { WeatherType } from "@/types/api/report.types";
@@ -40,9 +42,11 @@ export function WorkReportFields({
             const Icon = opt.icon;
             const active = selectedWeather === opt.value;
             return (
-              <button
+              <Button
                 key={opt.value}
                 type="button"
+                variant={active ? "default" : "outline"}
+                aria-pressed={active}
                 disabled={disabled}
                 onClick={() => setValue("weather", opt.value, { shouldValidate: true })}
                 className={cn(
@@ -54,7 +58,7 @@ export function WorkReportFields({
               >
                 <Icon className="size-5" />
                 <span>{opt.label}</span>
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -89,7 +93,7 @@ export function WorkReportFields({
         <Label htmlFor="progressText" className="text-base font-semibold text-text-primary">
           Progres Pekerjaan Hari Ini
         </Label>
-        <textarea
+        <Textarea
           id="progressText"
           rows={3}
           disabled={disabled}
@@ -108,7 +112,7 @@ export function WorkReportFields({
         <Label htmlFor="obstaclesText" className="text-base font-semibold text-text-primary">
           Hambatan / Kendala
         </Label>
-        <textarea
+        <Textarea
           id="obstaclesText"
           rows={2}
           disabled={disabled}
@@ -127,7 +131,7 @@ export function WorkReportFields({
         <Label htmlFor="tomorrowPlanText" className="text-base font-semibold text-text-primary">
           Rencana Pekerjaan Besok
         </Label>
-        <textarea
+        <Textarea
           id="tomorrowPlanText"
           rows={2}
           disabled={disabled}

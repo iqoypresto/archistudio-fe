@@ -7,6 +7,7 @@ import { Archive, Calendar, ExternalLink, Folder, MapPin, RotateCcw, Search } fr
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SelectField } from "@/components/ui/SelectField";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { useArchivedProjectsQuery, useRestoreProjectMutation } from "@/hooks/project.hooks";
@@ -70,19 +71,16 @@ export function ProjectArchiveContent() {
             className="h-11 pl-9"
           />
         </div>
-        <select
-          value={selectedYear ?? ""}
-          onChange={(event) => router.push(event.target.value ? `/archive?year=${event.target.value}` : "/archive")}
-          aria-label="Filter Folder Tahun Archive"
-          className="border-border bg-surface text-text-primary focus:ring-primary h-11 rounded-lg border px-3 text-sm focus:outline-none focus:ring-2"
-        >
-          <option value="">Semua Folder Tahun</option>
-          {allGroups.map((group) => (
-            <option key={group.year} value={group.year}>
-              Tahun {group.year} ({group.projects.length} project)
-            </option>
-          ))}
-        </select>
+        <SelectField
+          value={selectedYear ? String(selectedYear) : "ALL"}
+          onChange={(value) => router.push(value === "ALL" ? "/archive" : `/archive?year=${value}`)}
+          ariaLabel="Filter Folder Tahun Archive"
+          placeholder="Semua Folder Tahun"
+          options={[{ value: "ALL", label: "Semua Folder Tahun" }, ...allGroups.map((group) => ({
+            value: String(group.year),
+            label: `Tahun ${group.year} (${group.projects.length} project)`,
+          }))]}
+        />
       </div>
 
       <AsyncStateView

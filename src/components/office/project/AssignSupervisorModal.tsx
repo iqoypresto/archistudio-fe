@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { SelectField } from "@/components/ui/SelectField";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useUsersQuery } from "@/hooks/user.hooks";
@@ -50,6 +51,7 @@ export function AssignSupervisorModal({
 
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors },
@@ -102,30 +104,16 @@ export function AssignSupervisorModal({
             <Label htmlFor="supervisorId">
               {isReplacing ? "Supervisor Baru" : "Supervisor Aktif"}
             </Label>
-            <select
-              id="supervisorId"
-              {...register("supervisorId")}
-              disabled={isLoading || isError}
-              className="border-border bg-surface text-text-primary focus:ring-primary h-11 w-full rounded-lg border px-3 text-sm focus:outline-none focus:ring-2"
-            >
-              <option value="">
-                {isLoading ? "Memuat daftar supervisor..." : "-- Pilih Supervisor Aktif --"}
-              </option>
-              {assignableSupervisors.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name} (@{s.username}) — {s.jobTitle}
-                </option>
-              ))}
-            </select>
+            <Controller name="supervisorId" control={control} render={({ field }) => <SelectField id="supervisorId" value={field.value} onChange={field.onChange} disabled={isLoading || isError} placeholder={isLoading ? "Memuat daftar supervisor..." : "Pilih Supervisor Aktif"} options={assignableSupervisors.map((s) => ({ value: s.id, label: `${s.name} (@${s.username}) — ${s.jobTitle}` }))} />} />
             <p className="text-text-secondary text-xs">
               Supervisor yang sedang aktif di area atau project lain tetap dapat dipilih (BR-09).
             </p>
             {isError && (
               <div className="flex items-center gap-2 text-xs text-status-danger-fg">
                 <span>Gagal memuat daftar supervisor.</span>
-                <button type="button" onClick={() => refetch()} className="underline">
+                <Button type="button" variant="link" size="sm" onClick={() => refetch()} className="h-auto p-0 underline">
                   Coba lagi
-                </button>
+                </Button>
               </div>
             )}
             {!isLoading && !isError && assignableSupervisors.length === 0 && (

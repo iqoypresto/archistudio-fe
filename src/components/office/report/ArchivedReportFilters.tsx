@@ -2,11 +2,10 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SelectField } from "@/components/ui/SelectField";
 import { useProjectAreasQuery } from "@/hooks/area.hooks";
 import { useArchiveProjectOptions } from "@/hooks/report-archive.hooks";
 import type { ListArchivedReportsQuery } from "@/types/api/report.types";
-
-const SELECT = "min-h-11 w-full rounded-lg border border-input bg-surface px-3 text-sm";
 
 export function ArchivedReportFilters({ filters, onChange, onReset }: {
   filters: ListArchivedReportsQuery;
@@ -19,25 +18,13 @@ export function ArchivedReportFilters({ filters, onChange, onReset }: {
     <div className="space-y-3">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <label className="space-y-1 text-sm">Project
-          <select className={SELECT} value={filters.projectId ?? ""} disabled={projects.isLoading}
-            onChange={(event) => onChange({ projectId: event.target.value || undefined })}>
-            <option value="">{projects.isLoading ? "Memuat project…" : "Semua project"}</option>
-            {projects.data?.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
-          </select>
+          <SelectField value={filters.projectId ?? "ALL"} disabled={projects.isLoading} onChange={(value) => onChange({ projectId: value === "ALL" ? undefined : value })} placeholder={projects.isLoading ? "Memuat project…" : "Semua project"} options={[{ value: "ALL", label: projects.isLoading ? "Memuat project…" : "Semua project" }, ...(projects.data?.map((project) => ({ value: project.id, label: project.name })) ?? [])]} />
         </label>
         <label className="space-y-1 text-sm">Area
-          <select className={SELECT} value={filters.areaId ?? ""}
-            disabled={!filters.projectId || areas.isLoading}
-            onChange={(event) => onChange({ areaId: event.target.value || undefined })}>
-            <option value="">{areas.isLoading ? "Memuat area…" : "Semua area"}</option>
-            {areas.data?.map((area) => <option key={area.id} value={area.id}>{area.code} — {area.name}</option>)}
-          </select>
+          <SelectField value={filters.areaId ?? "ALL"} disabled={!filters.projectId || areas.isLoading} onChange={(value) => onChange({ areaId: value === "ALL" ? undefined : value })} placeholder={areas.isLoading ? "Memuat area…" : "Semua area"} options={[{ value: "ALL", label: areas.isLoading ? "Memuat area…" : "Semua area" }, ...(areas.data?.map((area) => ({ value: area.id, label: `${area.code} — ${area.name}` })) ?? [])]} />
         </label>
         <label className="space-y-1 text-sm">Urutan tanggal laporan
-          <select className={SELECT} value={filters.sortOrder}
-            onChange={(event) => onChange({ sortOrder: event.target.value as "asc" | "desc" })}>
-            <option value="desc">Terbaru dahulu</option><option value="asc">Terlama dahulu</option>
-          </select>
+          <SelectField value={filters.sortOrder ?? "desc"} onChange={(value) => onChange({ sortOrder: value as "asc" | "desc" })} placeholder="Urutan tanggal" options={[{ value: "desc", label: "Terbaru dahulu" }, { value: "asc", label: "Terlama dahulu" }]} />
         </label>
         <label className="space-y-1 text-sm">Dari tanggal
           <Input type="date" value={filters.dateFrom ?? ""} className="min-h-11" max={filters.dateTo}

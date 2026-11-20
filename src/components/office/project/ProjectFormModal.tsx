@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SelectField } from "@/components/ui/SelectField";
 import {
   TIMEZONE_OPTIONS,
   projectFormSchema,
@@ -142,29 +143,14 @@ export function ProjectFormModal({
             </div>
             <div className="space-y-1">
               <Label htmlFor="status">Status Project</Label>
-              <select
-                id="status"
-                {...register("status")}
-                className="border-border bg-surface text-text-primary focus:ring-primary h-9 w-full rounded-lg border px-3 text-sm focus:outline-none focus:ring-2"
-              >
-                <option value="PERSIAPAN">Persiapan</option>
-                <option value="BERJALAN">Berjalan</option>
-              </select>
+              <Controller name="status" control={control} render={({ field }) => <SelectField id="status" value={field.value} onChange={field.onChange} placeholder="Pilih status" className="h-9" options={[{ value: "PERSIAPAN", label: "Persiapan" }, { value: "BERJALAN", label: "Berjalan" }]} />} />
               <p className="text-[11px] text-text-secondary">
                 Status Selesai ditetapkan oleh Owner dari detail project (BR-39).
               </p>
             </div>
             <div className="space-y-1">
               <Label htmlFor="timezone">Zona Waktu (NFR-04)</Label>
-              <select
-                id="timezone"
-                {...register("timezone")}
-                className="border-border bg-surface text-text-primary focus:ring-primary h-9 w-full rounded-lg border px-2.5 text-xs focus:outline-none focus:ring-2"
-              >
-                {TIMEZONE_OPTIONS.map((tz) => (
-                  <option key={tz.value} value={tz.value}>{tz.label}</option>
-                ))}
-              </select>
+              <Controller name="timezone" control={control} render={({ field }) => <SelectField id="timezone" value={field.value} onChange={field.onChange} placeholder="Pilih zona waktu" className="h-9 text-xs" options={TIMEZONE_OPTIONS.map((tz) => ({ value: tz.value, label: tz.label }))} />} />
             </div>
           </div>
 

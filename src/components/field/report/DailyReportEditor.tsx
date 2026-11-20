@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLocalFormBackup } from "@/hooks/local-form-backup.hooks";
 import { useSaveDraftMutation, useSubmitReportMutation } from "@/hooks/report.hooks";
@@ -128,9 +128,11 @@ export function DailyReportEditor({
 
       <div className="grid grid-cols-2 gap-2.5">
         {(["WORK", "NO_WORK"] as const).map((type) => (
-          <button
+          <Button
             key={type}
             type="button"
+            variant={reportType === type ? "default" : "outline"}
+            aria-pressed={reportType === type}
             disabled={busy}
             onClick={() => form.setValue("reportType", type, { shouldValidate: true })}
             className={cn(
@@ -141,7 +143,7 @@ export function DailyReportEditor({
             )}
           >
             {type === "WORK" ? "Ada Pekerjaan" : "Hari Tanpa Pekerjaan"}
-          </button>
+          </Button>
         ))}
       </div>
 

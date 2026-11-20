@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { DailyReportPhotoDto } from "@/types/api/report.types";
 
@@ -34,9 +35,11 @@ export function ReportPhotoGallery({
         </CardHeader>
         <CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {photos.map((photo, index) => (
-            <button
+            <Button
               key={photo.id}
               type="button"
+              variant="ghost"
+              aria-label={`Perbesar ${photo.caption || `foto ${index + 1}`}`}
               onClick={() => setZoomPhoto(photo)}
               className="group overflow-hidden rounded-xl border border-border bg-canvas text-left"
             >
@@ -67,7 +70,7 @@ export function ReportPhotoGallery({
                   )}
                 </p>
               </div>
-            </button>
+            </Button>
           ))}
         </CardContent>
       </Card>

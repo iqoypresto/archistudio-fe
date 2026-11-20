@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useUnlockAreaMutation } from "@/hooks/dashboard.hooks";
 import type { DashboardAreaStatusItem } from "@/types/api/dashboard.types";
 
@@ -98,7 +99,7 @@ export function AreaUnlockModal({ isOpen, area, onClose }: AreaUnlockModalProps)
             <Label htmlFor="reason" className="text-xs font-semibold">
               Alasan (Opsional)
             </Label>
-            <textarea
+            <Textarea
               id="reason"
               rows={3}
               value={reason}

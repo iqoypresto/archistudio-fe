@@ -1,6 +1,8 @@
 import { useWatch, type UseFormReturn } from "react-hook-form";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   NO_WORK_REASONS,
   type ReportFormValues,
@@ -38,9 +40,11 @@ export function NoWorkReportFields({
                   )
                 : currentReason === reason;
             return (
-              <button
+              <Button
                 key={reason}
                 type="button"
+                variant={active ? "default" : "outline"}
+                aria-pressed={active}
                 disabled={disabled}
                 onClick={() =>
                   setValue("noWorkReason", reason === "Lainnya" ? "" : reason, {
@@ -55,7 +59,7 @@ export function NoWorkReportFields({
                 )}
               >
                 {reason}
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -65,7 +69,7 @@ export function NoWorkReportFields({
         <Label htmlFor="noWorkReason" className="text-base font-semibold text-text-primary">
           Keterangan Alasan
         </Label>
-        <textarea
+        <Textarea
           id="noWorkReason"
           rows={3}
           disabled={disabled}

@@ -3,10 +3,8 @@
 import { RotateCcw, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SelectField } from "@/components/ui/SelectField";
 import type { ListReportsQuery, ReportStatus, ReportType } from "@/types/api/report.types";
-
-const SELECT_CLASS =
-  "min-h-11 rounded-lg border border-input bg-surface px-3 text-sm text-text-primary outline-none focus:border-primary";
 
 export function OfficeReportFilters({
   filters,
@@ -46,36 +44,10 @@ export function OfficeReportFilters({
         className="min-h-11 font-mono text-sm"
       />
 
-      <select
-        value={filters.status ?? "ALL"}
-        onChange={(e) =>
-          onChange({
-            status: e.target.value === "ALL" ? undefined : (e.target.value as ReportStatus),
-          })
-        }
-        aria-label="Filter status laporan"
-        className={SELECT_CLASS}
-      >
-        <option value="ALL">Semua Status</option>
-        <option value="SUBMITTED">Terkirim</option>
-        <option value="DRAFT">Draf</option>
-      </select>
+      <SelectField value={filters.status ?? "ALL"} onChange={(value) => onChange({ status: value === "ALL" ? undefined : value as ReportStatus })} ariaLabel="Filter status laporan" placeholder="Semua Status" options={[{ value: "ALL", label: "Semua Status" }, { value: "SUBMITTED", label: "Terkirim" }, { value: "DRAFT", label: "Draf" }]} />
 
       <div className="flex gap-2">
-        <select
-          value={filters.reportType ?? "ALL"}
-          onChange={(e) =>
-            onChange({
-              reportType: e.target.value === "ALL" ? undefined : (e.target.value as ReportType),
-            })
-          }
-          aria-label="Filter tipe laporan"
-          className={`${SELECT_CLASS} flex-1`}
-        >
-          <option value="ALL">Semua Tipe</option>
-          <option value="WORK">Ada Pekerjaan</option>
-          <option value="NO_WORK">Tanpa Pekerjaan</option>
-        </select>
+        <SelectField value={filters.reportType ?? "ALL"} onChange={(value) => onChange({ reportType: value === "ALL" ? undefined : value as ReportType })} ariaLabel="Filter tipe laporan" placeholder="Semua Tipe" className="flex-1" options={[{ value: "ALL", label: "Semua Tipe" }, { value: "WORK", label: "Ada Pekerjaan" }, { value: "NO_WORK", label: "Tanpa Pekerjaan" }]} />
 
         <Button
           type="button"

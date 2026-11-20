@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FolderKanban, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useProjectsQuery } from "@/hooks/project.hooks";
 import type { ProjectListItem } from "@/types/api/project.types";
 
@@ -33,17 +34,18 @@ export function ProjectSwitcher({
         <FolderKanban className="size-4" />
         <span>Project</span>
       </div>}
-      <select
-        value={activeProject?.id ?? ""}
-        onChange={(event) => openProject(event.target.value)}
-        onFocus={() => setOpened(true)}
-        onMouseDown={() => setOpened(true)}
-        aria-label="Pilih project"
-        className={`w-full rounded-lg border border-border bg-surface-input px-3 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring ${compact ? "h-10" : "h-11"}`}
+      <Select
+        value={activeProject?.id ?? null}
+        onValueChange={(value) => openProject(typeof value === "string" ? value : "")}
+        onOpenChange={(isOpen) => isOpen && setOpened(true)}
       >
-        <option value="">Pilih project</option>
-        {options.map((project) => <option key={project.id} value={project.id}>{project.code} · {project.name}</option>)}
-      </select>
+        <SelectTrigger aria-label="Pilih project" className={`h-11 min-h-11 w-full bg-surface-input ${compact ? "h-10" : ""}`}>
+          <SelectValue placeholder="Pilih project" />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((project) => <SelectItem key={project.id} value={project.id}>{project.code} · {project.name}</SelectItem>)}
+        </SelectContent>
+      </Select>
       {!compact && projectsQuery.isLoading && <p className="px-1 text-xs text-text-muted">Memuat project...</p>}
       {!compact && projectsQuery.isError && (
         <Button type="button" variant="ghost" onClick={() => projectsQuery.refetch()} className="h-9 w-full justify-start px-2 text-xs">

@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useReviseReportMutation } from "@/hooks/report.hooks";
 import {
   reviseReportSchema,
@@ -105,9 +106,11 @@ export function OwnerReviseReportModal({
                 <Label>Cuaca</Label>
                 <div className="grid grid-cols-3 gap-2">
                   {WEATHER_VALUES.map((w) => (
-                    <button
+                    <Button
                       key={w}
                       type="button"
+                      variant={selectedWeather === w ? "default" : "outline"}
+                      aria-pressed={selectedWeather === w}
                       onClick={() => setValue("weather", w)}
                       className={cn(
                         "min-h-11 rounded-lg border text-sm font-medium",
@@ -117,7 +120,7 @@ export function OwnerReviseReportModal({
                       )}
                     >
                       {w}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>
@@ -133,7 +136,7 @@ export function OwnerReviseReportModal({
               </div>
               <div className="space-y-1">
                 <Label htmlFor="revProgress">Progres Pekerjaan</Label>
-                <textarea
+                <Textarea
                   id="revProgress"
                   rows={2}
                   className="w-full rounded-lg border border-border p-2.5 text-sm"
@@ -142,7 +145,7 @@ export function OwnerReviseReportModal({
               </div>
               <div className="space-y-1">
                 <Label htmlFor="revObstacles">Hambatan</Label>
-                <textarea
+                <Textarea
                   id="revObstacles"
                   rows={2}
                   className="w-full rounded-lg border border-border p-2.5 text-sm"
@@ -151,7 +154,7 @@ export function OwnerReviseReportModal({
               </div>
               <div className="space-y-1">
                 <Label htmlFor="revTomorrow">Rencana Besok</Label>
-                <textarea
+                <Textarea
                   id="revTomorrow"
                   rows={2}
                   className="w-full rounded-lg border border-border p-2.5 text-sm"
@@ -162,7 +165,7 @@ export function OwnerReviseReportModal({
           ) : (
             <div className="space-y-1">
               <Label htmlFor="revNoWork">Alasan Hari Tanpa Pekerjaan</Label>
-              <textarea
+              <Textarea
                 id="revNoWork"
                 rows={3}
                 className="w-full rounded-lg border border-border p-2.5 text-sm"

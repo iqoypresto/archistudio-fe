@@ -3,6 +3,7 @@
 import { FolderPlus, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SelectField } from "@/components/ui/SelectField";
 import type { ActiveProjectStatus, ProjectFilterParams } from "@/types/api/project.types";
 
 interface ProjectFiltersProps {
@@ -35,21 +36,19 @@ export function ProjectFilters({
           />
         </div>
 
-        <select
-          value={filters.status ?? ""}
-          onChange={(e) =>
+        <SelectField
+          value={filters.status ?? "ALL"}
+          onChange={(value) =>
             onFilterChange({
-              status: (e.target.value || undefined) as ActiveProjectStatus | undefined,
+              status: (value === "ALL" ? undefined : value) as ActiveProjectStatus | undefined,
               page: 1,
             })
           }
-          className="border-border bg-surface text-text-primary focus:ring-primary h-9 rounded-lg border px-3 text-sm focus:outline-none focus:ring-2"
           aria-label="Filter Status Project"
-        >
-          <option value="">Semua Status Aktif</option>
-          <option value="PERSIAPAN">Persiapan</option>
-          <option value="BERJALAN">Berjalan</option>
-        </select>
+          placeholder="Semua Status Aktif"
+          className="h-9"
+          options={[{ value: "ALL", label: "Semua Status Aktif" }, { value: "PERSIAPAN", label: "Persiapan" }, { value: "BERJALAN", label: "Berjalan" }]}
+        />
 
         {hasActiveFilters && (
           <Button

@@ -3,6 +3,7 @@
 import { Search, UserPlus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SelectField } from "@/components/ui/SelectField";
 import type { UserFilterParams } from "@/types/api/user.types";
 import type { UserRole } from "@/types/api/auth.types";
 
@@ -36,41 +37,35 @@ export function MemberFilters({
           />
         </div>
 
-        <select
-          value={filters.role ?? ""}
-          onChange={(e) =>
+        <SelectField
+          value={filters.role ?? "ALL"}
+          onChange={(value) =>
             onFilterChange({
-              role: (e.target.value || undefined) as UserRole | undefined,
+              role: (value === "ALL" ? undefined : value) as UserRole | undefined,
               page: 1,
             })
           }
-          className="border-border bg-surface text-text-primary focus:ring-primary h-9 rounded-lg border px-3 text-sm focus:outline-none focus:ring-2"
           aria-label="Filter Peran"
-        >
-          <option value="">Semua Peran</option>
-          <option value="OWNER">Owner</option>
-          <option value="ADMIN">Admin</option>
-          <option value="SUPERVISOR">Supervisor</option>
-        </select>
+          placeholder="Semua Peran"
+          className="h-9"
+          options={[{ value: "ALL", label: "Semua Peran" }, { value: "OWNER", label: "Owner" }, { value: "ADMIN", label: "Admin" }, { value: "SUPERVISOR", label: "Supervisor" }]}
+        />
 
-        <select
+        <SelectField
           value={
-            filters.isActive === undefined ? "" : filters.isActive ? "true" : "false"
+            filters.isActive === undefined ? "ALL" : filters.isActive ? "true" : "false"
           }
-          onChange={(e) => {
-            const val = e.target.value;
+          onChange={(val) => {
             onFilterChange({
-              isActive: val === "" ? undefined : val === "true",
+              isActive: val === "ALL" ? undefined : val === "true",
               page: 1,
             });
           }}
-          className="border-border bg-surface text-text-primary focus:ring-primary h-9 rounded-lg border px-3 text-sm focus:outline-none focus:ring-2"
           aria-label="Filter Status"
-        >
-          <option value="">Semua Status</option>
-          <option value="true">Aktif</option>
-          <option value="false">Nonaktif</option>
-        </select>
+          placeholder="Semua Status"
+          className="h-9"
+          options={[{ value: "ALL", label: "Semua Status" }, { value: "true", label: "Aktif" }, { value: "false", label: "Nonaktif" }]}
+        />
 
         {hasActiveFilters && (
           <Button
