@@ -22,6 +22,12 @@ export interface ProjectListItem {
   };
 }
 
+export interface ProjectOption {
+  id: string;
+  code: string;
+  name: string;
+}
+
 export interface ProjectAreaSummary {
   id: string;
   code: string;

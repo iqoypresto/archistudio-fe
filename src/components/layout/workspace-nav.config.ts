@@ -64,7 +64,7 @@ export function getProjectNavGroups(projectId: string, role: UserRole): Workspac
   const groups: WorkspaceNavGroup[] = [
     { label: "Project", items: [
       { href: base, label: "Overview & Area", icon: FolderKanban, exact: true },
-      { href: `${base}/drawings`, label: "Drawing", icon: FileText, children: [
+      { label: "Drawing", icon: FileText, toggleOnly: true, children: [
         { href: `${base}/drawings?tab=masuk`, label: "Masuk", icon: FileText },
         { href: `${base}/drawings?tab=keluar`, label: "Keluar", icon: FileText },
       ] },
@@ -72,7 +72,7 @@ export function getProjectNavGroups(projectId: string, role: UserRole): Workspac
   ];
   if (role === "OWNER") {
     groups.push({ label: "Document Out", items: [
-      { href: `${base}/document-out`, label: "Dokumen Keluar", icon: ReceiptText, exact: true, children: [
+      { label: "Dokumen Keluar", icon: ReceiptText, toggleOnly: true, children: [
         { href: `${base}/document-out?tab=quotation`, label: "Quotation", icon: ReceiptText },
         { href: `${base}/document-out?tab=bast`, label: "BAST", icon: ReceiptText },
         { href: `${base}/document-out?tab=invoice`, label: "Invoice", icon: ReceiptText },
@@ -81,7 +81,7 @@ export function getProjectNavGroups(projectId: string, role: UserRole): Workspac
   }
   if (role !== "SUPERVISOR") {
     groups.push({ label: "Document In", items: [
-      { href: `${base}/document-in/reports/daily`, label: "Dokumen Masuk", icon: ClipboardList, children: [
+      { label: "Dokumen Masuk", icon: ClipboardList, toggleOnly: true, children: [
         { href: `${base}/document-in/reports/daily`, label: "Laporan Proyek · Harian", icon: ClipboardList },
         { href: `${base}/document-in/reports/monthly`, label: "Laporan Proyek · Bulanan", icon: FileText },
         ...(role === "OWNER" ? [{ href: `${base}/document-in/comms`, label: "Komunikasi", icon: MessageSquareText }] : []),

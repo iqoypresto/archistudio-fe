@@ -22,7 +22,7 @@ export function OfficeAppShell({ children }: { children: ReactNode }) {
   const reduceMotion = useReducedMotion();
   const user = useAuthStore((state) => state.user);
   const navGroups = getGlobalNavGroups(user?.role ?? "ADMIN", false);
-  const projectInsertAt = user?.role === "OWNER" ? 2 : 1;
+  const projectInsertAt = user?.role === "OWNER" ? 3 : user?.role === "SUPERVISOR" ? 1 : 2;
   const logoutMutation = useLogoutMutation();
 
   async function handleLogout(): Promise<void> {

@@ -10,7 +10,17 @@ import type {
 } from "@/types/api/project.types";
 
 export const PROJECTS_QUERY_KEY = ["projects"] as const;
+export const PROJECT_OPTIONS_QUERY_KEY = [...PROJECTS_QUERY_KEY, "options"] as const;
 export const ARCHIVED_PROJECTS_QUERY_KEY = ["projects", "archive"] as const;
+
+export function useProjectOptionsQuery(options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: PROJECT_OPTIONS_QUERY_KEY,
+    queryFn: () => projectApi.getProjectOptions(),
+    enabled: options?.enabled ?? true,
+    staleTime: 5 * 60 * 1000,
+  });
+}
 
 export function useProjectsQuery(
   params: ProjectFilterParams,

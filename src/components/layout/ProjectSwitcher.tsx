@@ -5,20 +5,20 @@ import { useRouter } from "next/navigation";
 import { FolderKanban, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useProjectsQuery } from "@/hooks/project.hooks";
-import type { ProjectListItem } from "@/types/api/project.types";
+import { useProjectOptionsQuery } from "@/hooks/project.hooks";
+import type { ProjectOption } from "@/types/api/project.types";
 
 export function ProjectSwitcher({
   activeProject,
   compact = false,
 }: {
-  activeProject?: ProjectListItem | null;
+  activeProject?: ProjectOption | null;
   compact?: boolean;
 }) {
   const router = useRouter();
   const [opened, setOpened] = useState(false);
-  const projectsQuery = useProjectsQuery({ page: 1, pageSize: 100 }, { enabled: opened, staleTime: 5 * 60 * 1000 });
-  const options = (projectsQuery.data?.data ?? []).filter((project) => project.status === "PERSIAPAN" || project.status === "BERJALAN");
+  const projectsQuery = useProjectOptionsQuery({ enabled: opened });
+  const options = projectsQuery.data ?? [];
 
   function openProject(projectId: string): void {
     if (projectId) {
@@ -37,7 +37,7 @@ export function ProjectSwitcher({
       <Select
         value={activeProject?.id ?? null}
         onValueChange={(value) => openProject(typeof value === "string" ? value : "")}
-        onOpenChange={(isOpen) => isOpen && setOpened(true)}
+        onOpenChange={setOpened}
       >
         <SelectTrigger aria-label="Pilih project" className={`h-11 min-h-11 w-full bg-surface-input ${compact ? "h-10" : ""}`}>
           <SelectValue placeholder="Pilih project" />

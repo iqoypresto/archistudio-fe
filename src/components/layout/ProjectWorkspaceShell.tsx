@@ -33,13 +33,12 @@ export function ProjectWorkspaceShell({
   const projectQuery = useProjectDetailQuery(projectId ?? "");
   const project = projectQuery.data;
   const logoutMutation = useLogoutMutation();
-  const navGroups = [
-    ...getGlobalNavGroups(role),
-    ...(projectId ? getProjectNavGroups(projectId, role) : []),
-  ];
+  const globalNavGroups = getGlobalNavGroups(role);
+  const projectNavGroups = projectId ? getProjectNavGroups(projectId, role) : [];
+  const navGroups = [...globalNavGroups, ...projectNavGroups];
   const title = project ? `${project.code} · ${project.name}` : projectId ? "Project" : "Semua Project";
   const projectHref = projectId ? `/projects/${projectId}` : undefined;
-  const projectInsertAt = role === "OWNER" ? 2 : 1;
+  const projectInsertAt = role === "OWNER" ? 3 : role === "SUPERVISOR" ? 1 : 2;
 
   async function handleLogout(): Promise<void> {
     await logoutMutation.mutateAsync();
@@ -68,7 +67,7 @@ export function ProjectWorkspaceShell({
           <ProjectNavList groups={navGroups.slice(0, projectInsertAt)} largeTouchTarget={role === "SUPERVISOR"} layoutGroupId="project-desktop-sidebar" />
           <ProjectSwitcher activeProject={project} />
           <div className="border-t border-border pt-4">
-            <ProjectNavList groups={navGroups.slice(projectInsertAt)} largeTouchTarget={role === "SUPERVISOR"} layoutGroupId="project-desktop-sidebar" />
+            <ProjectNavList groups={navGroups.slice(projectInsertAt)} largeTouchTarget={role === "SUPERVISOR"} layoutGroupId="project-desktop-sidebar" resetKey={projectId} animateOnMount={Boolean(projectId)} />
           </div>
         </div>
       </aside>
@@ -93,6 +92,8 @@ export function ProjectWorkspaceShell({
                       onNavigate={() => setMobileOpen(false)}
                       largeTouchTarget={role === "SUPERVISOR"}
                       layoutGroupId="project-mobile-sidebar"
+                      resetKey={projectId}
+                      animateOnMount={Boolean(projectId)}
                     />
                   </div>
                 </div>

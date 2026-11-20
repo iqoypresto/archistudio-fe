@@ -14,20 +14,31 @@ export function ProjectNavList({
   onNavigate,
   largeTouchTarget = false,
   layoutGroupId = "workspace-sidebar",
+  resetKey,
+  animateOnMount = false,
 }: {
   groups: WorkspaceNavGroup[];
   onNavigate?: () => void;
   largeTouchTarget?: boolean;
   layoutGroupId?: string;
+  resetKey?: string;
+  animateOnMount?: boolean;
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const navigationId = useId();
   const reduceMotion = useReducedMotion();
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [collapseState, setCollapseState] = useState<{ key?: string; values: Record<string, boolean> }>({
+    key: resetKey,
+    values: {},
+  });
+  const collapsed = collapseState.key === resetKey ? collapseState.values : {};
 
   function toggleGroup(label: string): void {
-    setCollapsed((current) => ({ ...current, [label]: !current[label] }));
+    setCollapseState((current) => {
+      const values = current.key === resetKey ? current.values : {};
+      return { key: resetKey, values: { ...values, [label]: !values[label] } };
+    });
   }
 
   return (
@@ -39,7 +50,13 @@ export function ProjectNavList({
         const isOpen = group.label ? !collapsed[groupKey] : true;
         const groupContentId = `${navigationId}-group-${index}`;
         return (
-          <section key={groupKey}>
+          <motion.section
+            key={groupKey}
+            layout={animateOnMount}
+            initial={animateOnMount ? { opacity: 0, y: -6 } : false}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: reduceMotion ? 0 : 0.18, ease: "easeOut" }}
+          >
             {group.label && <Button
               type="button"
               variant="ghost"
@@ -83,7 +100,7 @@ export function ProjectNavList({
                         </Button>
                       ) : (
                         <>
-                          {item.href && <Link href={item.href} onClick={onNavigate} aria-current={isActive ? "page" : undefined} className={cn("relative z-10 flex min-w-0 flex-1 items-center gap-3 rounded-lg bg-transparent px-3 py-2.5 text-sm font-medium", largeTouchTarget ? "min-h-12" : "min-h-11", isActive ? "font-semibold text-text-primary" : "text-text-secondary group-hover/nav-row:text-text-primary")}>
+                          {item.href && <Link href={item.href} prefetch={item.children ? false : undefined} onClick={onNavigate} aria-current={isActive ? "page" : undefined} className={cn("relative z-10 flex min-w-0 flex-1 items-center gap-3 rounded-lg bg-transparent px-3 py-2.5 text-sm font-medium", largeTouchTarget ? "min-h-12" : "min-h-11", isActive ? "font-semibold text-text-primary" : "text-text-secondary group-hover/nav-row:text-text-primary")}>
                             <Icon className="size-5 shrink-0" />
                             <span>{item.label}</span>
                           </Link>}
@@ -104,7 +121,7 @@ export function ProjectNavList({
                       {item.children.map((child) => {
                         if (!child.href) return null;
                         const isChildActive = currentUrl === child.href;
-                        return <Link key={child.label} href={child.href} onClick={onNavigate} aria-current={isChildActive ? "page" : undefined} className={cn("relative z-0 flex min-h-10 items-center rounded-lg px-3 text-sm text-text-secondary hover:bg-surface-active hover:text-text-primary motion-reduce:transition-none", isChildActive && "font-semibold text-text-primary")}>
+                        return <Link key={child.label} href={child.href} prefetch={false} onClick={onNavigate} aria-current={isChildActive ? "page" : undefined} className={cn("relative z-0 flex min-h-10 items-center rounded-lg px-3 text-sm text-text-secondary hover:bg-surface-active hover:text-text-primary motion-reduce:transition-none", isChildActive && "font-semibold text-text-primary")}>
                           {isChildActive && <motion.span layoutId="sidebar-active-pill" transition={{ type: "spring", bounce: 0.18, duration: 0.35 }} className="absolute inset-0 z-0 rounded-lg bg-primary-soft" aria-hidden="true" />}
                           <span className="relative z-10">{child.label}</span>
                         </Link>;
@@ -114,7 +131,7 @@ export function ProjectNavList({
                 );
               })}
             </motion.div>
-          </section>
+          </motion.section>
         );
       })}
     </nav>

@@ -7,11 +7,18 @@ import type {
   ProjectDetail,
   ProjectFilterParams,
   ProjectListItem,
+  ProjectOption,
   RestoreProjectPayload,
   UpdateProjectPayload,
 } from "@/types/api/project.types";
 
 export const projectApi = {
+  /** Mengambil opsi ringkas project aktif untuk dropdown navigasi. */
+  async getProjectOptions(): Promise<ProjectOption[]> {
+    const response = await api.get<ApiResponse<ProjectOption[]>>("/projects/options");
+    return response.data.data;
+  },
+
   /** Mengambil daftar project aktif berpaginasi (US-04). */
   async getProjects(
     params?: ProjectFilterParams,
