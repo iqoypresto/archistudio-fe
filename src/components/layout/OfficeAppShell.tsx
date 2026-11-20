@@ -19,6 +19,7 @@ export function OfficeAppShell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
   const navGroups = getGlobalNavGroups(user?.role ?? "ADMIN", false);
+  const projectInsertAt = user?.role === "OWNER" ? 2 : 1;
   const logoutMutation = useLogoutMutation();
 
   async function handleLogout(): Promise<void> {
@@ -31,8 +32,9 @@ export function OfficeAppShell({ children }: { children: ReactNode }) {
       <aside className="hidden w-72 shrink-0 flex-col border-r border-border bg-surface lg:flex">
         <BrandHeader />
         <div className="flex-1 space-y-5 overflow-y-auto p-4">
+          <ProjectNavList groups={navGroups.slice(0, projectInsertAt)} />
           <ProjectSwitcher />
-          <div className="border-t border-border pt-4"><ProjectNavList groups={navGroups} /></div>
+          <div className="border-t border-border pt-4"><ProjectNavList groups={navGroups.slice(projectInsertAt)} /></div>
         </div>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
@@ -48,9 +50,10 @@ export function OfficeAppShell({ children }: { children: ReactNode }) {
                   <WorkspaceBreadcrumbs groups={navGroups} className="text-left" />
                 </SheetHeader>
                 <div className="space-y-5 p-4">
+                  <ProjectNavList groups={navGroups.slice(0, projectInsertAt)} onNavigate={() => setMobileOpen(false)} />
                   <ProjectSwitcher />
                   <div className="border-t border-border pt-4">
-                    <ProjectNavList groups={navGroups} onNavigate={() => setMobileOpen(false)} />
+                    <ProjectNavList groups={navGroups.slice(projectInsertAt)} onNavigate={() => setMobileOpen(false)} />
                   </div>
                 </div>
               </SheetContent>
