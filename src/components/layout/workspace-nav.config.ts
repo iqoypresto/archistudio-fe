@@ -54,7 +54,7 @@ export function getGlobalNavGroups(role: UserRole, includeProjects = true): Work
     ] });
   }
   groups.push({ label: "", items: [
-    { href: "/archive", label: "Arsip", icon: Archive, children: getArchiveYearLinks() },
+    { label: "Arsip", icon: Archive, toggleOnly: true, children: getArchiveYearLinks() },
   ] });
   return groups;
 }
