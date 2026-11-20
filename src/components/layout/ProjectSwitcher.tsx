@@ -40,7 +40,11 @@ export function ProjectSwitcher({
         onValueChange={(project) => project && openProject(project.id)}
         onOpenChange={setOpened}
       >
-        <ComboboxInput aria-label="Pilih project" placeholder="Pilih project..." />
+        <ComboboxInput
+          aria-label="Pilih project"
+          placeholder="Pilih project..."
+          className="focus-within:border-input focus-within:bg-transparent focus-within:ring-0 has-[[data-slot=input-group-control]:focus-visible]:border-input has-[[data-slot=input-group-control]:focus-visible]:bg-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0"
+        />
         <ComboboxContent>
           <ComboboxEmpty>
             {projectsQuery.isLoading ? "Memuat project..." : "Project tidak ditemukan."}
