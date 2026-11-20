@@ -1,0 +1,102 @@
+"use client";
+
+import type { ChangeEvent } from "react";
+import { ImageIcon, Loader2, Trash2, Upload } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import type { PaymentProofPayload } from "@/types/api/payment.types";
+
+interface PaymentProofFieldProps {
+  proof: PaymentProofPayload | null;
+  existingViewUrl?: string | null;
+  isUploading: boolean;
+  errorMessage: string | null;
+  onSelectFile: (file: File) => void;
+  onRemoveProof: () => void;
+}
+
+export function PaymentProofField({
+  proof,
+  existingViewUrl,
+  isUploading,
+  errorMessage,
+  onSelectFile,
+  onRemoveProof,
+}: PaymentProofFieldProps) {
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (file) onSelectFile(file);
+  };
+
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor="payment-proof-input">Bukti Pembayaran (Opsional — JPG/PNG, maks. 2 MB)</Label>
+
+      {proof ? (
+        <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-surface-subtle p-2.5 text-xs">
+          <div className="flex min-w-0 items-center gap-2">
+            <ImageIcon className="h-4 w-4 shrink-0 text-primary" />
+            <div className="min-w-0">
+              <p className="truncate font-medium text-text-primary">{proof.fileName}</p>
+              <p className="text-text-secondary">
+                {Math.max(1, Math.round(proof.sizeBytes / 1024))} KB
+                {existingViewUrl && (
+                  <>
+                    {" · "}
+                    <a
+                      href={existingViewUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-primary underline"
+                    >
+                      Lihat bukti
+                    </a>
+                  </>
+                )}
+              </p>
+            </div>
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="min-h-11 min-w-11 shrink-0 text-status-danger-fg"
+            onClick={onRemoveProof}
+            title="Hapus bukti"
+            disabled={isUploading}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ) : (
+        <label
+          htmlFor="payment-proof-input"
+          className="flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-surface-subtle px-3 py-2.5 text-xs font-medium text-text-secondary hover:border-primary hover:text-text-primary"
+        >
+          {isUploading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Mengunggah bukti ke storage...
+            </>
+          ) : (
+            <>
+              <Upload className="h-4 w-4" />
+              Pilih Gambar Bukti (JPG / PNG, maks. 2 MB)
+            </>
+          )}
+          <input
+            id="payment-proof-input"
+            type="file"
+            accept="image/jpeg,image/png"
+            onChange={handleFileChange}
+            disabled={isUploading}
+            className="sr-only"
+          />
+        </label>
+      )}
+
+      {errorMessage && <p className="text-status-danger-fg text-xs">{errorMessage}</p>}
+    </div>
+  );
+}
