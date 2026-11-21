@@ -122,10 +122,10 @@ export function AreaTaskCard({ task }: { task: SupervisorAreaTaskStatus }) {
       <CardHeader className="space-y-1.5 pb-3">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <p className="font-mono text-xs font-semibold text-primary uppercase">
+            <span className="inline-block rounded-md border border-border/80 bg-surface-input px-2 py-0.5 font-mono text-xs font-semibold text-text-primary uppercase">
               {task.projectCode} / {task.areaCode}
-            </p>
-            <CardTitle className="text-lg font-bold text-text-primary">
+            </span>
+            <CardTitle className="mt-1 text-lg font-bold text-text-primary">
               {task.areaName}
             </CardTitle>
             <p className="text-base text-text-secondary">{task.projectName}</p>

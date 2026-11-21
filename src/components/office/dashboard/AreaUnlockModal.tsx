@@ -56,7 +56,7 @@ export function AreaUnlockModal({ isOpen, area, onClose }: AreaUnlockModalProps)
       <DialogContent className="sm:max-w-md">
         <form onSubmit={handleSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-rose-700">
+            <DialogTitle className="flex items-center gap-2 text-status-danger-fg">
               <KeyRound className="h-5 w-5" />
               Buka Kunci Manual Laporan Area
             </DialogTitle>
@@ -65,7 +65,7 @@ export function AreaUnlockModal({ isOpen, area, onClose }: AreaUnlockModalProps)
             </DialogDescription>
           </DialogHeader>
 
-          <div className="rounded-lg bg-rose-50 p-3 text-xs text-rose-800">
+          <div className="rounded-lg border border-status-danger-fg/20 bg-status-danger-bg/70 p-3 text-xs text-status-danger-fg">
             <div className="flex items-center gap-1.5 font-semibold">
               <AlertTriangle className="h-4 w-4" />
               <span>

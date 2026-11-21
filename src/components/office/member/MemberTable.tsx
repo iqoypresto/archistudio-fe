@@ -106,25 +106,25 @@ export function MemberTable({
             <Button
               variant="ghost"
               size="icon"
-              className="min-h-11 min-w-11"
+              className="size-8 text-text-secondary hover:text-text-primary"
               onClick={() => onEdit(row)}
               title="Ubah Anggota"
             >
-              <Pencil className="h-4 w-4" />
+              <Pencil className="size-3.5" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="min-h-11 min-w-11"
+              className="size-8 text-text-secondary hover:text-text-primary"
               onClick={() => onResetPassword(row)}
               title="Reset Sandi"
             >
-              <KeyRound className="h-4 w-4" />
+              <KeyRound className="size-3.5" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="text-status-danger-fg hover:bg-status-danger-bg/50 min-h-11 min-w-11 disabled:opacity-40"
+              className="size-8 text-status-danger-fg hover:bg-status-danger-bg/50 disabled:opacity-40"
               onClick={() => onToggleStatus(row)}
               disabled={isSelf}
               title={
@@ -135,7 +135,7 @@ export function MemberTable({
                     : "Aktifkan Akun"
               }
             >
-              <Power className="h-4 w-4" />
+              <Power className="size-3.5" />
             </Button>
           </div>
         );

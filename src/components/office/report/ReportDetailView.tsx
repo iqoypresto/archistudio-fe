@@ -57,20 +57,20 @@ export function ReportDetailView({
         <CardHeader className="space-y-2 pb-3">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="space-y-1">
-              <p className="font-mono text-xs font-semibold text-primary">
+              <span className="inline-block rounded-md border border-border/80 bg-surface-input px-2 py-0.5 font-mono text-xs font-semibold text-text-primary">
                 {report.reportNumber}
-              </p>
-              <CardTitle className="text-xl font-bold text-text-primary">
+              </span>
+              <CardTitle className="text-xl font-semibold tracking-tight text-text-primary">
                 {report.project.name} — {report.area.name}
               </CardTitle>
-              <div className="flex flex-wrap items-center gap-3 text-sm text-text-secondary">
+              <div className="flex flex-wrap items-center gap-3 text-xs text-text-secondary">
                 <span className="inline-flex items-center gap-1 font-mono tabular-nums">
-                  <Calendar className="size-4" />
+                  <Calendar className="size-3.5 text-text-muted" />
                   {report.reportDate}
                 </span>
                 {report.locationText && (
                   <span className="inline-flex items-center gap-1">
-                    <MapPin className="size-4" />
+                    <MapPin className="size-3.5 text-text-muted" />
                     {report.locationText}
                   </span>
                 )}
@@ -78,8 +78,8 @@ export function ReportDetailView({
             </div>
 
             {canRevise && onOpenReviseModal && (
-              <Button type="button" onClick={onOpenReviseModal} className="min-h-11 bg-primary text-primary-foreground">
-                <Edit3 className="mr-2 size-4" />
+              <Button type="button" onClick={onOpenReviseModal} className="h-9 gap-1.5 text-xs">
+                <Edit3 className="size-3.5" />
                 Revisi Laporan (Owner)
               </Button>
             )}
@@ -95,33 +95,33 @@ export function ReportDetailView({
           <ReportStatusBadges report={report} />
         </CardHeader>
 
-        <CardContent className="space-y-4 text-sm sm:text-base">
+        <CardContent className="space-y-3 text-sm">
           {report.reportType === "WORK" ? (
             <div className="space-y-3">
-              <div className="flex flex-wrap gap-4 rounded-xl bg-secondary/60 p-3 text-sm">
-                <span>Cuaca: <strong>{report.weather ?? "-"}</strong></span>
+              <div className="flex flex-wrap gap-4 rounded-xl border border-border/80 bg-surface-input/70 p-3 text-xs text-text-secondary">
+                <span>Cuaca: <strong className="text-text-primary">{report.weather ?? "-"}</strong></span>
                 <span className="inline-flex items-center gap-1">
-                  <Users className="size-4" />
-                  Pekerja Hadir: <strong className="font-mono tabular-nums">{report.workerCount ?? 0}</strong> orang
+                  <Users className="size-3.5 text-text-muted" />
+                  Pekerja Hadir: <strong className="font-mono tabular-nums text-text-primary">{report.workerCount ?? 0}</strong> orang
                 </span>
               </div>
-              <div>
-                <p className="font-semibold text-text-primary">Progres Pekerjaan</p>
-                <p className="mt-1 whitespace-pre-line text-text-secondary">{report.progressText ?? "-"}</p>
+              <div className="rounded-xl border border-border/80 bg-surface-input/60 p-3.5">
+                <p className="text-xs font-medium text-text-muted">Progres Pekerjaan</p>
+                <p className="mt-1 whitespace-pre-line text-sm text-text-primary">{report.progressText ?? "-"}</p>
               </div>
-              <div>
-                <p className="font-semibold text-text-primary">Hambatan / Kendala</p>
-                <p className="mt-1 whitespace-pre-line text-text-secondary">{report.obstaclesText ?? "-"}</p>
+              <div className="rounded-xl border border-border/80 bg-surface-input/60 p-3.5">
+                <p className="text-xs font-medium text-text-muted">Hambatan / Kendala</p>
+                <p className="mt-1 whitespace-pre-line text-sm text-text-primary">{report.obstaclesText ?? "-"}</p>
               </div>
-              <div>
-                <p className="font-semibold text-text-primary">Rencana Besok</p>
-                <p className="mt-1 whitespace-pre-line text-text-secondary">{report.tomorrowPlanText ?? "-"}</p>
+              <div className="rounded-xl border border-border/80 bg-surface-input/60 p-3.5">
+                <p className="text-xs font-medium text-text-muted">Rencana Besok</p>
+                <p className="mt-1 whitespace-pre-line text-sm text-text-primary">{report.tomorrowPlanText ?? "-"}</p>
               </div>
             </div>
           ) : (
-            <div>
-              <p className="font-semibold text-text-primary">Alasan Hari Tanpa Pekerjaan</p>
-              <p className="mt-1 whitespace-pre-line text-text-secondary">{report.noWorkReason ?? "-"}</p>
+            <div className="rounded-xl border border-border/80 bg-surface-input/60 p-3.5">
+              <p className="text-xs font-medium text-text-muted">Alasan Hari Tanpa Pekerjaan</p>
+              <p className="mt-1 whitespace-pre-line text-sm text-text-primary">{report.noWorkReason ?? "-"}</p>
             </div>
           )}
         </CardContent>
@@ -131,7 +131,7 @@ export function ReportDetailView({
 
       <Card className="border border-border bg-surface">
         <CardContent className="flex items-start gap-3 py-4">
-          <ShieldCheck className="mt-0.5 size-5 shrink-0 text-primary" />
+          <ShieldCheck className="mt-0.5 size-5 shrink-0 text-status-success-fg" />
           <div className="space-y-0.5 text-sm">
             <p className="font-semibold text-text-primary">Paraf Otomatis Supervisor</p>
             <p className="text-text-secondary">

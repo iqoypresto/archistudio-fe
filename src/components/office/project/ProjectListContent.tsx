@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { FolderPlus } from "lucide-react";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
+import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/PageHeader";
 import {
   useArchiveProjectMutation,
   useCreateProjectMutation,
@@ -51,39 +54,60 @@ export function ProjectListContent() {
   };
 
   return (
-    <div className="space-y-6">
-      <ProjectFilters
-        filters={filters}
-        onFilterChange={handleFilterChange}
-        onReset={handleResetFilters}
-        onOpenCreateModal={() => {
-          setProjectToEdit(null);
-          setIsFormModalOpen(true);
-        }}
-        canManage={canManage}
+    <div className="space-y-5">
+      <PageHeader
+        title="Semua Project"
+        description="Pilih dan kelola project aktif beserta jadwal pelaksanaan dan zona waktu."
+        action={
+          canManage ? (
+            <Button
+              onClick={() => {
+                setProjectToEdit(null);
+                setIsFormModalOpen(true);
+              }}
+              className="h-9 gap-1.5 text-xs"
+            >
+              <FolderPlus className="size-4" />
+              Tambah Project
+            </Button>
+          ) : undefined
+        }
       />
 
-      <AsyncStateView
-        isLoading={projectsQuery.isLoading}
-        isError={projectsQuery.isError}
-        error={projectsQuery.error}
-        data={projectsQuery.data}
-        onRetry={() => projectsQuery.refetch()}
-        emptyTitle="Belum ada project"
-        emptyDescription="Tidak ada data project yang sesuai dengan kriteria filter."
-      >
-        {(result) => (
-          <ProjectTable
-            projects={result.data}
-            meta={result.meta}
-            canManage={canManage}
-            canArchive={canArchive}
-            onPageChange={(page) => handleFilterChange({ page })}
-            onEdit={handleOpenEdit}
-            onArchive={(project) => setProjectToArchive(project)}
-          />
-        )}
-      </AsyncStateView>
+      <section className="space-y-4 rounded-xl border border-border bg-surface p-4 sm:p-5">
+        <ProjectFilters
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          onReset={handleResetFilters}
+          onOpenCreateModal={() => {
+            setProjectToEdit(null);
+            setIsFormModalOpen(true);
+          }}
+          canManage={canManage}
+        />
+
+        <AsyncStateView
+          isLoading={projectsQuery.isLoading}
+          isError={projectsQuery.isError}
+          error={projectsQuery.error}
+          data={projectsQuery.data}
+          onRetry={() => projectsQuery.refetch()}
+          emptyTitle="Belum ada project"
+          emptyDescription="Tidak ada data project yang sesuai dengan kriteria filter."
+        >
+          {(result) => (
+            <ProjectTable
+              projects={result.data}
+              meta={result.meta}
+              canManage={canManage}
+              canArchive={canArchive}
+              onPageChange={(page) => handleFilterChange({ page })}
+              onEdit={handleOpenEdit}
+              onArchive={(project) => setProjectToArchive(project)}
+            />
+          )}
+        </AsyncStateView>
+      </section>
 
       {canManage && <ProjectFormModal
         isOpen={isFormModalOpen}

@@ -68,7 +68,7 @@ export function CommsContent({ projectId }: CommsContentProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <PageHeader
         title="Comms Project"
         description={
@@ -78,7 +78,7 @@ export function CommsContent({ projectId }: CommsContentProps) {
         }
         action={
           canMutate ? (
-            <Button onClick={openCreateModal} className="min-h-11 gap-1.5">
+            <Button onClick={openCreateModal} className="h-9 gap-1.5 text-xs">
               <Plus className="h-4 w-4" />
               Tambah Catatan
             </Button>
@@ -86,94 +86,96 @@ export function CommsContent({ projectId }: CommsContentProps) {
         }
       />
 
-      <CommsFiltersBar
-        dateFrom={dateFrom}
-        dateTo={dateTo}
-        direction={direction}
-        onDateFromChange={setDateFrom}
-        onDateToChange={setDateTo}
-        onDirectionChange={setDirection}
-        onReset={() => {
-          setDateFrom("");
-          setDateTo("");
-          setDirection("");
-        }}
-      />
+      <section className="space-y-4 rounded-xl border border-border bg-surface p-4 sm:p-5">
+        <CommsFiltersBar
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          direction={direction}
+          onDateFromChange={setDateFrom}
+          onDateToChange={setDateTo}
+          onDirectionChange={setDirection}
+          onReset={() => {
+            setDateFrom("");
+            setDateTo("");
+            setDirection("");
+          }}
+        />
 
-      <AsyncStateView
-        isLoading={commsQuery.isLoading}
-        isError={commsQuery.isError}
-        error={commsQuery.error}
-        data={commsQuery.data}
-        isEmpty={(items) => items.length === 0}
-        onRetry={() => commsQuery.refetch()}
-        emptyTitle="Belum ada catatan Comms"
-        emptyDescription="Catat komunikasi masuk atau keluar project agar riwayat tersimpan rapi."
-        emptyAction={
-          canMutate ? (
-            <Button onClick={openCreateModal} className="min-h-11 gap-1.5">
-              <Plus className="h-4 w-4" />
-              Tambah Catatan
-            </Button>
-          ) : undefined
-        }
-      >
-        {(items) => (
-          <div className="space-y-3">
-            {items.map((entry) => {
-              const isInbound = entry.direction === "INBOUND";
-              return (
-                <article
-                  key={entry.id}
-                  className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 sm:flex-row sm:items-start sm:justify-between"
-                >
-                  <div className="space-y-1.5">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <StatusBadge tone={isInbound ? "info" : "success"}>
-                        <span className="inline-flex items-center gap-1">
-                          {isInbound ? <ArrowDownLeft className="h-3 w-3" /> : <ArrowUpRight className="h-3 w-3" />}
-                          {getCommsDirectionLabel(entry.direction)}
+        <AsyncStateView
+          isLoading={commsQuery.isLoading}
+          isError={commsQuery.isError}
+          error={commsQuery.error}
+          data={commsQuery.data}
+          isEmpty={(items) => items.length === 0}
+          onRetry={() => commsQuery.refetch()}
+          emptyTitle="Belum ada catatan Comms"
+          emptyDescription="Catat komunikasi masuk atau keluar project agar riwayat tersimpan rapi."
+          emptyAction={
+            canMutate ? (
+              <Button onClick={openCreateModal} className="h-9 gap-1.5 text-xs">
+                <Plus className="h-4 w-4" />
+                Tambah Catatan
+              </Button>
+            ) : undefined
+          }
+        >
+          {(items) => (
+            <div className="space-y-2.5">
+              {items.map((entry) => {
+                const isInbound = entry.direction === "INBOUND";
+                return (
+                  <article
+                    key={entry.id}
+                    className="flex flex-col gap-3 rounded-xl border border-border/80 bg-surface-input/70 p-4 sm:flex-row sm:items-start sm:justify-between"
+                  >
+                    <div className="space-y-1.5">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <StatusBadge tone={isInbound ? "info" : "success"}>
+                          <span className="inline-flex items-center gap-1">
+                            {isInbound ? <ArrowDownLeft className="h-3 w-3" /> : <ArrowUpRight className="h-3 w-3" />}
+                            {getCommsDirectionLabel(entry.direction)}
+                          </span>
+                        </StatusBadge>
+                        <span className="inline-flex items-center gap-1 font-mono text-xs text-text-muted">
+                          <Calendar className="h-3.5 w-3.5" /> {entry.entryDate}
                         </span>
-                      </StatusBadge>
-                      <span className="inline-flex items-center gap-1 text-xs text-text-secondary">
-                        <Calendar className="h-3.5 w-3.5" /> {entry.entryDate}
-                      </span>
+                      </div>
+                      <h3 className="text-sm font-medium text-text-primary">{entry.subject}</h3>
+                      {entry.note && <p className="whitespace-pre-line text-xs leading-relaxed text-text-secondary">{entry.note}</p>}
+                      {entry.attachmentViewUrl && (
+                        <a
+                          href={entry.attachmentViewUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1.5 pt-1 text-xs font-medium text-text-primary underline-offset-4 hover:underline"
+                        >
+                          <ExternalLink className="h-3.5 w-3.5 text-text-secondary" /> Lampiran: {entry.attachmentName ?? "File"}
+                        </a>
+                      )}
                     </div>
-                    <h3 className="font-semibold text-text-primary">{entry.subject}</h3>
-                    {entry.note && <p className="whitespace-pre-line text-sm text-text-secondary">{entry.note}</p>}
-                    {entry.attachmentViewUrl && (
-                      <a
-                        href={entry.attachmentViewUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1.5 pt-1 text-xs font-medium text-primary hover:underline"
-                      >
-                        <ExternalLink className="h-3.5 w-3.5" /> Lampiran: {entry.attachmentName ?? "File"}
-                      </a>
-                    )}
-                  </div>
 
-                  {canMutate && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="min-h-11 gap-1.5 self-start"
-                      onClick={() => {
-                        setEntryToEdit(entry);
-                        setIsModalOpen(true);
-                      }}
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                      Ubah
-                    </Button>
-                  )}
-                </article>
-              );
-            })}
-          </div>
-        )}
-      </AsyncStateView>
+                    {canMutate && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-8 gap-1.5 self-start text-xs"
+                        onClick={() => {
+                          setEntryToEdit(entry);
+                          setIsModalOpen(true);
+                        }}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                        Ubah
+                      </Button>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </AsyncStateView>
+      </section>
 
       {canMutate && isModalOpen && (
         <CommsFormModal

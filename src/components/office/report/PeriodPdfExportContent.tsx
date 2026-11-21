@@ -5,6 +5,7 @@ import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { pdfExportApi } from "@/lib/api/pdf-export.api";
 
@@ -47,34 +48,41 @@ export function PeriodPdfExportContent({ projectId, mode }: { projectId: string;
     : "Unduh laporan lengkap beserta foto untuk rentang maksimal 7 hari kalender.";
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6">
+    <div className="space-y-5">
       <PageHeader title={title} description={description} />
       <form id="period-pdf-form" onSubmit={download} className="space-y-5 rounded-xl border border-border bg-surface p-5">
         {isMonthly ? (
-          <label className="block max-w-sm space-y-2 text-sm font-medium" htmlFor="report-month">
-            Bulan kalender
-            <Input id="report-month" type="month" required value={month} onChange={(event) => setMonth(event.target.value)} />
-          </label>
+          <div className="max-w-xs space-y-2">
+            <Label htmlFor="report-month">Bulan kalender</Label>
+            <Input id="report-month" type="month" required value={month} className="h-9 font-mono text-xs" onChange={(event) => setMonth(event.target.value)} />
+          </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="space-y-2 text-sm font-medium" htmlFor="from-date">
-              Tanggal awal
-              <Input id="from-date" type="date" required max={toDate || undefined} value={fromDate} onChange={(event) => setFromDate(event.target.value)} />
-            </label>
-            <label className="space-y-2 text-sm font-medium" htmlFor="to-date">
-              Tanggal akhir
-              <Input id="to-date" type="date" required min={fromDate || undefined} value={toDate} onChange={(event) => setToDate(event.target.value)} />
-            </label>
+          <div className="grid max-w-xl gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="from-date">Tanggal awal</Label>
+              <Input id="from-date" type="date" required max={toDate || undefined} value={fromDate} className="h-9 font-mono text-xs" onChange={(event) => setFromDate(event.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="to-date">Tanggal akhir</Label>
+              <Input id="to-date" type="date" required min={fromDate || undefined} value={toDate} className="h-9 font-mono text-xs" onChange={(event) => setToDate(event.target.value)} />
+            </div>
           </div>
         )}
-        {!isMonthly && rangeDays > 7 && <p role="alert" className="text-sm text-destructive">Rentang maksimal adalah 7 hari kalender.</p>}
-        {!isMonthly && validRange && <p className="text-sm text-text-secondary">Periode dipilih: {rangeDays} hari kalender. Area tanpa laporan akan ditandai “Belum lapor” di PDF.</p>}
-        <Button type="submit" disabled={isPending || (isMonthly ? !month : !validRange)} className="min-h-11">
-          <Download className="mr-2 size-4" />{isPending ? "Menyiapkan PDF…" : "Unduh PDF"}
+        {!isMonthly && rangeDays > 7 && <p role="alert" className="text-xs text-destructive">Rentang maksimal adalah 7 hari kalender.</p>}
+        {!isMonthly && validRange && <p className="text-xs text-text-secondary">Periode dipilih: {rangeDays} hari kalender. Area tanpa laporan akan ditandai “Belum lapor” di PDF.</p>}
+        <Button type="submit" disabled={isPending || (isMonthly ? !month : !validRange)} className="h-9 gap-1.5 text-xs">
+          <Download className="size-3.5" />{isPending ? "Menyiapkan PDF…" : "Unduh PDF"}
         </Button>
       </form>
       {error && <ErrorState title="PDF tidak dapat dibuat" description={error} onRetry={() => (document.getElementById("period-pdf-form") as HTMLFormElement | null)?.requestSubmit()} />}
-      {completed && <p role="status" className="rounded-lg bg-emerald-50 p-4 text-sm text-emerald-800">PDF berhasil dibuat dan diunduh.</p>}
+      {completed && (
+        <p
+          role="status"
+          className="rounded-lg border border-status-success-fg/20 bg-status-success-bg p-4 text-sm text-status-success-fg"
+        >
+          PDF berhasil dibuat dan diunduh.
+        </p>
+      )}
     </div>
   );
 }

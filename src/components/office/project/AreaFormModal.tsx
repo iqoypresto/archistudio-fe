@@ -1,19 +1,17 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { useUsersQuery } from "@/hooks/user.hooks";
 import {
   areaFormSchema,
@@ -55,6 +53,7 @@ export function AreaFormModal({
     register,
     handleSubmit,
     reset,
+    control,
     setError,
     formState: { errors },
   } = useForm<AreaFormValues>({
@@ -136,21 +135,38 @@ export function AreaFormModal({
             <>
               <div className="space-y-1">
                 <Label htmlFor="initialSupervisorId">Supervisor Aktif (BR-08 / BR-09)</Label>
-                <select
-                  id="initialSupervisorId"
-                  {...register("initialSupervisorId")}
-                  disabled={isLoading}
-                  className="border-border bg-surface text-text-primary focus:ring-primary h-11 w-full rounded-lg border px-3 text-sm focus:outline-none focus:ring-2"
-                >
-                  <option value="">
-                    {isLoading ? "Memuat supervisor..." : "-- Pilih Supervisor Lapangan --"}
-                  </option>
-                  {supervisors.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name} (@{s.username}) — {s.jobTitle}
-                    </option>
-                  ))}
-                </select>
+                <Controller
+                  name="initialSupervisorId"
+                  control={control}
+                  render={({ field }) => {
+                    const selected = supervisors.find((s) => s.id === field.value);
+                    const label = selected
+                      ? `${selected.name} (@${selected.username}) — ${selected.jobTitle}`
+                      : undefined;
+                    return (
+                      <Select
+                        value={field.value ?? ""}
+                        disabled={isLoading}
+                        onValueChange={(val: string | null) => field.onChange(val ?? "")}
+                      >
+                        <SelectTrigger id="initialSupervisorId" className="h-10">
+                          <SelectValue
+                            placeholder={isLoading ? "Memuat supervisor..." : "-- Pilih Supervisor Lapangan --"}
+                          >
+                            {label}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {supervisors.map((s) => (
+                            <SelectItem key={s.id} value={s.id}>
+                              {s.name} (@{s.username}) — {s.jobTitle}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    );
+                  }}
+                />
                 <p className="text-text-secondary text-xs">
                   Supervisor yang sudah bertugas di area/project lain tetap dapat dipilih (BR-09).
                 </p>
@@ -161,10 +177,8 @@ export function AreaFormModal({
 
               <div className="space-y-1">
                 <Label htmlFor="startDate">Tanggal Mulai Penugasan</Label>
-                <Input id="startDate" type="date" className="h-11" {...register("startDate")} />
-                {errors.startDate && (
-                  <p className="text-status-danger-fg text-xs">{errors.startDate.message}</p>
-                )}
+                <Input id="startDate" type="date" className="h-10" {...register("startDate")} />
+                {errors.startDate && <p className="text-status-danger-fg text-xs">{errors.startDate.message}</p>}
               </div>
             </>
           )}

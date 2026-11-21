@@ -37,9 +37,9 @@ export function CommsAttachmentField({
       </Label>
 
       {attachment ? (
-        <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-surface-subtle p-2.5 text-xs">
+        <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-surface-input p-2.5 text-xs">
           <div className="flex min-w-0 items-center gap-2">
-            <FileText className="h-4 w-4 shrink-0 text-primary" />
+            <FileText className="h-4 w-4 shrink-0 text-text-secondary" />
             <div className="min-w-0">
               <p className="truncate font-medium text-text-primary">{attachment.fileName}</p>
               <p className="text-text-secondary">
@@ -51,7 +51,7 @@ export function CommsAttachmentField({
                       href={existingViewUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-primary underline"
+                      className="text-text-primary underline"
                     >
                       Buka lampiran
                     </a>
@@ -64,7 +64,7 @@ export function CommsAttachmentField({
             type="button"
             variant="ghost"
             size="icon"
-            className="min-h-11 min-w-11 shrink-0 text-status-danger-fg"
+            className="size-8 shrink-0 text-status-danger-fg"
             onClick={onRemoveAttachment}
             title="Hapus lampiran"
             disabled={isUploading}
@@ -75,7 +75,7 @@ export function CommsAttachmentField({
       ) : (
         <label
           htmlFor="comms-attachment-input"
-          className="flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-surface-subtle px-3 py-2.5 text-xs font-medium text-text-secondary hover:border-primary hover:text-text-primary"
+          className="flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-surface-input/70 px-3 py-2.5 text-xs font-medium text-text-secondary transition-colors hover:border-white/25 hover:text-text-primary"
         >
           {isUploading ? (
             <>

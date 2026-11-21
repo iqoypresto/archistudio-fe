@@ -8,8 +8,13 @@ import { PdfExportDialog } from "@/components/office/dashboard/PdfExportDialog";
 export function ReportPdfExportControl() {
   const [open, setOpen] = useState(false);
   return <>
-    <Button variant="outline" className="gap-2" onClick={() => setOpen(true)}>
-      <FileDown className="size-4" /> Export PDF Harian
+    <Button
+      variant="outline"
+      size="sm"
+      className="h-9 gap-1.5 border-border bg-surface px-3 text-xs text-text-primary hover:bg-surface-active"
+      onClick={() => setOpen(true)}
+    >
+      <FileDown className="size-3.5" /> Export PDF Harian
     </Button>
     <PdfExportDialog isOpen={open} onClose={() => setOpen(false)} />
   </>;

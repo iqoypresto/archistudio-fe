@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { UserPlus } from "lucide-react";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
+import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/PageHeader";
 import {
   useCreateUserMutation,
   useResetPasswordMutation,
@@ -55,37 +58,56 @@ export function MemberContent() {
   };
 
   return (
-    <div className="space-y-6">
-      <MemberFilters
-        filters={filters}
-        onFilterChange={handleFilterChange}
-        onReset={handleResetFilters}
-        onOpenCreateModal={() => {
-          setUserToEdit(null);
-          setIsFormModalOpen(true);
-        }}
+    <div className="space-y-5">
+      <PageHeader
+        title="Anggota Tim"
+        description="Kelola akun internal, peran pengguna, pengaturan kata sandi, dan status aktif operasional."
+        action={
+          <Button
+            onClick={() => {
+              setUserToEdit(null);
+              setIsFormModalOpen(true);
+            }}
+            className="h-9 gap-1.5 text-xs"
+          >
+            <UserPlus className="size-4" />
+            Tambah Anggota
+          </Button>
+        }
       />
 
-      <AsyncStateView
-        isLoading={usersQuery.isLoading}
-        isError={usersQuery.isError}
-        error={usersQuery.error}
-        data={usersQuery.data}
-        onRetry={() => usersQuery.refetch()}
-        emptyTitle="Belum ada anggota"
-        emptyDescription="Tidak ada data anggota tim yang sesuai dengan kriteria filter."
-      >
-        {(result) => (
-          <MemberTable
-            users={result.data}
-            meta={result.meta}
-            onPageChange={(page) => handleFilterChange({ page })}
-            onEdit={handleOpenEdit}
-            onResetPassword={(user) => setUserToResetPassword(user)}
-            onToggleStatus={(user) => setUserToToggleStatus(user)}
-          />
-        )}
-      </AsyncStateView>
+      <section className="space-y-4 rounded-xl border border-border bg-surface p-4 sm:p-5">
+        <MemberFilters
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          onReset={handleResetFilters}
+          onOpenCreateModal={() => {
+            setUserToEdit(null);
+            setIsFormModalOpen(true);
+          }}
+        />
+
+        <AsyncStateView
+          isLoading={usersQuery.isLoading}
+          isError={usersQuery.isError}
+          error={usersQuery.error}
+          data={usersQuery.data}
+          onRetry={() => usersQuery.refetch()}
+          emptyTitle="Belum ada anggota"
+          emptyDescription="Tidak ada data anggota tim yang sesuai dengan kriteria filter."
+        >
+          {(result) => (
+            <MemberTable
+              users={result.data}
+              meta={result.meta}
+              onPageChange={(page) => handleFilterChange({ page })}
+              onEdit={handleOpenEdit}
+              onResetPassword={(user) => setUserToResetPassword(user)}
+              onToggleStatus={(user) => setUserToToggleStatus(user)}
+            />
+          )}
+        </AsyncStateView>
+      </section>
 
       <MemberFormModal
         isOpen={isFormModalOpen}

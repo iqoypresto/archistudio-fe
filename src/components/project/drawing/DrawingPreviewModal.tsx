@@ -45,7 +45,7 @@ export function DrawingPreviewModal({ drawing, onClose }: DrawingPreviewModalPro
               href={drawing.viewUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex min-h-11 items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-surface-input px-3 text-xs font-medium text-text-primary transition-colors hover:bg-surface-active"
             >
               <ExternalLink className="h-3.5 w-3.5" />
               Buka Gambar di Tab Baru

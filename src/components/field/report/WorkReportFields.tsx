@@ -48,8 +48,8 @@ export function WorkReportFields({
                 className={cn(
                   "flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2.5 text-sm font-semibold transition-colors",
                   active
-                    ? "border-primary bg-primary-soft text-primary"
-                    : "border-border bg-surface text-text-secondary hover:bg-secondary"
+                    ? "border-white/25 bg-surface-active text-text-primary shadow-2xs"
+                    : "border-border bg-surface-input text-text-secondary hover:bg-surface-active/60"
                 )}
               >
                 <Icon className="size-5" />
@@ -94,7 +94,7 @@ export function WorkReportFields({
           rows={3}
           disabled={disabled}
           placeholder="Contoh: Pengecoran sloof zona barat selesai 80%"
-          className="w-full rounded-xl border border-border bg-surface p-3 text-base text-text-primary outline-none focus:border-primary"
+          className="w-full rounded-xl border border-border bg-surface-input p-3 text-base text-text-primary outline-none focus:border-ring"
           {...register("progressText")}
         />
         {errors.progressText && (
@@ -113,7 +113,7 @@ export function WorkReportFields({
           rows={2}
           disabled={disabled}
           placeholder="Tulis kendala atau 'Tidak ada'"
-          className="w-full rounded-xl border border-border bg-surface p-3 text-base text-text-primary outline-none focus:border-primary"
+          className="w-full rounded-xl border border-border bg-surface-input p-3 text-base text-text-primary outline-none focus:border-ring"
           {...register("obstaclesText")}
         />
         {errors.obstaclesText && (
@@ -132,7 +132,7 @@ export function WorkReportFields({
           rows={2}
           disabled={disabled}
           placeholder="Contoh: Lanjut pemasangan bekisting kolom lantai 1"
-          className="w-full rounded-xl border border-border bg-surface p-3 text-base text-text-primary outline-none focus:border-primary"
+          className="w-full rounded-xl border border-border bg-surface-input p-3 text-base text-text-primary outline-none focus:border-ring"
           {...register("tomorrowPlanText")}
         />
         {errors.tomorrowPlanText && (

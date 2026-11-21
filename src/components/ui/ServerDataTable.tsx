@@ -40,13 +40,13 @@ export function ServerDataTable<T>({
     <div className={cn("space-y-4", className)}>
       <div className="overflow-hidden rounded-xl border border-border bg-surface">
         <Table>
-          <TableHeader className="bg-secondary/70">
-            <TableRow>
+          <TableHeader className="bg-surface-input/70">
+            <TableRow className="border-border/80 hover:bg-transparent">
               {columns.map((column) => (
                 <TableHead
                   key={column.key}
                   className={cn(
-                    "h-11 px-4 text-xs font-semibold tracking-wide text-text-secondary uppercase",
+                    "h-10 px-4 text-[11px] font-medium tracking-wider text-text-muted uppercase",
                     column.headerClassName
                   )}
                 >
@@ -57,11 +57,11 @@ export function ServerDataTable<T>({
           </TableHeader>
           <TableBody>
             {data.map((row) => (
-              <TableRow key={getRowKey(row)}>
+              <TableRow key={getRowKey(row)} className="border-border/60 hover:bg-surface-input/40">
                 {columns.map((column) => (
                   <TableCell
                     key={column.key}
-                    className={cn("px-4 py-3 text-sm text-text-primary", column.cellClassName)}
+                    className={cn("px-4 py-3 text-[13px] text-text-primary", column.cellClassName)}
                   >
                     {column.cell(row)}
                   </TableCell>

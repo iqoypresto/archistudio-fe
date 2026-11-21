@@ -50,8 +50,8 @@ export function NoWorkReportFields({
                 className={cn(
                   "min-h-12 rounded-xl border px-3 py-2 text-base font-medium transition-colors",
                   active
-                    ? "border-primary bg-primary-soft font-semibold text-primary"
-                    : "border-border bg-surface text-text-secondary hover:bg-secondary"
+                    ? "border-white/25 bg-surface-active font-semibold text-text-primary shadow-2xs"
+                    : "border-border bg-surface-input text-text-secondary hover:bg-surface-active/60"
                 )}
               >
                 {reason}
@@ -70,7 +70,7 @@ export function NoWorkReportFields({
           rows={3}
           disabled={disabled}
           placeholder="Jelaskan kondisi lapangan (wajib disertai minimal 1 foto bukti)"
-          className="w-full rounded-xl border border-border bg-surface p-3 text-base text-text-primary outline-none focus:border-primary"
+          className="w-full rounded-xl border border-border bg-surface-input p-3 text-base text-text-primary outline-none focus:border-ring"
           {...register("noWorkReason")}
         />
         {errors.noWorkReason && (

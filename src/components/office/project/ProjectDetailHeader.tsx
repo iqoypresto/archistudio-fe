@@ -44,17 +44,17 @@ export function ProjectDetailHeader({
         <div className="flex items-center gap-3">
           <Link
             href={isProjectReadOnly ? "/archive" : "/projects"}
-            className="flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-surface text-text-secondary hover:bg-surface-hover hover:text-text-primary"
+            className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border bg-surface text-text-secondary transition-colors hover:bg-surface-active hover:text-text-primary"
             title={isProjectReadOnly ? "Kembali ke Archive Project" : "Kembali ke Daftar Project"}
           >
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-mono text-xs font-bold text-primary">
+              <span className="rounded-md border border-border/80 bg-surface-input px-2 py-0.5 font-mono text-xs font-semibold text-text-primary">
                 {project?.code ?? "..."}
               </span>
-              <h1 className="text-xl font-bold tracking-tight text-text-primary">
+              <h1 className="font-heading text-xl font-semibold tracking-tight text-text-primary sm:text-[22px]">
                 {project?.name ?? "Memuat Project..."}
               </h1>
               {project && (
@@ -63,14 +63,14 @@ export function ProjectDetailHeader({
               {project?.archivedAt && <StatusBadge tone="warning">Arsip Manual</StatusBadge>}
             </div>
             {project && (
-              <p className="flex flex-wrap items-center gap-3 text-xs text-text-secondary">
+              <p className="mt-1 flex flex-wrap items-center gap-3 text-xs text-text-secondary">
                 <span className="inline-flex items-center gap-1">
-                  <User className="h-3 w-3" /> Client: {project.clientName}
+                  <User className="h-3 w-3 text-text-muted" /> Client: {project.clientName}
                 </span>
                 <span className="inline-flex items-center gap-1">
-                  <MapPin className="h-3 w-3" /> Lokasi: {project.location}
+                  <MapPin className="h-3 w-3 text-text-muted" /> Lokasi: {project.location}
                 </span>
-                <span>Zona: {project.timezone}</span>
+                <span className="text-text-muted">Zona: {project.timezone}</span>
               </p>
             )}
           </div>
@@ -78,26 +78,26 @@ export function ProjectDetailHeader({
 
         <div className="flex flex-wrap items-center gap-2">
           {canCompleteProject && (
-            <Button variant="outline" onClick={onCompleteProject} className="min-h-11 gap-1.5">
-              <CheckCircle2 className="h-4 w-4 text-status-success-fg" />
+            <Button variant="outline" onClick={onCompleteProject} className="h-9 gap-1.5 text-xs">
+              <CheckCircle2 className="h-3.5 w-3.5 text-status-success-fg" />
               Tandai Selesai
             </Button>
           )}
           {canArchiveProject && (
-            <Button variant="outline" onClick={onArchiveProject} className="min-h-11 gap-1.5">
-              <Archive className="h-4 w-4 text-status-warning-fg" />
+            <Button variant="outline" onClick={onArchiveProject} className="h-9 gap-1.5 text-xs">
+              <Archive className="h-3.5 w-3.5 text-status-warning-fg" />
               Arsipkan
             </Button>
           )}
           {canRestoreProject && (
-            <Button onClick={onRestoreProject} className="min-h-11 gap-1.5">
-              <RotateCcw className="h-4 w-4" />
+            <Button onClick={onRestoreProject} className="h-9 gap-1.5 text-xs">
+              <RotateCcw className="h-3.5 w-3.5" />
               Pulihkan Project
             </Button>
           )}
           {canEditArea && (
-            <Button onClick={onAddArea} className="min-h-11 gap-1.5">
-              <Plus className="h-4 w-4" />
+            <Button onClick={onAddArea} className="h-9 gap-1.5 text-xs">
+              <Plus className="h-3.5 w-3.5" />
               Tambah Area
             </Button>
           )}
@@ -105,8 +105,8 @@ export function ProjectDetailHeader({
       </div>
 
       {(isSupervisorReadOnly || isProjectReadOnly) && (
-        <div className="flex items-start gap-2.5 rounded-lg border border-border bg-surface-subtle p-3 text-xs text-text-secondary">
-          <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+        <div className="flex items-start gap-2.5 rounded-xl border border-border bg-surface p-3.5 text-xs text-text-secondary">
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-text-primary" />
           <span>
             {isSupervisorReadOnly
               ? "Mode baca saja: hanya area yang sedang ditugaskan kepada Anda pada project ini yang ditampilkan (BR-03, BR-09)."

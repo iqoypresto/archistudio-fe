@@ -28,9 +28,12 @@ export function ReportDetailContent({
       <div>
         <Link
           href={backHref}
-          className={cn(buttonVariants({ variant: "outline" }), "min-h-11 px-3")}
+          className={cn(
+            buttonVariants({ variant: "outline", size: "sm" }),
+            "h-9 gap-1.5 border-border bg-surface px-3 text-xs text-text-secondary hover:bg-surface-active hover:text-text-primary"
+          )}
         >
-          <ArrowLeft className="mr-1.5 size-4" />
+          <ArrowLeft className="size-3.5" />
           Kembali ke Daftar
         </Link>
       </div>

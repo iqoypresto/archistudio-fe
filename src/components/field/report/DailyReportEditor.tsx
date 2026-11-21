@@ -136,8 +136,8 @@ export function DailyReportEditor({
             className={cn(
               "min-h-12 rounded-xl border px-3 py-2 text-base font-semibold transition-colors",
               reportType === type
-                ? "border-primary bg-primary-soft text-primary"
-                : "border-border bg-surface text-text-secondary"
+                ? "border-white/25 bg-surface-active text-text-primary shadow-2xs"
+                : "border-border bg-surface text-text-secondary hover:bg-surface-input"
             )}
           >
             {type === "WORK" ? "Ada Pekerjaan" : "Hari Tanpa Pekerjaan"}

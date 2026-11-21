@@ -164,7 +164,7 @@ export function PhotoUploadQueue({
         variant="outline"
         disabled={disabled || !canAddMore}
         onClick={() => inputRef.current?.click()}
-        className="min-h-12 w-full border-dashed border-primary/50 bg-primary-soft/50 text-base font-semibold text-primary hover:bg-primary-soft"
+        className="min-h-12 w-full border-dashed border-white/20 bg-surface-input text-base font-semibold text-text-primary hover:bg-surface-active"
       >
         <Camera className="mr-2 size-5" />
         {canAddMore ? "Pilih atau Ambil Foto" : "Maksimal 10 Foto Tercapai"}

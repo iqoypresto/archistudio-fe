@@ -66,8 +66,8 @@ export function ProjectDetailContent({ projectId }: ProjectDetailContentProps) {
         : "Gagal memuat detail project.";
     return (
       <div className="space-y-4">
-        <Link href="/projects" className="inline-flex items-center gap-1.5 text-sm text-primary">
-          <ArrowLeft className="h-4 w-4" /> Kembali ke Daftar Project
+        <Link href="/projects" className="inline-flex items-center gap-1.5 text-xs font-medium text-text-secondary hover:text-text-primary">
+          <ArrowLeft className="h-3.5 w-3.5" /> Kembali ke Daftar Project
         </Link>
         <ErrorState description={message} onRetry={() => projectQuery.refetch()} />
       </div>
@@ -75,7 +75,7 @@ export function ProjectDetailContent({ projectId }: ProjectDetailContentProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <ProjectDetailHeader
         project={project}
         canEditArea={canEditArea}
@@ -93,12 +93,12 @@ export function ProjectDetailContent({ projectId }: ProjectDetailContentProps) {
         onRestoreProject={() => setIsRestoreOpen(true)}
       />
 
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold text-text-primary">
-            Daftar Area & Pengawas Lapangan
+      <section className="space-y-4 rounded-xl border border-border bg-surface p-4 sm:p-5">
+        <div className="flex items-center justify-between border-b border-border/70 pb-3">
+          <h2 className="text-sm font-medium text-text-primary">
+            Daftar Area &amp; Pengawas Lapangan
           </h2>
-          <span className="text-xs text-text-secondary">
+          <span className="rounded-md border border-border bg-surface-input px-2.5 py-1 font-mono text-xs tabular-nums text-text-secondary">
             {areasQuery.data?.length ?? 0} Area Terdaftar
           </span>
         </div>
@@ -118,7 +118,7 @@ export function ProjectDetailContent({ projectId }: ProjectDetailContentProps) {
           }
         >
           {(areas) => (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
               {areas.map((area) => (
                 <AreaCard
                   key={area.id}
@@ -136,7 +136,7 @@ export function ProjectDetailContent({ projectId }: ProjectDetailContentProps) {
             </div>
           )}
         </AsyncStateView>
-      </div>
+      </section>
 
       {canEditArea && (
         <>
