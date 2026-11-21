@@ -16,18 +16,11 @@ import { ProjectNavigation } from "./ProjectNavigation";
 import { WorkspaceBreadcrumbs } from "./WorkspaceBreadcrumbs";
 import { getGlobalNavGroups, getProjectNavGroups } from "./workspace-nav.config";
 
-export function OfficeAppShell({
-  children,
-  projectId: propProjectId,
-}: {
-  children: ReactNode;
-  projectId?: string;
-}) {
+export function OfficeAppShell({ children, projectId: propProjectId }: { children: ReactNode; projectId?: string }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const router = useRouter();
   const params = useParams<{ projectId?: string }>();
-  const activeProjectId =
-    propProjectId ?? (typeof params?.projectId === "string" ? params.projectId : undefined);
+  const activeProjectId = propProjectId ?? (typeof params?.projectId === "string" ? params.projectId : undefined);
   const user = useAuthStore((state) => state.user);
   const role = user?.role ?? "ADMIN";
   const isSupervisor = role === "SUPERVISOR";
@@ -37,11 +30,7 @@ export function OfficeAppShell({
     ...getGlobalNavGroups(role, true),
     ...(activeProjectId ? getProjectNavGroups(activeProjectId, role) : []),
   ];
-  const projectTitle = project
-    ? `${project.code} · ${project.name}`
-    : activeProjectId
-      ? "Project"
-      : undefined;
+  const projectTitle = project ? `${project.code} · ${project.name}` : activeProjectId ? "Project" : undefined;
   const projectHref = activeProjectId ? `/projects/${activeProjectId}` : undefined;
   const logoutMutation = useLogoutMutation();
 
@@ -106,14 +95,22 @@ export function OfficeAppShell({
         <header className="sticky top-0 z-30 flex h-13 items-center justify-between gap-3 border-b border-border/70 bg-canvas/85 px-4 backdrop-blur-md sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-              <SheetTrigger render={<Button type="button" variant="outline" size="icon" className="size-9 lg:hidden" aria-label="Buka menu navigasi" />}>
+              <SheetTrigger
+                render={
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="size-9 lg:hidden"
+                    aria-label="Buka menu navigasi"
+                  />
+                }
+              >
                 <Menu className="size-4" />
               </SheetTrigger>
               <SheetContent side="left" className="w-72 overflow-y-auto bg-sidebar p-0">
                 <SheetHeader className="border-b border-sidebar-border px-4 py-3.5">
-                  <SheetTitle className="truncate text-sm">
-                    {projectTitle ?? "ArchiStudio Office"}
-                  </SheetTitle>
+                  <SheetTitle className="truncate text-sm">{projectTitle ?? "ArchiStudio Office"}</SheetTitle>
                   <WorkspaceBreadcrumbs
                     groups={navGroups}
                     projectTitle={projectTitle}
@@ -140,18 +137,12 @@ export function OfficeAppShell({
                 </div>
               </SheetContent>
             </Sheet>
-            <WorkspaceBreadcrumbs
-              groups={navGroups}
-              projectTitle={projectTitle}
-              projectHref={projectHref}
-            />
+            <WorkspaceBreadcrumbs groups={navGroups} projectTitle={projectTitle} projectHref={projectHref} />
           </div>
           <div className="flex shrink-0 items-center gap-2.5">
             {user && (
               <div className="hidden items-center gap-2 sm:flex">
-                <span className="max-w-36 truncate text-xs font-medium text-text-secondary">
-                  {user.name}
-                </span>
+                <span className="max-w-36 truncate text-xs font-medium text-text-secondary">{user.name}</span>
                 <StatusBadge tone="info">{user.role}</StatusBadge>
               </div>
             )}
@@ -185,13 +176,10 @@ function BrandHeader({ homeHref, subtitle }: { homeHref: string; subtitle: strin
             <Building2 className="size-4" />
           </div>
           <div className="min-w-0">
-            <p className="text-[13px] leading-tight font-semibold tracking-tight text-text-primary">
-              ArchiStudio
-            </p>
+            <p className="text-[13px] leading-tight font-semibold tracking-tight text-text-primary">ArchiStudio</p>
             <p className="truncate text-[11px] leading-tight text-text-muted">{subtitle}</p>
           </div>
         </div>
-        <ChevronsUpDown className="size-3.5 shrink-0 text-text-muted" />
       </Link>
     </div>
   );

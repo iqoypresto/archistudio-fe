@@ -43,7 +43,7 @@ export function ProjectNavList({
         <nav className="space-y-5" aria-label="Navigasi workspace">
           {groups.map((group, index) => {
             const groupKey = `${index}:${group.label}`;
-            const isOpen = !collapsed[groupKey];
+            const isOpen = collapsed[groupKey];
             const groupContentId = `${layoutGroupId}-group-${index}`;
 
             return (
