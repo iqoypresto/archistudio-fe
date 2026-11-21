@@ -4,6 +4,7 @@ import { useState, type ChangeEvent } from "react";
 import { Archive, Calendar, Eye, Loader2, Upload } from "lucide-react";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -78,7 +79,7 @@ export function DrawingGalleryContent({ projectId }: DrawingGalleryContentProps)
                   Unggah Drawing {direction === "IN" ? "In" : "Out"}
                 </>
               )}
-              <input
+              <Input
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 onChange={handleFileChange}
@@ -130,10 +131,12 @@ export function DrawingGalleryContent({ projectId }: DrawingGalleryContentProps)
                   key={item.id}
                   className="flex flex-col overflow-hidden rounded-xl border border-border/80 bg-surface-input/70 transition-colors hover:border-white/[0.14]"
                 >
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    aria-label={`Pratinjau ${item.fileName}`}
                     onClick={() => setPreviewItem(item)}
-                    className="group relative aspect-4/3 w-full overflow-hidden bg-surface"
+                    className="group relative h-auto aspect-4/3 w-full overflow-hidden rounded-none border-0 bg-surface p-0 hover:bg-surface"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -144,7 +147,7 @@ export function DrawingGalleryContent({ projectId }: DrawingGalleryContentProps)
                     <span className="absolute right-2 bottom-2 inline-flex items-center gap-1 rounded-md bg-black/75 px-2 py-1 text-[11px] text-white backdrop-blur-xs">
                       <Eye className="h-3 w-3" /> Pratinjau
                     </span>
-                  </button>
+                  </Button>
 
                   <div className="flex flex-1 flex-col justify-between gap-3 p-3.5">
                     <div className="space-y-1">

@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useUnlockAreaMutation } from "@/hooks/dashboard.hooks";
 import type { DashboardAreaStatusItem } from "@/types/api/dashboard.types";
 
@@ -98,13 +99,13 @@ export function AreaUnlockModal({ isOpen, area, onClose }: AreaUnlockModalProps)
             <Label htmlFor="reason" className="text-xs font-semibold">
               Alasan (Opsional)
             </Label>
-            <textarea
+            <Textarea
               id="reason"
               rows={3}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="Contoh: Kendala cuaca ekstrem dan pemadaman listrik di lokasi proyek..."
-              className="w-full rounded-md border border-border bg-surface-primary p-2 text-xs focus:outline-hidden focus:ring-2 focus:ring-brand-primary/20"
+              className="min-h-24 w-full rounded-md border-border bg-surface-primary p-2 text-xs focus-visible:ring-brand-primary/20"
             />
           </div>
 

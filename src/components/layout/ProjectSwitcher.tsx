@@ -1,28 +1,31 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FolderKanban, RotateCw, Search } from "lucide-react";
+import { FolderKanban, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox";
 import { useProjectsQuery } from "@/hooks/project.hooks";
 import type { ProjectListItem } from "@/types/api/project.types";
 
-const ALL_PROJECTS_VALUE = "__ALL_PROJECTS__";
+function projectLabel(project: ProjectListItem): string {
+  return `${project.code} · ${project.name}`;
+}
 
 export function ProjectSwitcher({
   activeProject,
+  onNavigate,
   compact = false,
 }: {
   activeProject?: ProjectListItem | null;
+  onNavigate?: () => void;
   compact?: boolean;
 }) {
   const router = useRouter();
@@ -35,86 +38,62 @@ export function ProjectSwitcher({
   const options = projectsQuery.data?.data ?? [];
   const includesActive =
     activeProject && options.every((project) => project.id !== activeProject.id);
-  const allOptions = includesActive && activeProject ? [activeProject, ...options] : options;
-  const selectedProject =
-    allOptions.find((item) => item.id === activeProject?.id) ?? activeProject ?? null;
-  const selectedLabel = selectedProject
-    ? `${selectedProject.code} · ${selectedProject.name}`
-    : "Pilih project";
+  const projects = includesActive && activeProject ? [activeProject, ...options] : options;
 
-  function openProject(value: string | null): void {
-    if (value && value !== ALL_PROJECTS_VALUE) router.push(`/projects/${value}`);
-    else router.push("/projects");
+  function openProject(project: ProjectListItem | null): void {
+    if (!project) return;
+    onNavigate?.();
+    router.push(`/projects/${project.id}`);
   }
 
   return (
-    <section className={compact ? "w-52" : "space-y-2"} aria-label="Project Switcher">
-      {!compact && (
-        <div className="flex items-center justify-between px-1">
-          <span className="flex items-center gap-1.5 text-[11px] font-medium tracking-wider text-text-muted uppercase">
-            <FolderKanban className="size-3.5" />
-            Project Switcher
-          </span>
-          <Link
-            href="/projects"
-            className="text-[11px] font-medium text-text-secondary transition-colors hover:text-text-primary"
-          >
-            Semua
-          </Link>
-        </div>
-      )}
-      {!compact && (
-        <div className="relative">
-          <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-text-muted" />
-          <Input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Cari project..."
-            aria-label="Cari project"
-            className="h-8 pl-8 text-xs"
-          />
-        </div>
-      )}
-      <Select
-        value={activeProject?.id ?? ALL_PROJECTS_VALUE}
+    <section className={compact ? "w-56 space-y-2" : "space-y-2"} aria-label="Project Switcher">
+      {!compact && <div className="flex items-center gap-2 px-1 text-sm font-semibold text-text-primary">
+        <FolderKanban className="size-4" aria-hidden="true" />
+        <span>Project Switcher</span>
+      </div>}
+      <Combobox
+        items={projects}
+        value={activeProject ?? null}
+        itemToStringLabel={projectLabel}
+        itemToStringValue={(project) => project.id}
+        isItemEqualToValue={(item, value) => item.id === value.id}
         onValueChange={openProject}
+        onInputValueChange={setSearch}
       >
-        <SelectTrigger
-          aria-label="Pilih project"
-          className={compact ? "h-8 text-xs" : "h-9 text-xs"}
-        >
-          <SelectValue placeholder="Pilih project">{selectedLabel}</SelectValue>
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value={ALL_PROJECTS_VALUE}>Semua Project</SelectItem>
-          {allOptions.map((project) => (
-            <SelectItem key={project.id} value={project.id}>
-              {project.code} · {project.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      {!compact && projectsQuery.isLoading && (
-        <p className="px-1 text-[11px] text-text-muted">Memuat project...</p>
-      )}
-      {!compact && projectsQuery.isError && (
+        <ComboboxInput
+          aria-label="Cari dan pilih project"
+          placeholder="Cari project..."
+          showClear={Boolean(search)}
+          className={`w-full rounded-lg border-border bg-surface-input text-sm text-text-primary placeholder:text-text-muted focus-within:ring-2 focus-within:ring-ring ${compact ? "h-9" : "h-10"}`}
+        />
+        <ComboboxContent className="overflow-hidden rounded-lg border border-border bg-surface p-1 text-text-primary shadow-lg">
+          <ComboboxEmpty className="px-3 py-2 text-sm text-text-muted">
+            {projectsQuery.isLoading ? "Memuat project..." : "Project tidak ditemukan."}
+          </ComboboxEmpty>
+          <ComboboxList className="max-h-72 overflow-y-auto">
+            {(project: ProjectListItem) => (
+              <ComboboxItem
+                key={project.id}
+                value={project}
+                className="cursor-pointer rounded-md px-3 py-2.5 text-sm text-text-primary data-highlighted:bg-surface-active"
+              >
+                {projectLabel(project)}
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
+      {projectsQuery.isError && (
         <Button
           type="button"
           variant="ghost"
           onClick={() => projectsQuery.refetch()}
-          className="h-8 w-full justify-start px-2 text-xs"
+          className="h-9 w-full justify-start px-2 text-xs"
         >
-          <RotateCw className="mr-1.5 size-3.5" /> Gagal memuat · Coba lagi
+          <RotateCw className="mr-2 size-3.5" /> Gagal memuat · Coba lagi
         </Button>
       )}
-      {!compact &&
-        !projectsQuery.isLoading &&
-        !projectsQuery.isError &&
-        options.length === 0 && (
-          <p className="px-1 text-[11px] text-text-muted">
-            Tidak ada project yang dapat diakses.
-          </p>
-        )}
     </section>
   );
 }

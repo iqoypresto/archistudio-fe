@@ -12,7 +12,7 @@ import { useLogoutMutation } from "@/hooks/auth.hooks";
 import { useProjectDetailQuery } from "@/hooks/project.hooks";
 import { useAuthStore } from "@/stores/auth.store";
 import { ProjectNavList } from "./ProjectNavList";
-import { ProjectSwitcher } from "./ProjectSwitcher";
+import { ProjectNavigation } from "./ProjectNavigation";
 import { WorkspaceBreadcrumbs } from "./WorkspaceBreadcrumbs";
 import { getGlobalNavGroups, getProjectNavGroups } from "./workspace-nav.config";
 
@@ -74,10 +74,19 @@ export function OfficeAppShell({
           subtitle={projectTitle ?? "Internal Office"}
         />
         <div className="flex-1 space-y-4 overflow-y-auto px-3 py-2">
-          <ProjectSwitcher activeProject={project} />
-          <div className="border-t border-sidebar-border pt-3">
-            <ProjectNavList groups={navGroups} largeTouchTarget={isSupervisor} />
-          </div>
+          <ProjectNavList
+            groups={getGlobalNavGroups(role, false)}
+            largeTouchTarget={isSupervisor}
+            layoutGroupId="office-desktop-global"
+            resetKey={activeProjectId}
+          />
+          <ProjectNavigation
+            projectId={activeProjectId}
+            activeProject={project}
+            role={role}
+            largeTouchTarget={isSupervisor}
+            layoutGroupId="office-desktop-project"
+          />
         </div>
         {user && (
           <div className="p-3 pt-1">
@@ -113,14 +122,21 @@ export function OfficeAppShell({
                   />
                 </SheetHeader>
                 <div className="space-y-4 p-3">
-                  <ProjectSwitcher activeProject={project} />
-                  <div className="border-t border-sidebar-border pt-3">
-                    <ProjectNavList
-                      groups={navGroups}
-                      onNavigate={() => setMobileOpen(false)}
-                      largeTouchTarget={isSupervisor}
-                    />
-                  </div>
+                  <ProjectNavList
+                    groups={getGlobalNavGroups(role, false)}
+                    onNavigate={() => setMobileOpen(false)}
+                    largeTouchTarget={isSupervisor}
+                    layoutGroupId="office-mobile-global"
+                    resetKey={activeProjectId}
+                  />
+                  <ProjectNavigation
+                    projectId={activeProjectId}
+                    activeProject={project}
+                    role={role}
+                    onNavigate={() => setMobileOpen(false)}
+                    largeTouchTarget={isSupervisor}
+                    layoutGroupId="office-mobile-project"
+                  />
                 </div>
               </SheetContent>
             </Sheet>

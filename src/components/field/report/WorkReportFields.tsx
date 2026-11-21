@@ -1,7 +1,9 @@
 import { Cloud, CloudRain, Sun } from "lucide-react";
 import { useWatch, type UseFormReturn } from "react-hook-form";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import type { ReportFormValues } from "@/lib/validation/report.validation";
 import { cn } from "@/lib/utils";
 import type { WeatherType } from "@/types/api/report.types";
@@ -40,13 +42,15 @@ export function WorkReportFields({
             const Icon = opt.icon;
             const active = selectedWeather === opt.value;
             return (
-              <button
+              <Button
                 key={opt.value}
                 type="button"
                 disabled={disabled}
+                variant="outline"
+                aria-pressed={active}
                 onClick={() => setValue("weather", opt.value, { shouldValidate: true })}
                 className={cn(
-                  "flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2.5 text-sm font-semibold transition-colors",
+                  "h-auto flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl px-2 py-2.5 text-sm font-semibold transition-colors",
                   active
                     ? "border-white/25 bg-surface-active text-text-primary shadow-2xs"
                     : "border-border bg-surface-input text-text-secondary hover:bg-surface-active/60"
@@ -54,7 +58,7 @@ export function WorkReportFields({
               >
                 <Icon className="size-5" />
                 <span>{opt.label}</span>
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -89,12 +93,12 @@ export function WorkReportFields({
         <Label htmlFor="progressText" className="text-base font-semibold text-text-primary">
           Progres Pekerjaan Hari Ini
         </Label>
-        <textarea
+        <Textarea
           id="progressText"
           rows={3}
           disabled={disabled}
           placeholder="Contoh: Pengecoran sloof zona barat selesai 80%"
-          className="w-full rounded-xl border border-border bg-surface-input p-3 text-base text-text-primary outline-none focus:border-ring"
+          className="w-full rounded-xl border-border bg-surface-input p-3 text-base text-text-primary focus-visible:ring-ring"
           {...register("progressText")}
         />
         {errors.progressText && (
@@ -108,12 +112,12 @@ export function WorkReportFields({
         <Label htmlFor="obstaclesText" className="text-base font-semibold text-text-primary">
           Hambatan / Kendala
         </Label>
-        <textarea
+        <Textarea
           id="obstaclesText"
           rows={2}
           disabled={disabled}
           placeholder="Tulis kendala atau 'Tidak ada'"
-          className="w-full rounded-xl border border-border bg-surface-input p-3 text-base text-text-primary outline-none focus:border-ring"
+          className="w-full rounded-xl border-border bg-surface-input p-3 text-base text-text-primary focus-visible:ring-ring"
           {...register("obstaclesText")}
         />
         {errors.obstaclesText && (
@@ -127,12 +131,12 @@ export function WorkReportFields({
         <Label htmlFor="tomorrowPlanText" className="text-base font-semibold text-text-primary">
           Rencana Pekerjaan Besok
         </Label>
-        <textarea
+        <Textarea
           id="tomorrowPlanText"
           rows={2}
           disabled={disabled}
           placeholder="Contoh: Lanjut pemasangan bekisting kolom lantai 1"
-          className="w-full rounded-xl border border-border bg-surface-input p-3 text-base text-text-primary outline-none focus:border-ring"
+          className="w-full rounded-xl border-border bg-surface-input p-3 text-base text-text-primary focus-visible:ring-ring"
           {...register("tomorrowPlanText")}
         />
         {errors.tomorrowPlanText && (

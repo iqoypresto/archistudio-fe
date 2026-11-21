@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -148,12 +149,12 @@ export function CommsFormModal({
 
           <div className="space-y-1">
             <Label htmlFor="comms-note">Catatan Singkat (Opsional)</Label>
-            <textarea
+            <Textarea
               id="comms-note"
               rows={3}
               placeholder="Ringkasan poin komunikasi..."
               {...register("note")}
-              className="border-border bg-surface-input text-text-primary focus:ring-ring w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2"
+              className="min-h-20 w-full rounded-lg border-border bg-surface-input px-3 py-2 text-sm text-text-primary focus-visible:ring-ring"
             />
             {errors.note && <p className="text-status-danger-fg text-xs">{errors.note.message}</p>}
           </div>

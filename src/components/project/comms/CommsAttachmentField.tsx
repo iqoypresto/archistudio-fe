@@ -3,6 +3,7 @@
 import type { ChangeEvent } from "react";
 import { FileText, Loader2, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { COMMS_ATTACHMENT_ACCEPT } from "@/lib/validation/comms.validation";
 import type { CommsAttachmentPayload } from "@/types/api/comms.types";
@@ -73,7 +74,7 @@ export function CommsAttachmentField({
           </Button>
         </div>
       ) : (
-        <label
+        <Label
           htmlFor="comms-attachment-input"
           className="flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-surface-input/70 px-3 py-2.5 text-xs font-medium text-text-secondary transition-colors hover:border-white/25 hover:text-text-primary"
         >
@@ -88,7 +89,7 @@ export function CommsAttachmentField({
               Pilih Lampiran (PDF / Word / Excel, maks. 5 MB)
             </>
           )}
-          <input
+          <Input
             id="comms-attachment-input"
             type="file"
             accept={COMMS_ATTACHMENT_ACCEPT}
@@ -96,7 +97,7 @@ export function CommsAttachmentField({
             disabled={isUploading}
             className="sr-only"
           />
-        </label>
+        </Label>
       )}
 
       {errorMessage && <p className="text-status-danger-fg text-xs">{errorMessage}</p>}

@@ -73,11 +73,13 @@ export function PaymentPayeeList({
             {items.map((person) => {
               const isActive = person.id === activePersonId;
               return (
-                <button
+                <Button
                   key={person.id}
                   type="button"
+                  variant="outline"
+                  aria-pressed={isActive}
                   onClick={() => onSelectPerson(person.id)}
-                  className={`w-full rounded-xl border p-3.5 text-left transition-colors ${
+                  className={`h-auto w-full justify-start rounded-xl p-3.5 text-left transition-colors ${
                     isActive
                       ? "border-white/20 bg-surface-active shadow-2xs"
                       : "border-border/80 bg-surface-input/60 hover:bg-surface-active/50"
@@ -100,7 +102,7 @@ export function PaymentPayeeList({
                   <p className="mt-1.5 font-mono text-xs font-medium tabular-nums text-text-primary">
                     Belum dibayar: {formatCurrencyIdr(person.summary.totalUnpaid)}
                   </p>
-                </button>
+                </Button>
               );
             })}
           </div>

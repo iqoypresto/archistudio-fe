@@ -145,7 +145,7 @@ export function PhotoUploadQueue({
         <span className="text-sm text-text-secondary">Min. 1 foto (JPG/PNG/WebP)</span>
       </div>
 
-      <input
+      <Input
         ref={inputRef}
         type="file"
         accept="image/jpeg,image/png,image/webp"

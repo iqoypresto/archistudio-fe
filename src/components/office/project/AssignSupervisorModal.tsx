@@ -139,9 +139,9 @@ export function AssignSupervisorModal({
             {isError && (
               <div className="flex items-center gap-2 text-xs text-status-danger-fg">
                 <span>Gagal memuat daftar supervisor.</span>
-                <button type="button" onClick={() => refetch()} className="underline">
+                <Button type="button" variant="link" onClick={() => refetch()} className="h-auto p-0 underline">
                   Coba lagi
-                </button>
+                </Button>
               </div>
             )}
             {!isLoading && !isError && assignableSupervisors.length === 0 && (

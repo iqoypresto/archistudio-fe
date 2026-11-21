@@ -80,18 +80,20 @@ export function DashboardFilterBar({
 
         <div className="flex flex-wrap items-center gap-1 rounded-lg border border-border/80 bg-surface p-1">
           {STATUS_OPTIONS.map((opt) => (
-            <button
+            <Button
               key={opt.value}
               type="button"
+              variant="ghost"
+              aria-pressed={statusFilter === opt.value}
               onClick={() => onStatusFilterChange(opt.value)}
-              className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+              className={`h-auto min-h-9 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                 statusFilter === opt.value
                   ? "bg-surface-active text-text-primary shadow-2xs ring-1 ring-white/[0.06]"
                   : "text-text-secondary hover:text-text-primary"
               }`}
             >
               {opt.label}
-            </button>
+            </Button>
           ))}
         </div>
       </div>

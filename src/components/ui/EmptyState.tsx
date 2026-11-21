@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Inbox } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 interface EmptyStateProps {
@@ -18,9 +19,9 @@ export function EmptyState({
   className,
 }: EmptyStateProps) {
   return (
-    <div
+    <Card
       className={cn(
-        "flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-surface px-6 py-10 text-center",
+        "flex flex-col items-center justify-center gap-0 rounded-xl border-dashed border-border bg-surface px-6 py-10 text-center shadow-none ring-0",
         className
       )}
     >
@@ -34,6 +35,6 @@ export function EmptyState({
         </p>
       )}
       {action && <div className="mt-4 flex min-h-11 items-center">{action}</div>}
-    </div>
+    </Card>
   );
 }

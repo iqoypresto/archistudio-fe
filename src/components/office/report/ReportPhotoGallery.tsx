@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { DailyReportPhotoDto } from "@/types/api/report.types";
@@ -34,11 +35,13 @@ export function ReportPhotoGallery({
         </CardHeader>
         <CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {photos.map((photo, index) => (
-            <button
+            <Button
               key={photo.id}
               type="button"
+              variant="ghost"
+              aria-label={`Buka foto ${photo.caption ?? index + 1}`}
               onClick={() => setZoomPhoto(photo)}
-              className="group overflow-hidden rounded-xl border border-border/80 bg-surface-input/70 text-left transition-colors hover:border-white/[0.14]"
+              className="group h-auto w-full flex-col items-stretch overflow-hidden rounded-xl border border-border/80 bg-surface-input/70 p-0 text-left transition-colors hover:border-white/[0.14] hover:bg-surface-input/70"
             >
               <Image
                 src={photo.signedViewUrl || "/file.svg"}
@@ -67,7 +70,7 @@ export function ReportPhotoGallery({
                   )}
                 </p>
               </div>
-            </button>
+            </Button>
           ))}
         </CardContent>
       </Card>

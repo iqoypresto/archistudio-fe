@@ -3,6 +3,7 @@
 import type { ChangeEvent } from "react";
 import { ImageIcon, Loader2, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { PaymentProofPayload } from "@/types/api/payment.types";
 
@@ -70,7 +71,7 @@ export function PaymentProofField({
           </Button>
         </div>
       ) : (
-        <label
+        <Label
           htmlFor="payment-proof-input"
           className="flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-surface-input/70 px-3 py-2.5 text-xs font-medium text-text-secondary transition-colors hover:border-white/25 hover:text-text-primary"
         >
@@ -85,7 +86,7 @@ export function PaymentProofField({
               Pilih Gambar Bukti (JPG / PNG, maks. 2 MB)
             </>
           )}
-          <input
+          <Input
             id="payment-proof-input"
             type="file"
             accept="image/jpeg,image/png"
@@ -93,7 +94,7 @@ export function PaymentProofField({
             disabled={isUploading}
             className="sr-only"
           />
-        </label>
+        </Label>
       )}
 
       {errorMessage && <p className="text-status-danger-fg text-xs">{errorMessage}</p>}

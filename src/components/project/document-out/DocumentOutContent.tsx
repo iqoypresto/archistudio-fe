@@ -4,6 +4,7 @@ import { useState, type ChangeEvent } from "react";
 import { Calendar, ExternalLink, FileText, Loader2, Trash2, Upload } from "lucide-react";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -78,7 +79,7 @@ export function DocumentOutContent({ projectId }: DocumentOutContentProps) {
                   <Upload className="h-3.5 w-3.5" /> Unggah {activeLabel}
                 </>
               )}
-              <input
+              <Input
                 type="file"
                 multiple
                 accept={PROJECT_DOCUMENT_ACCEPT}

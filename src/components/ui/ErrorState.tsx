@@ -1,5 +1,6 @@
 import { AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 interface ErrorStateProps {
@@ -18,10 +19,10 @@ export function ErrorState({
   className,
 }: ErrorStateProps) {
   return (
-    <div
+    <Card
       role="alert"
       className={cn(
-        "flex flex-col items-center justify-center rounded-xl border border-status-danger-fg/25 bg-status-danger-bg px-6 py-8 text-center",
+        "flex flex-col items-center justify-center gap-0 rounded-xl border border-status-danger-fg/25 bg-status-danger-bg px-6 py-8 text-center shadow-none ring-0",
         className
       )}
     >
@@ -41,6 +42,6 @@ export function ErrorState({
           {retryLabel}
         </Button>
       )}
-    </div>
+    </Card>
   );
 }

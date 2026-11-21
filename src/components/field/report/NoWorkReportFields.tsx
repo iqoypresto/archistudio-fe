@@ -1,6 +1,8 @@
 import { useWatch, type UseFormReturn } from "react-hook-form";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   NO_WORK_REASONS,
   type ReportFormValues,
@@ -38,24 +40,26 @@ export function NoWorkReportFields({
                   )
                 : currentReason === reason;
             return (
-              <button
+              <Button
                 key={reason}
                 type="button"
                 disabled={disabled}
+                variant="outline"
+                aria-pressed={active}
                 onClick={() =>
                   setValue("noWorkReason", reason === "Lainnya" ? "" : reason, {
                     shouldValidate: true,
                   })
                 }
                 className={cn(
-                  "min-h-12 rounded-xl border px-3 py-2 text-base font-medium transition-colors",
+                  "h-auto min-h-12 rounded-xl px-3 py-2 text-base font-medium transition-colors",
                   active
                     ? "border-white/25 bg-surface-active font-semibold text-text-primary shadow-2xs"
                     : "border-border bg-surface-input text-text-secondary hover:bg-surface-active/60"
                 )}
               >
                 {reason}
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -65,12 +69,12 @@ export function NoWorkReportFields({
         <Label htmlFor="noWorkReason" className="text-base font-semibold text-text-primary">
           Keterangan Alasan
         </Label>
-        <textarea
+        <Textarea
           id="noWorkReason"
           rows={3}
           disabled={disabled}
           placeholder="Jelaskan kondisi lapangan (wajib disertai minimal 1 foto bukti)"
-          className="w-full rounded-xl border border-border bg-surface-input p-3 text-base text-text-primary outline-none focus:border-ring"
+          className="w-full rounded-xl border-border bg-surface-input p-3 text-base text-text-primary focus-visible:ring-ring"
           {...register("noWorkReason")}
         />
         {errors.noWorkReason && (
