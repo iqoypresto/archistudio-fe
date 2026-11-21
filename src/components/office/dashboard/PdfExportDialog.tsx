@@ -40,6 +40,10 @@ export function PdfExportDialog({
   const { data: projectsRes } = useProjectsQuery({ page: 1, pageSize: 100 });
   const exportMutation = useExportDailyReportPdfMutation();
   const projects = projectsRes?.data ?? [];
+  const selectedProject = projects.find((p) => p.id === selectedProjectId);
+  const selectedProjectLabel = selectedProject
+    ? `[${selectedProject.code}] ${selectedProject.name}`
+    : undefined;
   const missingAreas = exportMutation.error instanceof ApiError
     ? exportMutation.error.fields?.filter((field) => field.field === "missingAreas") ?? []
     : [];
@@ -70,7 +74,7 @@ export function PdfExportDialog({
       <DialogContent className="sm:max-w-md">
         <form onSubmit={handleDownload} className="space-y-4">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-brand-primary">
+            <DialogTitle className="flex items-center gap-2 text-text-primary">
               <FileDown className="h-5 w-5" />
               Export PDF Laporan Harian (Opsi A)
             </DialogTitle>
@@ -79,12 +83,12 @@ export function PdfExportDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="rounded-lg border border-blue-100 bg-blue-50/60 p-3 text-xs text-blue-900">
-            <div className="flex items-center gap-2 font-semibold text-blue-800">
+          <div className="rounded-lg border border-status-info-fg/20 bg-status-info-bg/60 p-3 text-xs text-status-info-fg">
+            <div className="flex items-center gap-2 font-semibold">
               <FileText className="h-4 w-4" />
               <span>Standar Format Opsi A (Klasik):</span>
             </div>
-            <ul className="mt-1.5 list-inside list-disc space-y-0.5 text-[11px] text-blue-700">
+            <ul className="mt-1.5 list-inside list-disc space-y-0.5 text-[11px] text-text-secondary">
               <li>Kepala laporan berwarna biru klasik dengan logo &amp; identitas proyek.</li>
               <li>Dokumentasi foto lapangan terpasang 2 kolom per baris beserta keterangan.</li>
               <li>Membubuhkan paraf otomatis supervisor tanpa kolom &quot;Diketahui&quot; (BR-27).</li>
@@ -100,7 +104,9 @@ export function PdfExportDialog({
               onValueChange={(val: string | null) => setSelectedProjectId(val ?? "")}
             >
               <SelectTrigger id="pdfProjectId" className="h-9">
-                <SelectValue placeholder="Pilih salah satu proyek" />
+                <SelectValue placeholder="Pilih salah satu proyek">
+                  {selectedProjectLabel}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {projects.map((p) => (

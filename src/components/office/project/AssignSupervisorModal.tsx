@@ -1,19 +1,17 @@
 "use client";
 
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { useUsersQuery } from "@/hooks/user.hooks";
 import { filterAssignableSupervisors } from "@/lib/validation/area-access";
 import {
@@ -52,6 +50,7 @@ export function AssignSupervisorModal({
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm<AssignSupervisorFormValues>({
     resolver: zodResolver(assignSupervisorFormSchema),
@@ -102,21 +101,38 @@ export function AssignSupervisorModal({
             <Label htmlFor="supervisorId">
               {isReplacing ? "Supervisor Baru" : "Supervisor Aktif"}
             </Label>
-            <select
-              id="supervisorId"
-              {...register("supervisorId")}
-              disabled={isLoading || isError}
-              className="border-border bg-surface text-text-primary focus:ring-primary h-11 w-full rounded-lg border px-3 text-sm focus:outline-none focus:ring-2"
-            >
-              <option value="">
-                {isLoading ? "Memuat daftar supervisor..." : "-- Pilih Supervisor Aktif --"}
-              </option>
-              {assignableSupervisors.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name} (@{s.username}) — {s.jobTitle}
-                </option>
-              ))}
-            </select>
+            <Controller
+              name="supervisorId"
+              control={control}
+              render={({ field }) => {
+                const selected = assignableSupervisors.find((s) => s.id === field.value);
+                const label = selected
+                  ? `${selected.name} (@${selected.username}) — ${selected.jobTitle}`
+                  : undefined;
+                return (
+                  <Select
+                    value={field.value}
+                    disabled={isLoading || isError}
+                    onValueChange={(val: string | null) => field.onChange(val ?? "")}
+                  >
+                    <SelectTrigger id="supervisorId" className="h-10">
+                      <SelectValue
+                        placeholder={isLoading ? "Memuat daftar supervisor..." : "-- Pilih Supervisor Aktif --"}
+                      >
+                        {label}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {assignableSupervisors.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.name} (@{s.username}) — {s.jobTitle}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                );
+              }}
+            />
             <p className="text-text-secondary text-xs">
               Supervisor yang sedang aktif di area atau project lain tetap dapat dipilih (BR-09).
             </p>

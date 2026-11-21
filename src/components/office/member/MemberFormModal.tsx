@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
@@ -9,6 +9,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { useAuthStore } from "@/stores/auth.store";
 import {
   memberFormSchema,
@@ -66,6 +69,7 @@ export function MemberFormModal({
     register,
     handleSubmit,
     reset,
+    control,
     setError,
     clearErrors,
     formState: { errors },
@@ -126,37 +130,39 @@ export function MemberFormModal({
             <div className="space-y-1.5">
               <Label htmlFor="username">Username</Label>
               <Input id="username" placeholder="budis" {...register("username")} />
-              {errors.username && (
-                <p className="text-status-danger-fg text-xs">{errors.username.message}</p>
-              )}
+              {errors.username && <p className="text-status-danger-fg text-xs">{errors.username.message}</p>}
             </div>
-
             <div className="space-y-1.5">
               <Label htmlFor="phone">Nomor HP</Label>
               <Input id="phone" placeholder="08123456789" {...register("phone")} />
-              {errors.phone && (
-                <p className="text-status-danger-fg text-xs">{errors.phone.message}</p>
-              )}
+              {errors.phone && <p className="text-status-danger-fg text-xs">{errors.phone.message}</p>}
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="role">Peran (Role)</Label>
-              <select
-                id="role"
-                {...register("role")}
-                disabled={isAdminActor}
-                className="border-border bg-surface text-text-primary focus:ring-primary h-9 w-full rounded-lg border px-3 text-sm focus:outline-none focus:ring-2 disabled:opacity-60"
-              >
-                {!isAdminActor && <option value="ADMIN">Admin</option>}
-                <option value="SUPERVISOR">Supervisor</option>
-              </select>
-              {isAdminActor && (
-                <p className="text-text-secondary text-xs">Admin hanya dapat mengelola Supervisor.</p>
-              )}
+              <Controller
+                name="role"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value}
+                    disabled={isAdminActor}
+                    onValueChange={(val: string | null) => field.onChange(val === "ADMIN" ? "ADMIN" : "SUPERVISOR")}
+                  >
+                    <SelectTrigger id="role" className="h-9">
+                      <SelectValue placeholder="Pilih Peran">{field.value === "ADMIN" ? "Admin" : "Supervisor"}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {!isAdminActor && <SelectItem value="ADMIN">Admin</SelectItem>}
+                      <SelectItem value="SUPERVISOR">Supervisor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {isAdminActor && <p className="text-text-secondary text-xs">Admin hanya dapat mengelola Supervisor.</p>}
             </div>
-
             <div className="space-y-1.5">
               <Label htmlFor="jobTitle">Jabatan Paraf</Label>
               <Input id="jobTitle" placeholder="Supervisor Lapangan" {...register("jobTitle")} />
@@ -173,17 +179,15 @@ export function MemberFormModal({
                 {...register("password")}
                 onChange={() => clearErrors("password")}
               />
-              {errors.password && (
-                <p className="text-status-danger-fg text-xs">{errors.password.message}</p>
-              )}
+              {errors.password && <p className="text-status-danger-fg text-xs">{errors.password.message}</p>}
             </div>
           )}
 
           <DialogFooter className="pt-2">
-            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting} className="min-h-11">
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting} className="h-9">
               Batal
             </Button>
-            <Button type="submit" disabled={isSubmitting} className="min-h-11">
+            <Button type="submit" disabled={isSubmitting} className="h-9">
               {isSubmitting ? "Menyimpan..." : isEditing ? "Simpan Perubahan" : "Buat Akun"}
             </Button>
           </DialogFooter>

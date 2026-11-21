@@ -110,10 +110,10 @@ export function OwnerReviseReportModal({
                       type="button"
                       onClick={() => setValue("weather", w)}
                       className={cn(
-                        "min-h-11 rounded-lg border text-sm font-medium",
+                        "h-10 rounded-lg border text-xs font-medium transition-colors",
                         selectedWeather === w
-                          ? "border-primary bg-primary-soft text-primary"
-                          : "border-border bg-surface text-text-secondary"
+                          ? "border-white/25 bg-surface-active text-text-primary shadow-2xs"
+                          : "border-border bg-surface-input text-text-secondary hover:text-text-primary"
                       )}
                     >
                       {w}

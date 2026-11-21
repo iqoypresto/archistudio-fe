@@ -25,20 +25,26 @@ export function WorkspaceBreadcrumbs({
 }: WorkspaceBreadcrumbsProps) {
   const pathname = usePathname();
   const active = findActiveItem(groups, pathname);
+  const ActiveIcon = active?.item.icon;
   const items = getBreadcrumbItems(pathname, active, projectTitle, projectHref);
 
   return (
     <nav aria-label="Breadcrumb" className={className}>
       <ol className="flex min-w-0 items-center gap-1.5 text-xs text-text-muted">
+        {ActiveIcon && (
+          <li aria-hidden="true" className="flex shrink-0 items-center text-text-secondary">
+            <ActiveIcon className="size-3.5" />
+          </li>
+        )}
         {items.map((item, index) => {
           const isCurrent = index === items.length - 1;
           return (
             <li key={`${item.label}-${index}`} className="flex min-w-0 items-center gap-1.5">
-              {index > 0 && <ChevronRight className="size-3.5 shrink-0" aria-hidden="true" />}
+              {index > 0 && <ChevronRight className="size-3 shrink-0 text-text-muted/70" aria-hidden="true" />}
               {item.href && !isCurrent ? (
                 <Link href={item.href} className="truncate transition-colors hover:text-text-primary">{item.label}</Link>
               ) : (
-                <span aria-current={isCurrent ? "page" : undefined} className="truncate text-text-secondary">{item.label}</span>
+                <span aria-current={isCurrent ? "page" : undefined} className="truncate font-medium text-text-secondary">{item.label}</span>
               )}
             </li>
           );

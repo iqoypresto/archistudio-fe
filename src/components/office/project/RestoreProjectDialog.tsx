@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +13,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   restoreProjectSchema,
   type RestoreProjectFormValues,
@@ -35,7 +42,7 @@ export function RestoreProjectDialog({
   isSubmitting,
 }: RestoreProjectDialogProps) {
   const {
-    register,
+    control,
     handleSubmit,
     reset,
     formState: { errors },
@@ -71,14 +78,28 @@ export function RestoreProjectDialog({
         <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4 py-1">
           <div className="space-y-1.5">
             <Label htmlFor="restore-status">Status Setelah Dipulihkan</Label>
-            <select
-              id="restore-status"
-              {...register("status")}
-              className="border-border bg-surface text-text-primary focus:ring-primary h-11 w-full rounded-lg border px-3 text-sm focus:outline-none focus:ring-2"
-            >
-              <option value="PERSIAPAN">Persiapan</option>
-              <option value="BERJALAN">Berjalan</option>
-            </select>
+            <Controller
+              name="status"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  value={field.value}
+                  onValueChange={(val: string | null) =>
+                    field.onChange(val === "PERSIAPAN" ? "PERSIAPAN" : "BERJALAN")
+                  }
+                >
+                  <SelectTrigger id="restore-status" className="h-10">
+                    <SelectValue placeholder="Pilih Status">
+                      {field.value === "PERSIAPAN" ? "Persiapan" : "Berjalan"}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="PERSIAPAN">Persiapan</SelectItem>
+                    <SelectItem value="BERJALAN">Berjalan</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
             {errors.status && (
               <p className="text-status-danger-fg text-xs">{errors.status.message}</p>
             )}

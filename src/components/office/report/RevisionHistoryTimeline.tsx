@@ -62,8 +62,8 @@ export function RevisionHistoryTimeline({
     <>
       <Card className="border border-border bg-surface">
         <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-base font-semibold">
-            <History className="size-4 text-primary" />
+          <CardTitle className="flex items-center gap-2 text-sm font-medium">
+            <History className="size-4 text-text-secondary" />
             Riwayat Revisi Owner ({revisions.length})
           </CardTitle>
         </CardHeader>
@@ -71,13 +71,13 @@ export function RevisionHistoryTimeline({
           {revisions.map((rev) => (
             <div
               key={rev.id}
-              className="flex flex-col gap-2 rounded-xl border border-border bg-canvas p-3.5 sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-2 rounded-xl border border-border/80 bg-surface-input/70 p-3.5 sm:flex-row sm:items-center sm:justify-between"
             >
-              <div className="space-y-1 text-sm">
+              <div className="space-y-1 text-xs">
                 <div className="flex flex-wrap items-center gap-2">
                   <StatusBadge tone="info">Revisi #{rev.revisionNo}</StatusBadge>
                   <span className="font-medium text-text-primary">{rev.revisedByName}</span>
-                  <span className="font-mono text-xs text-text-secondary">
+                  <span className="font-mono text-xs text-text-muted">
                     {new Intl.DateTimeFormat("id-ID", {
                       timeZone,
                       dateStyle: "medium",
@@ -91,10 +91,11 @@ export function RevisionHistoryTimeline({
               <Button
                 type="button"
                 variant="outline"
+                size="sm"
                 onClick={() => setSelectedRev(rev)}
-                className="min-h-11 shrink-0 text-sm"
+                className="h-8 shrink-0 gap-1.5 text-xs"
               >
-                <Eye className="mr-1.5 size-4" />
+                <Eye className="size-3.5" />
                 Lihat Versi Sebelumnya
               </Button>
             </div>

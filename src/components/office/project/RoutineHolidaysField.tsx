@@ -27,10 +27,10 @@ export function RoutineHolidaysField({ value, onChange }: RoutineHolidaysFieldPr
               key={day.value}
               type="button"
               onClick={() => toggleDay(day.value)}
-              className={`h-8 rounded-md px-2.5 text-xs font-medium transition-colors ${
+              className={`h-8 rounded-lg border px-2.5 text-xs font-medium transition-colors ${
                 isSelected
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-surface-subtle text-text-secondary hover:bg-surface-hover"
+                  ? "border-white/20 bg-surface-active text-text-primary shadow-2xs"
+                  : "border-border bg-surface-input text-text-secondary hover:bg-surface-active/60 hover:text-text-primary"
               }`}
             >
               {day.label}

@@ -38,7 +38,7 @@ export function ReportPhotoGallery({
               key={photo.id}
               type="button"
               onClick={() => setZoomPhoto(photo)}
-              className="group overflow-hidden rounded-xl border border-border bg-canvas text-left"
+              className="group overflow-hidden rounded-xl border border-border/80 bg-surface-input/70 text-left transition-colors hover:border-white/[0.14]"
             >
               <Image
                 src={photo.signedViewUrl || "/file.svg"}
@@ -48,10 +48,10 @@ export function ReportPhotoGallery({
                 unoptimized
                 className="aspect-4/3 w-full object-cover transition-transform group-hover:scale-105"
               />
-              <p className="truncate px-2.5 py-2 text-xs text-text-secondary">
+              <p className="truncate px-3 pt-2.5 pb-1 text-xs font-medium text-text-primary">
                 {photo.caption || `Foto #${index + 1}`}
               </p>
-              <div className="space-y-1 px-2.5 pb-2.5 text-xs text-text-secondary">
+              <div className="space-y-0.5 px-3 pb-2.5 text-[11px] text-text-muted">
                 <p>
                   Diambil: {formatPhotoTime(
                     photo.takenAt,

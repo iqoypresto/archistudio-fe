@@ -35,8 +35,8 @@ function SessionCheckingScreen() {
   return (
     <div className="flex min-h-dvh items-center justify-center bg-canvas px-4">
       <div className="flex items-center gap-3 rounded-xl border border-border bg-surface px-5 py-4 shadow-xs">
-        <Loader2 className="size-5 animate-spin text-primary" />
-        <span className="text-base font-medium text-text-primary">
+        <Loader2 className="size-5 animate-spin text-text-primary" />
+        <span className="text-sm font-medium text-text-primary">
           Memeriksa sesi akun...
         </span>
       </div>

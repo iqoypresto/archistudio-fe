@@ -13,7 +13,7 @@ const COLUMNS: DataColumn<DailyReportListItem>[] = [
     header: "Nomor & Tanggal",
     cell: (row) => (
       <div className="space-y-0.5">
-        <p className="font-mono text-xs font-semibold text-primary">{row.reportNumber}</p>
+        <p className="font-mono text-xs font-semibold text-text-primary">{row.reportNumber}</p>
         <p className="font-mono text-xs tabular-nums text-text-secondary">{row.reportDate}</p>
       </div>
     ),
@@ -55,12 +55,17 @@ const COLUMNS: DataColumn<DailyReportListItem>[] = [
   {
     key: "action",
     header: "Aksi",
+    headerClassName: "text-right",
+    cellClassName: "text-right",
     cell: (row) => (
       <Link
         href={`/reports/${row.id}`}
-        className={cn(buttonVariants({ variant: "outline" }), "min-h-11 px-3 text-sm")}
+        className={cn(
+          buttonVariants({ variant: "outline", size: "sm" }),
+          "h-8 gap-1.5 border-border bg-surface-input px-2.5 text-xs text-text-secondary hover:bg-surface-active hover:text-text-primary"
+        )}
       >
-        <Eye className="mr-1.5 size-4" />
+        <Eye className="size-3.5" />
         Detail
       </Link>
     ),

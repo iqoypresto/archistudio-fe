@@ -4,25 +4,19 @@ import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  TIMEZONE_OPTIONS,
-  projectFormSchema,
-  type ProjectFormValues,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import {
+  TIMEZONE_OPTIONS, projectFormSchema, type ProjectFormValues,
 } from "@/lib/validation/project.validation";
 import type {
-  CreateProjectPayload,
-  ProjectListItem,
-  UpdateProjectPayload,
+  CreateProjectPayload, ProjectListItem, UpdateProjectPayload,
 } from "@/types/api/project.types";
 import { RoutineHolidaysField } from "./RoutineHolidaysField";
 
@@ -36,34 +30,17 @@ interface ProjectFormModalProps {
 }
 
 const defaultValues: ProjectFormValues = {
-  code: "",
-  name: "",
-  location: "",
-  clientName: "",
-  startDate: new Date().toISOString().slice(0, 10),
-  endDate: "",
-  status: "PERSIAPAN",
-  timezone: "Asia/Jakarta",
-  routineHolidays: [0],
+  code: "", name: "", location: "", clientName: "",
+  startDate: new Date().toISOString().slice(0, 10), endDate: "",
+  status: "PERSIAPAN", timezone: "Asia/Jakarta", routineHolidays: [0],
 };
 
 export function ProjectFormModal({
-  isOpen,
-  onClose,
-  projectToEdit,
-  onSubmitCreate,
-  onSubmitUpdate,
-  isSubmitting,
+  isOpen, onClose, projectToEdit, onSubmitCreate, onSubmitUpdate, isSubmitting,
 }: ProjectFormModalProps) {
   const isEditing = Boolean(projectToEdit);
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    control,
-    formState: { errors },
-  } = useForm<ProjectFormValues>({
+  const { register, handleSubmit, reset, control, formState: { errors } } = useForm<ProjectFormValues>({
     resolver: zodResolver(projectFormSchema),
     defaultValues,
   });
@@ -142,29 +119,46 @@ export function ProjectFormModal({
             </div>
             <div className="space-y-1">
               <Label htmlFor="status">Status Project</Label>
-              <select
-                id="status"
-                {...register("status")}
-                className="border-border bg-surface text-text-primary focus:ring-primary h-9 w-full rounded-lg border px-3 text-sm focus:outline-none focus:ring-2"
-              >
-                <option value="PERSIAPAN">Persiapan</option>
-                <option value="BERJALAN">Berjalan</option>
-              </select>
-              <p className="text-[11px] text-text-secondary">
-                Status Selesai ditetapkan oleh Owner dari detail project (BR-39).
-              </p>
+              <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value}
+                    onValueChange={(val: string | null) => field.onChange(val === "BERJALAN" ? "BERJALAN" : "PERSIAPAN")}
+                  >
+                    <SelectTrigger id="status" className="h-9">
+                      <SelectValue placeholder="Pilih Status">{field.value === "BERJALAN" ? "Berjalan" : "Persiapan"}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="PERSIAPAN">Persiapan</SelectItem>
+                      <SelectItem value="BERJALAN">Berjalan</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              <p className="text-[11px] text-text-secondary">Status Selesai ditetapkan oleh Owner dari detail project (BR-39).</p>
             </div>
             <div className="space-y-1">
               <Label htmlFor="timezone">Zona Waktu (NFR-04)</Label>
-              <select
-                id="timezone"
-                {...register("timezone")}
-                className="border-border bg-surface text-text-primary focus:ring-primary h-9 w-full rounded-lg border px-2.5 text-xs focus:outline-none focus:ring-2"
-              >
-                {TIMEZONE_OPTIONS.map((tz) => (
-                  <option key={tz.value} value={tz.value}>{tz.label}</option>
-                ))}
-              </select>
+              <Controller
+                name="timezone"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={(val: string | null) => val && field.onChange(val)}>
+                    <SelectTrigger id="timezone" className="h-9 text-xs">
+                      <SelectValue placeholder="Pilih Zona Waktu">
+                        {TIMEZONE_OPTIONS.find((t) => t.value === field.value)?.label}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TIMEZONE_OPTIONS.map((tz) => (
+                        <SelectItem key={tz.value} value={tz.value}>{tz.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
           </div>
 

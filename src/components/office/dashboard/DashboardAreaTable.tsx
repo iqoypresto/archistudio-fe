@@ -34,31 +34,31 @@ export function DashboardAreaTable({ areas, onOpenUnlockModal }: DashboardAreaTa
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-surface-primary shadow-xs">
+    <div className="overflow-hidden rounded-xl border border-border bg-surface">
       <Table>
-        <TableHeader>
-          <TableRow className="bg-surface-secondary/50">
-            <TableHead className="w-1/4">Area & Proyek</TableHead>
-            <TableHead className="w-1/5">Supervisor Aktif</TableHead>
-            <TableHead className="w-1/5">Status Tanggal Ini</TableHead>
-            <TableHead className="w-1/5">Kunci & Tunggakan</TableHead>
-            <TableHead className="w-1/6 text-right">Aksi</TableHead>
+        <TableHeader className="bg-surface-input/70">
+          <TableRow className="border-border/80 hover:bg-transparent">
+            <TableHead className="h-10 w-1/4 px-4 text-[11px] font-medium tracking-wider text-text-muted uppercase">Area & Proyek</TableHead>
+            <TableHead className="h-10 w-1/5 px-4 text-[11px] font-medium tracking-wider text-text-muted uppercase">Supervisor Aktif</TableHead>
+            <TableHead className="h-10 w-1/5 px-4 text-[11px] font-medium tracking-wider text-text-muted uppercase">Status Tanggal Ini</TableHead>
+            <TableHead className="h-10 w-1/5 px-4 text-[11px] font-medium tracking-wider text-text-muted uppercase">Kunci & Tunggakan</TableHead>
+            <TableHead className="h-10 w-1/6 px-4 text-right text-[11px] font-medium tracking-wider text-text-muted uppercase">Aksi</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {areas.map((area) => {
             const { tone, label } = resolveStatusTone(area.status);
             return (
-              <TableRow key={area.areaId} className="hover:bg-surface-secondary/30">
-                <TableCell>
-                  <p className="font-semibold text-text-primary">
+              <TableRow key={area.areaId} className="border-border/60 hover:bg-surface-input/40">
+                <TableCell className="px-4 py-3">
+                  <p className="font-medium text-text-primary">
                     [{area.areaCode}] {area.areaName}
                   </p>
                   <p className="text-xs text-text-secondary">
                     [{area.projectCode}] {area.projectName}
                   </p>
                 </TableCell>
-                <TableCell>
+                <TableCell className="px-4 py-3">
                   {area.supervisor ? (
                     <div>
                       <p className="text-xs font-medium text-text-primary">{area.supervisor.name}</p>
@@ -76,16 +76,16 @@ export function DashboardAreaTable({ areas, onOpenUnlockModal }: DashboardAreaTa
                 </TableCell>
                 <TableCell>
                   {area.isOverdueMoreThan3Days ? (
-                    <div className="flex items-center gap-1.5 text-xs font-semibold text-rose-600">
-                      <AlertTriangle className="h-4 w-4 shrink-0" />
+                    <div className="flex items-center gap-1.5 text-xs font-medium text-status-danger-fg">
+                      <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
                       <span>Tertunggak {area.overdueBusinessDaysCount} Hari</span>
                     </div>
                   ) : area.overdueBusinessDaysCount > 0 ? (
-                    <span className="text-xs text-amber-600">
+                    <span className="text-xs text-status-warning-fg">
                       Tertunggak {area.overdueBusinessDaysCount} hari
                     </span>
                   ) : (
-                    <span className="text-xs text-emerald-600">Tidak ada tunggakan</span>
+                    <span className="text-xs text-status-success-fg">Tidak ada tunggakan</span>
                   )}
                   {area.latestUnlock && (
                     <p className="mt-1 text-[11px] text-text-muted">
@@ -100,7 +100,7 @@ export function DashboardAreaTable({ areas, onOpenUnlockModal }: DashboardAreaTa
                         size="sm"
                         variant="outline"
                         onClick={() => onOpenUnlockModal(area)}
-                        className="min-h-11 gap-1.5 border-rose-300 px-3 text-rose-700 hover:bg-rose-50"
+                        className="h-8 gap-1.5 border-status-danger-fg/30 bg-status-danger-bg/60 px-2.5 text-xs text-status-danger-fg hover:bg-status-danger-bg"
                       >
                         <KeyRound className="h-3.5 w-3.5" />
                         Buka Kunci
@@ -109,7 +109,7 @@ export function DashboardAreaTable({ areas, onOpenUnlockModal }: DashboardAreaTa
                     {area.reportId ? (
                       <Link
                         href={`/reports/${area.reportId}`}
-                        className="inline-flex min-h-11 items-center gap-1 rounded-md px-3 text-xs font-medium text-text-secondary hover:bg-surface-secondary hover:text-text-primary"
+                        className="inline-flex h-8 items-center gap-1 rounded-lg border border-border bg-surface-input px-2.5 text-xs font-medium text-text-secondary hover:bg-surface-active hover:text-text-primary"
                       >
                         Detail
                         <ExternalLink className="h-3 w-3" />

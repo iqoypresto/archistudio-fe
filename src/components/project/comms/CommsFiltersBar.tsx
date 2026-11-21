@@ -3,6 +3,13 @@
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { CommsDirection } from "@/types/api/comms.types";
 
 interface CommsFiltersBarProps {
@@ -25,9 +32,11 @@ export function CommsFiltersBar({
   onReset,
 }: CommsFiltersBarProps) {
   const hasFilters = Boolean(dateFrom || dateTo || direction);
+  const directionLabel =
+    direction === "INBOUND" ? "Masuk" : direction === "OUTBOUND" ? "Keluar" : "Semua Arah";
 
   return (
-    <div className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-surface p-3.5">
+    <div className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-surface-input/60 p-3">
       <div className="space-y-1">
         <label htmlFor="comms-filter-from" className="text-xs text-text-secondary">
           Dari Tanggal
@@ -37,7 +46,7 @@ export function CommsFiltersBar({
           type="date"
           value={dateFrom}
           onChange={(event) => onDateFromChange(event.target.value)}
-          className="h-10 w-40"
+          className="h-9 w-40 font-mono text-xs"
         />
       </div>
       <div className="space-y-1">
@@ -49,26 +58,31 @@ export function CommsFiltersBar({
           type="date"
           value={dateTo}
           onChange={(event) => onDateToChange(event.target.value)}
-          className="h-10 w-40"
+          className="h-9 w-40 font-mono text-xs"
         />
       </div>
-      <div className="space-y-1">
+      <div className="w-40 space-y-1">
         <label htmlFor="comms-filter-dir" className="text-xs text-text-secondary">
           Arah
         </label>
-        <select
-          id="comms-filter-dir"
-          value={direction}
-          onChange={(event) => onDirectionChange(event.target.value as CommsDirection | "")}
-          className="border-border bg-surface text-text-primary focus:ring-primary block h-10 rounded-lg border px-3 text-sm focus:outline-none focus:ring-2"
+        <Select
+          value={direction || "ALL"}
+          onValueChange={(val: string | null) =>
+            onDirectionChange((!val || val === "ALL" ? "" : val) as CommsDirection | "")
+          }
         >
-          <option value="">Semua Arah</option>
-          <option value="INBOUND">Masuk</option>
-          <option value="OUTBOUND">Keluar</option>
-        </select>
+          <SelectTrigger id="comms-filter-dir" className="h-9 text-xs">
+            <SelectValue placeholder="Semua Arah">{directionLabel}</SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">Semua Arah</SelectItem>
+            <SelectItem value="INBOUND">Masuk</SelectItem>
+            <SelectItem value="OUTBOUND">Keluar</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       {hasFilters && (
-        <Button type="button" variant="ghost" className="min-h-10 gap-1 text-xs" onClick={onReset}>
+        <Button type="button" variant="ghost" className="h-9 gap-1 px-2.5 text-xs" onClick={onReset}>
           <X className="h-3.5 w-3.5" /> Reset
         </Button>
       )}

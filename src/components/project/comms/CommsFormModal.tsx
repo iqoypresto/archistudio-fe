@@ -1,19 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { useCommsAttachmentUpload } from "@/hooks/comms.hooks";
 import { commsFormSchema, type CommsFormValues } from "@/lib/validation/comms.validation";
 import type {
@@ -35,9 +33,7 @@ interface CommsFormModalProps {
 }
 
 function toInitialAttachment(entry: CommsEntryItem | null): CommsAttachmentPayload | null {
-  if (!entry?.attachmentKey || !entry.attachmentName || !entry.attachmentMime || !entry.attachmentBytes) {
-    return null;
-  }
+  if (!entry?.attachmentKey || !entry.attachmentName || !entry.attachmentMime || !entry.attachmentBytes) return null;
   return {
     storageKey: entry.attachmentKey,
     fileName: entry.attachmentName,
@@ -47,22 +43,15 @@ function toInitialAttachment(entry: CommsEntryItem | null): CommsAttachmentPaylo
 }
 
 export function CommsFormModal({
-  isOpen,
-  onClose,
-  projectId,
-  entryToEdit,
-  onSubmitCreate,
-  onSubmitUpdate,
-  isSubmitting,
+  isOpen, onClose, projectId, entryToEdit, onSubmitCreate, onSubmitUpdate, isSubmitting,
 }: CommsFormModalProps) {
   const isEditing = Boolean(entryToEdit);
-  const [attachment, setAttachment] = useState<CommsAttachmentPayload | null>(() =>
-    toInitialAttachment(entryToEdit),
-  );
+  const [attachment, setAttachment] = useState<CommsAttachmentPayload | null>(() => toInitialAttachment(entryToEdit));
   const { uploadFile, isUploading, errorMessage, clearError } = useCommsAttachmentUpload(projectId);
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<CommsFormValues>({
@@ -116,21 +105,33 @@ export function CommsFormModal({
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-1">
               <Label htmlFor="comms-date">Tanggal *</Label>
-              <Input id="comms-date" type="date" className="h-11" {...register("entryDate")} />
-              {errors.entryDate && (
-                <p className="text-status-danger-fg text-xs">{errors.entryDate.message}</p>
-              )}
+              <Input id="comms-date" type="date" className="h-10" {...register("entryDate")} />
+              {errors.entryDate && <p className="text-status-danger-fg text-xs">{errors.entryDate.message}</p>}
             </div>
             <div className="space-y-1">
               <Label htmlFor="comms-direction">Arah Komunikasi *</Label>
-              <select
-                id="comms-direction"
-                {...register("direction")}
-                className="border-border bg-surface text-text-primary focus:ring-primary h-11 w-full rounded-lg border px-3 text-sm focus:outline-none focus:ring-2"
-              >
-                <option value="INBOUND">Masuk</option>
-                <option value="OUTBOUND">Keluar</option>
-              </select>
+              <Controller
+                name="direction"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value}
+                    onValueChange={(val: string | null) =>
+                      field.onChange(val === "OUTBOUND" ? "OUTBOUND" : "INBOUND")
+                    }
+                  >
+                    <SelectTrigger id="comms-direction" className="h-10">
+                      <SelectValue placeholder="Pilih Arah">
+                        {field.value === "OUTBOUND" ? "Keluar" : "Masuk"}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="INBOUND">Masuk</SelectItem>
+                      <SelectItem value="OUTBOUND">Keluar</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
           </div>
 
@@ -139,12 +140,10 @@ export function CommsFormModal({
             <Input
               id="comms-subject"
               placeholder="Contoh: Persetujuan revisi denah lantai 2"
-              className="h-11"
+              className="h-10"
               {...register("subject")}
             />
-            {errors.subject && (
-              <p className="text-status-danger-fg text-xs">{errors.subject.message}</p>
-            )}
+            {errors.subject && <p className="text-status-danger-fg text-xs">{errors.subject.message}</p>}
           </div>
 
           <div className="space-y-1">
@@ -154,11 +153,9 @@ export function CommsFormModal({
               rows={3}
               placeholder="Ringkasan poin komunikasi..."
               {...register("note")}
-              className="border-border bg-surface text-text-primary focus:ring-primary w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2"
+              className="border-border bg-surface-input text-text-primary focus:ring-ring w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2"
             />
-            {errors.note && (
-              <p className="text-status-danger-fg text-xs">{errors.note.message}</p>
-            )}
+            {errors.note && <p className="text-status-danger-fg text-xs">{errors.note.message}</p>}
           </div>
 
           <CommsAttachmentField

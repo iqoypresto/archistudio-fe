@@ -23,7 +23,7 @@ export function StatusBadge({ tone, children, className }: StatusBadgeProps) {
     <Badge
       variant="outline"
       className={cn(
-        "h-6 rounded-md px-2.5 text-xs font-semibold",
+        "h-5.5 rounded-md px-2 text-[11px] font-medium tracking-tight",
         TONE_CLASS_MAP[tone],
         className
       )}

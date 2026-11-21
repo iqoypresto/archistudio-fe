@@ -3,6 +3,13 @@
 import { FolderPlus, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { ActiveProjectStatus, ProjectFilterParams } from "@/types/api/project.types";
 
 interface ProjectFiltersProps {
@@ -13,6 +20,12 @@ interface ProjectFiltersProps {
   canManage: boolean;
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  ALL: "Semua Status Aktif",
+  PERSIAPAN: "Persiapan",
+  BERJALAN: "Berjalan",
+};
+
 export function ProjectFilters({
   filters,
   onFilterChange,
@@ -21,42 +34,50 @@ export function ProjectFilters({
   canManage,
 }: ProjectFiltersProps) {
   const hasActiveFilters = Boolean(filters.search || filters.status);
+  const statusValue = filters.status ?? "ALL";
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex flex-1 flex-wrap items-center gap-2">
+    <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface-input/60 p-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-1 flex-wrap items-center gap-2.5">
         <div className="relative min-w-[220px] max-w-sm flex-1">
-          <Search className="text-text-secondary absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+          <Search className="text-text-muted absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
           <Input
             value={filters.search ?? ""}
             onChange={(e) => onFilterChange({ search: e.target.value, page: 1 })}
             placeholder="Cari nama, kode, client, lokasi..."
-            className="pl-9"
+            className="h-8 pl-9 text-xs"
           />
         </div>
 
-        <select
-          value={filters.status ?? ""}
-          onChange={(e) =>
-            onFilterChange({
-              status: (e.target.value || undefined) as ActiveProjectStatus | undefined,
-              page: 1,
-            })
-          }
-          className="border-border bg-surface text-text-primary focus:ring-primary h-9 rounded-lg border px-3 text-sm focus:outline-none focus:ring-2"
-          aria-label="Filter Status Project"
-        >
-          <option value="">Semua Status Aktif</option>
-          <option value="PERSIAPAN">Persiapan</option>
-          <option value="BERJALAN">Berjalan</option>
-        </select>
+        <div className="w-48">
+          <Select
+            value={statusValue}
+            onValueChange={(val: string | null) =>
+              onFilterChange({
+                status: (!val || val === "ALL" ? undefined : val) as ActiveProjectStatus | undefined,
+                page: 1,
+              })
+            }
+          >
+            <SelectTrigger aria-label="Filter Status Project" className="h-8 text-xs">
+              <SelectValue placeholder="Semua Status Aktif">
+                {STATUS_LABELS[statusValue]}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">Semua Status Aktif</SelectItem>
+              <SelectItem value="PERSIAPAN">Persiapan</SelectItem>
+              <SelectItem value="BERJALAN">Berjalan</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
         {hasActiveFilters && (
           <Button
             variant="ghost"
             size="sm"
             onClick={onReset}
-            className="h-9 px-2 text-xs"
+            className="h-8 px-2.5 text-xs"
           >
             <X className="mr-1 h-3.5 w-3.5" />
             Reset
@@ -65,8 +86,13 @@ export function ProjectFilters({
       </div>
 
       {canManage && (
-        <Button onClick={onOpenCreateModal} className="h-9 gap-1.5 self-start sm:self-auto">
-          <FolderPlus className="h-4 w-4" />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onOpenCreateModal}
+          className="h-8 gap-1.5 self-start border-border bg-surface text-xs sm:hidden"
+        >
+          <FolderPlus className="h-3.5 w-3.5" />
           Tambah Project
         </Button>
       )}

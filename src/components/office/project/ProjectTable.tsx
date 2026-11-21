@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Archive, ChevronRight, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ServerDataTable, type DataColumn } from "@/components/ui/ServerDataTable";
@@ -117,22 +118,34 @@ export function ProjectTable({
       cell: (row) => (
         <div className="flex items-center justify-end gap-1">
           {canManage && (
-            <Button variant="ghost" size="icon" className="min-h-11 min-w-11" onClick={() => onEdit(row)} title="Ubah Data Project">
-              <Pencil className="h-4 w-4" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8 text-text-secondary hover:text-text-primary"
+              onClick={() => onEdit(row)}
+              title="Ubah Data Project"
+            >
+              <Pencil className="size-3.5" />
             </Button>
           )}
           {canArchive && (
-            <Button variant="ghost" size="icon" className="min-h-11 min-w-11 text-status-danger-fg hover:bg-status-danger-bg/50" onClick={() => onArchive(row)} title="Arsipkan Project (Owner)">
-              <Archive className="h-4 w-4" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8 text-status-danger-fg hover:bg-status-danger-bg/50"
+              onClick={() => onArchive(row)}
+              title="Arsipkan Project (Owner)"
+            >
+              <Archive className="size-3.5" />
             </Button>
           )}
-          <a
+          <Link
             href={`/projects/${row.id}`}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg hover:bg-surface-subtle"
+            className="inline-flex size-8 items-center justify-center rounded-lg text-text-secondary transition-colors hover:bg-surface-active hover:text-text-primary"
             title="Lihat Detail Area"
           >
-            <ChevronRight className="h-4 w-4 text-text-secondary" />
-          </a>
+            <ChevronRight className="size-4" />
+          </Link>
         </div>
       ),
     },

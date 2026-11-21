@@ -78,19 +78,19 @@ export function PaymentWorkspaceContent({ payeeType }: PaymentWorkspaceContentPr
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <PageHeader
         title={`Pembayaran ${label}`}
         description={`Pencatatan pembayaran ${label.toLowerCase()} global tanpa relasi project (khusus Owner — BR-36).`}
         action={
-          <Button onClick={() => setIsPayeeModalOpen(true)} className="min-h-11 gap-1.5">
+          <Button onClick={() => setIsPayeeModalOpen(true)} className="h-9 gap-1.5 text-xs">
             <Plus className="h-4 w-4" />
             Tambah {label}
           </Button>
         }
       />
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
         <PaymentPayeeList
           label={label}
           search={search}

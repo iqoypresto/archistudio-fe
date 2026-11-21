@@ -35,7 +35,7 @@ export function AssignmentHistoryDrawer({
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <History className="h-5 w-5 text-primary" />
+            <History className="h-5 w-5 text-text-secondary" />
             Riwayat Penugasan Area {targetArea.code}
           </DialogTitle>
           <DialogDescription>
@@ -62,10 +62,10 @@ export function AssignmentHistoryDrawer({
                   return (
                     <div
                       key={item.id}
-                      className={`relative rounded-lg border p-3 text-sm transition-colors ${
+                      className={`relative rounded-xl border p-3.5 text-sm transition-colors ${
                         isActive
-                          ? "border-primary/40 bg-primary/5"
-                          : "border-border bg-surface"
+                          ? "border-white/20 bg-surface-active"
+                          : "border-border bg-surface-input/60"
                       }`}
                     >
                       <div className="flex items-start justify-between gap-2">

@@ -40,17 +40,23 @@ export function DashboardFilterBar({
 }: DashboardFilterBarProps) {
   const { data: projectsRes } = useProjectsQuery({ page: 1, pageSize: 100 });
   const projects: ProjectListItem[] = projectsRes?.data ?? [];
+  const selectedProject = projects.find((p) => p.id === projectId);
+  const selectedProjectLabel = selectedProject
+    ? `[${selectedProject.code}] ${selectedProject.name}`
+    : "Semua Proyek";
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface-primary p-4 shadow-xs lg:flex-row lg:items-center lg:justify-between">
-      <div className="flex flex-wrap items-center gap-3">
+    <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface-input/60 p-3 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex flex-wrap items-center gap-2.5">
         <div className="w-56">
           <Select
             value={projectId || "ALL"}
-            onValueChange={(val: string | null) => onProjectChange(!val || val === "ALL" ? "" : val)}
+            onValueChange={(val: string | null) =>
+              onProjectChange(!val || val === "ALL" ? "" : val)
+            }
           >
-            <SelectTrigger className="h-9">
-              <SelectValue placeholder="Pilih Proyek" />
+            <SelectTrigger className="h-8 text-xs">
+              <SelectValue placeholder="Pilih Proyek">{selectedProjectLabel}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">Semua Proyek</SelectItem>
@@ -66,13 +72,13 @@ export function DashboardFilterBar({
         <div className="w-40">
           <Input
             type="date"
-            className="h-9"
+            className="h-8 font-mono text-xs"
             value={targetDate}
             onChange={(e) => onDateChange(e.target.value)}
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5 rounded-lg bg-surface-secondary p-1">
+        <div className="flex flex-wrap items-center gap-1 rounded-lg border border-border/80 bg-surface p-1">
           {STATUS_OPTIONS.map((opt) => (
             <button
               key={opt.value}
@@ -80,7 +86,7 @@ export function DashboardFilterBar({
               onClick={() => onStatusFilterChange(opt.value)}
               className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                 statusFilter === opt.value
-                  ? "bg-surface-primary text-text-primary shadow-xs"
+                  ? "bg-surface-active text-text-primary shadow-2xs ring-1 ring-white/[0.06]"
                   : "text-text-secondary hover:text-text-primary"
               }`}
             >
@@ -94,9 +100,9 @@ export function DashboardFilterBar({
         variant="outline"
         size="sm"
         onClick={onOpenExportDialog}
-        className="h-9 gap-2 border-brand-primary/30 text-brand-primary hover:bg-brand-primary/10"
+        className="h-8 gap-1.5 border-border bg-surface px-3 text-xs text-text-primary hover:bg-surface-active"
       >
-        <FileDown className="h-4 w-4" />
+        <FileDown className="size-3.5" />
         Export PDF Opsi A
       </Button>
     </div>
