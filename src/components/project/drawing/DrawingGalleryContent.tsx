@@ -63,7 +63,9 @@ export function DrawingGalleryContent({ projectId }: DrawingGalleryContentProps)
             ? "Galeri gambar acuan project. Unggah gambar JPG/PNG/WebP terkompresi (maks. 4 MB) atau arsipkan gambar lama (BR-32, BR-33)."
             : isProjectReadOnly
               ? "Project berstatus selesai atau arsip sehingga galeri Drawing bersifat baca saja (BR-12, BR-39)."
-              : "Galeri gambar acuan project (mode lihat saja untuk Admin dan Supervisor — BR-32)."
+              : role === "SUPERVISOR"
+                ? "Gambar acuan project yang dapat Anda lihat."
+                : "Galeri gambar acuan project (mode lihat saja untuk Admin — BR-32)."
         }
         action={
           canManage ? (
@@ -99,7 +101,7 @@ export function DrawingGalleryContent({ projectId }: DrawingGalleryContentProps)
           >
             <TabsList className="bg-surface-input">
               {DIRECTION_TABS.map((tab) => (
-                <TabsTrigger key={tab.value} value={tab.value} className="px-4 text-xs">
+                <TabsTrigger key={tab.value} value={tab.value} className="min-h-12 px-4 text-sm">
                   {tab.label}
                 </TabsTrigger>
               ))}

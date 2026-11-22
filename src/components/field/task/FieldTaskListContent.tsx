@@ -7,6 +7,14 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMyAreasStatusQuery } from "@/hooks/report-lock.hooks";
 import { AreaTaskCard } from "./AreaTaskCard";
+import { CompactAreaRow } from "./CompactAreaRow";
+import type { SupervisorAreaTaskStatus } from "@/types/api/report-lock.types";
+
+function priorityScore(task: SupervisorAreaTaskStatus): number {
+  if (task.isTodayLocked) return 0;
+  if (task.nextRequiredDate && !task.isTodaySubmitted && !task.isTodayRestDay) return 1;
+  return 2;
+}
 
 function FieldTasksSkeleton() {
   return (
@@ -25,7 +33,7 @@ export function FieldTaskListContent() {
     <div className="space-y-5">
       <PageHeader
         title="Tugas Lapor"
-        description="Pilih area untuk mengisi laporan harian Anda."
+        description="Selesaikan laporan yang paling mendesak terlebih dahulu."
         action={
           <Button
             type="button"
@@ -59,10 +67,25 @@ export function FieldTaskListContent() {
         emptyDescription="Hubungi Owner atau Admin untuk penempatan area Anda."
       >
         {(areas) => (
-          <div className="space-y-4">
-            {areas.map((area) => (
-              <AreaTaskCard key={area.areaId} task={area} />
-            ))}
+          <div className="space-y-6">
+            {(() => {
+              const sorted = [...areas].sort((a, b) =>
+                priorityScore(a) - priorityScore(b) ||
+                (a.oldestOverdueDate ?? a.nextRequiredDate ?? a.todayDate).localeCompare(
+                  b.oldestOverdueDate ?? b.nextRequiredDate ?? b.todayDate
+                )
+              );
+              return <>
+                <section className="space-y-3">
+                  <h2 className="text-sm font-bold uppercase tracking-wide text-text-secondary">Prioritas sekarang</h2>
+                  <AreaTaskCard task={sorted[0]} />
+                </section>
+                {sorted.length > 1 && <section className="space-y-3">
+                  <h2 className="text-sm font-bold uppercase tracking-wide text-text-secondary">Area lainnya</h2>
+                  {sorted.slice(1).map((area) => <CompactAreaRow key={area.areaId} task={area} />)}
+                </section>}
+              </>;
+            })()}
           </div>
         )}
       </AsyncStateView>

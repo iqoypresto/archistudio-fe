@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { Building2, ChevronsUpDown, LogOut, Menu } from "lucide-react";
+import { Building2, LogOut, Menu } from "lucide-react";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -56,13 +56,13 @@ export function OfficeAppShell({ children, projectId: propProjectId }: { childre
   );
 
   return (
-    <div className="flex min-h-dvh bg-canvas">
-      <aside className="hidden w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar lg:flex">
+    <div className="flex min-h-dvh bg-canvas lg:items-start lg:gap-4 lg:p-4">
+      <aside className="sticky top-4 hidden h-[calc(100dvh-2rem)] w-64 shrink-0 flex-col overflow-hidden rounded-3xl border border-sidebar-border bg-sidebar shadow-xl lg:flex">
         <BrandHeader
           homeHref={isSupervisor ? "/field/tasks" : "/dashboard"}
           subtitle={projectTitle ?? "Internal Office"}
         />
-        <div className="flex-1 space-y-4 overflow-y-auto px-3 py-2">
+        <div className="sidebar-scrollable min-h-0 flex-1 space-y-4 overflow-y-auto px-3 py-2">
           <ProjectNavList
             groups={getGlobalNavGroups(role, false)}
             largeTouchTarget={isSupervisor}
@@ -92,7 +92,7 @@ export function OfficeAppShell({ children, projectId: propProjectId }: { childre
         )}
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-13 items-center justify-between gap-3 border-b border-border/70 bg-canvas/85 px-4 backdrop-blur-md sm:px-6">
+        <header className="sticky top-0 z-30 flex h-13 items-center justify-between gap-3 border-b border-border/70 bg-canvas/85 px-4 backdrop-blur-md sm:px-6 lg:top-4">
           <div className="flex min-w-0 items-center gap-3">
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger
@@ -108,7 +108,10 @@ export function OfficeAppShell({ children, projectId: propProjectId }: { childre
               >
                 <Menu className="size-4" />
               </SheetTrigger>
-              <SheetContent side="left" className="w-72 overflow-y-auto bg-sidebar p-0">
+              <SheetContent
+                side="left"
+                className="sidebar-scrollable data-[side=left]:inset-y-4 data-[side=left]:left-4 data-[side=left]:h-[calc(100dvh-2rem)] data-[side=left]:w-[min(18rem,calc(100vw-2rem))] gap-0 overflow-y-auto rounded-3xl border border-sidebar-border bg-sidebar p-0 shadow-2xl"
+              >
                 <SheetHeader className="border-b border-sidebar-border px-4 py-3.5">
                   <SheetTitle className="truncate text-sm">{projectTitle ?? "ArchiStudio Office"}</SheetTitle>
                   <WorkspaceBreadcrumbs

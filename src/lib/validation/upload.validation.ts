@@ -62,8 +62,8 @@ export function canSubmitPhotoQueue(
       reason: "Masih ada foto gagal diunggah. Tekan Ulangi Foto Ini atau hapus foto tersebut.",
     };
   }
-  if (items.some((item) => item.status !== "uploaded")) {
-    return { ready: false, reason: "Tunggu seluruh foto selesai diunggah terlebih dahulu." };
+  if (items.some((item) => item.status !== "uploaded" && item.status !== "local")) {
+    return { ready: false, reason: "Tunggu foto selesai disiapkan terlebih dahulu." };
   }
   return { ready: true };
 }

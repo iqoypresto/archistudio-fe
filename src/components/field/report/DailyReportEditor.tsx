@@ -1,6 +1,5 @@
 "use client";
-
-import { useEffect, useMemo } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,10 +8,12 @@ import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useLocalFormBackup } from "@/hooks/local-form-backup.hooks";
-import { useSaveDraftMutation, useSubmitReportMutation } from "@/hooks/report.hooks";
+import { useSubmitNewReportMutation, useSubmitReportMutation } from "@/hooks/report.hooks";
 import { usePhotoUploadQueue } from "@/hooks/upload-queue.hooks";
+import { localReportKey, readLocalReport, removeLocalReport, writeLocalReport } from "@/lib/storage/local-report";
+import { reportApi } from "@/lib/api/report.api";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/stores/auth.store";
 import {
   buildDefaultReportValues,
   buildSaveDraftPayload,
@@ -21,25 +22,14 @@ import {
   type ReportFormValues,
 } from "@/lib/validation/report.validation";
 import type { SupervisorAreaTaskStatus } from "@/types/api/report-lock.types";
-import type { DailyReportDetail, ReportPhotoInput } from "@/types/api/report.types";
+import type { DailyReportDetail } from "@/types/api/report.types";
 import { NoWorkReportFields } from "./NoWorkReportFields";
 import { PhotoUploadQueue } from "./PhotoUploadQueue";
 import { ReportSubmitBar } from "./ReportSubmitBar";
+import { ReportReview } from "./ReportReview";
+import { ReportStepIndicator } from "./ReportStepIndicator";
+import { ReportTypeSwitch } from "./ReportTypeSwitch";
 import { WorkReportFields } from "./WorkReportFields";
-
-function mapUploadedPhotos(
-  items: ReturnType<typeof usePhotoUploadQueue>["items"]
-): ReportPhotoInput[] {
-  return items
-    .filter((item) => item.status === "uploaded" && item.storageKey)
-    .map((item, idx) => ({
-      storageKey: item.storageKey as string,
-      caption: item.caption.trim() || null,
-      sortOrder: idx,
-      takenAt: item.takenAt,
-    }));
-}
-
 export function DailyReportEditor({
   areaTask,
   reportDate,
@@ -50,61 +40,95 @@ export function DailyReportEditor({
   draft?: DailyReportDetail;
 }) {
   const router = useRouter();
-  const { loadBackup, saveBackup, removeBackup } = useLocalFormBackup(
-    areaTask.areaId,
-    reportDate
-  );
-  const initialBackup = useMemo(() => (draft ? null : loadBackup()), [draft, loadBackup]);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [ready, setReady] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sendStage, setSendStage] = useState("");
+  const [saveState, setSaveState] = useState("Memuat penyimpanan perangkat...");
+  const pendingSave = useRef<Promise<unknown> | null>(null);
+  const submittedRef = useRef(false);
+  const userId = useAuthStore((state) => state.user?.id);
+  const cacheKey = localReportKey(userId ?? "", areaTask.areaId, reportDate);
   const form = useForm<ReportFormValues>({
     resolver: zodResolver(reportFormSchema),
-    defaultValues: buildDefaultReportValues(draft, initialBackup?.values),
+    defaultValues: buildDefaultReportValues(draft),
   });
   const photoQueue = usePhotoUploadQueue({
     areaId: areaTask.areaId,
     reportDate,
     initialPhotos: draft?.photos,
   });
-  const saveDraftMutation = useSaveDraftMutation();
   const submitMutation = useSubmitReportMutation();
+  const submitNewMutation = useSubmitNewReportMutation();
   const watchedValues = useWatch({ control: form.control });
   const reportType = watchedValues.reportType ?? "WORK";
-  const uploadedPhotos = useMemo(() => mapUploadedPhotos(photoQueue.items), [photoQueue.items]);
-
   useEffect(() => {
-    saveBackup(watchedValues as Partial<ReportFormValues>, uploadedPhotos);
-  }, [saveBackup, uploadedPhotos, watchedValues]);
-
-  async function handleSaveDraft(): Promise<void> {
-    const payload = buildSaveDraftPayload({
-      areaId: areaTask.areaId,
-      reportDate,
-      values: form.getValues(),
-      photos: uploadedPhotos,
+    if (!userId) return;
+    let active = true;
+    void readLocalReport(cacheKey).then((saved) => {
+      if (!active) return;
+      if (saved && !draft) {
+        form.reset(buildDefaultReportValues(undefined, saved.values));
+        photoQueue.restoreItems(saved.photos);
+      }
+      setReady(true);
+      setSaveState("Tersimpan sementara di perangkat ini");
+    }).catch(() => {
+      if (active) { setReady(true); setSaveState("Penyimpanan perangkat tidak tersedia"); }
     });
-    await saveDraftMutation.mutateAsync({ reportId: draft?.id, payload });
-  }
-
+    return () => { active = false; };
+  // Pemulihan dijalankan sekali untuk identitas dan tanggal laporan ini.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cacheKey, userId]);
+  useEffect(() => {
+    if (!ready || !userId || draft) return;
+    const timer = window.setTimeout(() => {
+      if (submittedRef.current) return;
+      setSaveState("Menyimpan di perangkat...");
+      pendingSave.current = writeLocalReport(cacheKey, {
+        values: watchedValues as Partial<ReportFormValues>,
+        photos: photoQueue.localPhotos, savedAt: new Date().toISOString(),
+      }).then(() => setSaveState("Tersimpan sementara di perangkat ini"))
+        .catch(() => setSaveState("Gagal menyimpan di perangkat"));
+    }, 500);
+    return () => window.clearTimeout(timer);
+  }, [cacheKey, draft, photoQueue.localPhotos, ready, userId, watchedValues]);
   async function handleValidSubmit(values: ReportFormValues): Promise<void> {
     if (!photoQueue.submitReadiness.ready) {
       toast.error(photoQueue.submitReadiness.reason ?? "Periksa foto laporan.");
       return;
     }
-    const savePayload = buildSaveDraftPayload({
-      areaId: areaTask.areaId,
-      reportDate,
-      values,
-      photos: uploadedPhotos,
-    });
-    await submitMutation.mutateAsync({
-      reportId: draft?.id,
-      savePayload,
-      submitPayload: toUpdateDraftPayload(savePayload),
-    });
-    removeBackup();
-    router.replace("/field/tasks");
+    setSending(true);
+    try {
+      setSendStage("Mengunggah foto...");
+      const session = await reportApi.createUploadSession({ areaId: areaTask.areaId, reportDate, reportId: draft?.id });
+      const photos = await photoQueue.uploadAll(session.sessionId);
+      const payload = { ...buildSaveDraftPayload({ areaId: areaTask.areaId, reportDate, values, photos }), sessionId: session.sessionId };
+      setSendStage("Mengirim laporan...");
+      const submitted = draft
+        ? await submitMutation.mutateAsync({ reportId: draft.id, submitPayload: { ...toUpdateDraftPayload(payload), sessionId: session.sessionId } })
+        : await submitNewMutation.mutateAsync(payload);
+      submittedRef.current = true;
+      setReady(false);
+      await pendingSave.current?.catch(() => undefined);
+      if (userId) await removeLocalReport(cacheKey).catch(() => undefined);
+      router.replace(`/field/reports/${submitted.id}/success`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Gagal mengirim. Coba lagi.");
+    } finally { setSending(false); setSendStage(""); }
   }
 
-  const busy = saveDraftMutation.isPending || submitMutation.isPending;
+  async function goToPhoto(): Promise<void> {
+    if (await form.trigger()) setStep(2);
+  }
+  function goToReview(): void {
+    if (!photoQueue.submitReadiness.ready) {
+      toast.error(photoQueue.submitReadiness.reason ?? "Periksa foto laporan.");
+      return;
+    }
+    setStep(3);
+  }
+  const busy = sending;
 
   return (
     <div className="space-y-4">
@@ -126,55 +150,51 @@ export function DailyReportEditor({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2.5">
-        {(["WORK", "NO_WORK"] as const).map((type) => (
-          <Button
-            key={type}
-            type="button"
-            disabled={busy}
-            aria-pressed={reportType === type}
-            onClick={() => form.setValue("reportType", type, { shouldValidate: true })}
-            variant="outline"
-            className={cn(
-              "h-auto min-h-12 rounded-xl px-3 py-2 text-base font-semibold transition-colors",
-              reportType === type
-                ? "border-white/25 bg-surface-active text-text-primary shadow-2xs"
-                : "border-border bg-surface text-text-secondary hover:bg-surface-input"
-            )}
-          >
-            {type === "WORK" ? "Ada Pekerjaan" : "Hari Tanpa Pekerjaan"}
-          </Button>
-        ))}
-      </div>
+      <ReportStepIndicator step={step} />
+      {!draft && <p role="status" className="text-sm text-text-secondary">Belum dikirim · {saveState}</p>}
 
-      <Card className="border border-border bg-surface">
+      {step === 1 && <ReportTypeSwitch value={reportType} disabled={busy}
+        onChange={(type) => form.setValue("reportType", type, { shouldValidate: true })} />}
+
+      {step !== 3 ? <Card className="border border-border bg-surface">
         <CardContent className="space-y-5 pt-5">
-          <PhotoUploadQueue
+          {step === 2 ? <PhotoUploadQueue
             items={photoQueue.items}
             disabled={busy}
             onAddFiles={photoQueue.addFiles}
             onRetry={photoQueue.retryPhoto}
             onCaptionChange={photoQueue.updateCaption}
             onRemove={photoQueue.removePhoto}
-          />
-          {reportType === "WORK" ? (
+          /> : reportType === "WORK" ? (
             <WorkReportFields form={form} disabled={busy} />
           ) : (
             <NoWorkReportFields form={form} disabled={busy} />
           )}
         </CardContent>
-      </Card>
+      </Card> : <ReportReview
+        values={form.getValues()}
+        projectName={areaTask.projectName}
+        areaName={areaTask.areaName}
+        reportDate={reportDate}
+        photoCount={photoQueue.items.length}
+        onEdit={setStep}
+      />}
 
-      <ReportSubmitBar
-        isSavingDraft={saveDraftMutation.isPending}
-        isSubmitting={submitMutation.isPending}
+      {step === 3 ? <ReportSubmitBar
+        isSubmitting={sending}
+        progressLabel={sendStage}
         canSubmitPhotos={photoQueue.submitReadiness.ready}
         photoReadinessReason={photoQueue.submitReadiness.reason}
-        onSaveDraft={handleSaveDraft}
         onConfirmSubmit={() => {
           void form.handleSubmit(handleValidSubmit)();
         }}
-      />
+      /> : <div className="sticky bottom-20 z-20 space-y-2 rounded-2xl border border-border bg-surface p-3 shadow-lg">
+        <Button type="button" className="min-h-12 w-full bg-primary text-base font-semibold text-primary-foreground" disabled={busy}
+          onClick={() => void (step === 1 ? goToPhoto() : goToReview())}>
+          {step === 1 ? "Lanjut ke Foto" : "Lanjut ke Periksa"}
+        </Button>
+        {step === 2 && <Button type="button" variant="outline" className="min-h-12 w-full" onClick={() => setStep(1)}>Kembali ke Kondisi</Button>}
+      </div>}
     </div>
   );
 }

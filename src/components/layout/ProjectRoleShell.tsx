@@ -1,0 +1,15 @@
+"use client";
+
+import type { ReactNode } from "react";
+import { useAuthStore } from "@/stores/auth.store";
+import { FieldAppShell } from "./FieldAppShell";
+import { OfficeAppShell } from "./OfficeAppShell";
+
+export function ProjectRoleShell({ children }: { children: ReactNode }) {
+  const role = useAuthStore((state) => state.user?.role);
+  return role === "SUPERVISOR" ? (
+    <FieldAppShell>{children}</FieldAppShell>
+  ) : (
+    <OfficeAppShell>{children}</OfficeAppShell>
+  );
+}

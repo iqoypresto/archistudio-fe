@@ -11,11 +11,12 @@ import type { PhotoQueueItem, UploadQueueStatus } from "@/types/api/upload.types
 
 const STATUS_BADGE_MAP: Record<UploadQueueStatus, { label: string; tone: StatusTone }> = {
   idle: { label: "Menunggu", tone: "muted" },
+  local: { label: "Di perangkat", tone: "info" },
   compressing: { label: "Mengompres...", tone: "info" },
   signing: { label: "Menyiapkan...", tone: "info" },
   uploading: { label: "Mengunggah", tone: "info" },
   uploaded: { label: "Terunggah", tone: "success" },
-  failed: { label: "Gagal Unggah", tone: "danger" },
+  failed: { label: "Gagal", tone: "danger" },
 };
 
 function PhotoQueueItemCard({
@@ -142,7 +143,7 @@ export function PhotoUploadQueue({
         <p className="text-base font-semibold text-text-primary">
           Foto Lapangan ({items.length}/{MAX_REPORT_PHOTOS})
         </p>
-        <span className="text-sm text-text-secondary">Min. 1 foto (JPG/PNG/WebP)</span>
+        <span className="text-sm text-text-secondary">Min. 1 foto · diunggah saat Kirim</span>
       </div>
 
       <Input

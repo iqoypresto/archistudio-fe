@@ -17,6 +17,7 @@ import { ConfirmArchiveProjectDialog } from "./ConfirmArchiveProjectDialog";
 import { ProjectFilters } from "./ProjectFilters";
 import { ProjectFormModal } from "./ProjectFormModal";
 import { ProjectTable } from "./ProjectTable";
+import { SupervisorProjectList } from "./SupervisorProjectList";
 
 export function ProjectListContent() {
   const role = useAuthStore((state) => state.user?.role);
@@ -52,6 +53,17 @@ export function ProjectListContent() {
     setProjectToEdit(project);
     setIsFormModalOpen(true);
   };
+
+  if (role === "SUPERVISOR") {
+    return <AsyncStateView
+      isLoading={projectsQuery.isLoading} isError={projectsQuery.isError}
+      error={projectsQuery.error} data={projectsQuery.data}
+      onRetry={() => projectsQuery.refetch()} emptyTitle="Belum ada project ditugaskan"
+    >{(result) => <SupervisorProjectList projects={result.data} meta={result.meta}
+      search={filters.search ?? ""}
+      onSearch={(search) => handleFilterChange({ search, page: 1 })}
+      onPageChange={(page) => handleFilterChange({ page })} />}</AsyncStateView>;
+  }
 
   return (
     <div className="space-y-5">

@@ -27,6 +27,7 @@ import { AssignSupervisorModal } from "./AssignSupervisorModal";
 import { AssignmentHistoryDrawer } from "./AssignmentHistoryDrawer";
 import { ProjectDetailHeader } from "./ProjectDetailHeader";
 import { ProjectLifecycleDialogs } from "./ProjectLifecycleDialogs";
+import { SupervisorProjectDetail } from "./SupervisorProjectDetail";
 
 interface ProjectDetailContentProps {
   projectId: string;
@@ -58,6 +59,16 @@ export function ProjectDetailContent({ projectId }: ProjectDetailContentProps) {
   const completeProject = useCompleteProjectMutation(() => setIsCompleteOpen(false));
   const archiveProject = useArchiveProjectMutation(() => setIsArchiveOpen(false));
   const restoreProject = useRestoreProjectMutation(() => setIsRestoreOpen(false));
+
+  if (role === "SUPERVISOR") {
+    return <SupervisorProjectDetail
+      project={project} areas={areasQuery.data}
+      isLoading={projectQuery.isLoading || areasQuery.isLoading}
+      isError={projectQuery.isError || areasQuery.isError}
+      error={projectQuery.error ?? areasQuery.error}
+      onRetry={() => { void projectQuery.refetch(); void areasQuery.refetch(); }}
+    />;
+  }
 
   if (projectQuery.isError) {
     const message =

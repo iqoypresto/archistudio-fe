@@ -1,181 +1,142 @@
 "use client";
-
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import imageCompression from "browser-image-compression";
 import { toast } from "sonner";
 import { uploadApi } from "@/lib/api/upload.api";
 import { readPhotoTakenAt } from "@/lib/utils/photo-exif";
-import {
-  canSubmitPhotoQueue,
-  isSupportedImageMime,
-  validateSelectedPhotoFiles,
-} from "@/lib/validation/upload.validation";
-import type { DailyReportPhotoDto } from "@/types/api/report.types";
+import { canSubmitPhotoQueue, isSupportedImageMime, validateSelectedPhotoFiles } from "@/lib/validation/upload.validation";
+import type { LocalPhoto } from "@/lib/storage/local-report";
+import type { DailyReportDetail, ReportPhotoInput } from "@/types/api/report.types";
 import type { PhotoQueueItem, SupportedImageMime } from "@/types/api/upload.types";
 
-function mapInitialPhotos(photos?: DailyReportPhotoDto[]): PhotoQueueItem[] {
-  if (!photos || photos.length === 0) return [];
-  return photos.map((photo, index) => ({
-    id: photo.id,
-    fileName: `Foto #${index + 1}`,
-    contentType: "image/jpeg",
-    previewUrl: photo.signedViewUrl,
-    file: new Blob(),
-    status: "uploaded",
-    progress: 100,
-    caption: photo.caption ?? "",
-    storageKey: photo.storageKey,
-    takenAt: photo.takenAt,
-    errorMessage: null,
-  }));
+export function applyQueueItemPatch(items: PhotoQueueItem[], id: string,
+  change: Partial<PhotoQueueItem>): PhotoQueueItem[] {
+  return items.map((item) => item.id === id ? { ...item, ...change } : item);
 }
-
-export function applyQueueItemPatch(
-  items: PhotoQueueItem[],
-  itemId: string,
-  patch: Partial<PhotoQueueItem>
-): PhotoQueueItem[] {
-  return items.map((item) => (item.id === itemId ? { ...item, ...patch } : item));
-}
-
-export function prepareRetryItem(items: PhotoQueueItem[], itemId: string): PhotoQueueItem[] {
-  return applyQueueItemPatch(items, itemId, {
-    status: "idle",
-    progress: 0,
-    errorMessage: null,
+export function prepareRetryItem(items: PhotoQueueItem[], id: string): PhotoQueueItem[] {
+  return applyQueueItemPatch(items, id, {
+    status: "idle", progress: 0, errorMessage: null, storageKey: null,
   });
 }
-
-export function removeQueueItem(items: PhotoQueueItem[], itemId: string): PhotoQueueItem[] {
-  return items.filter((item) => item.id !== itemId);
+export function removeQueueItem(items: PhotoQueueItem[], id: string): PhotoQueueItem[] {
+  return items.filter((item) => item.id !== id);
 }
 
-function createInitialQueueItem(file: File): PhotoQueueItem {
-  const contentType: SupportedImageMime = isSupportedImageMime(file.type)
-    ? file.type
-    : "image/jpeg";
-  return {
-    id: crypto.randomUUID(),
-    fileName: file.name,
-    contentType,
-    previewUrl: URL.createObjectURL(file),
-    file,
-    status: "idle",
-    progress: 0,
-    caption: "",
-    storageKey: null,
-    takenAt: null,
-    errorMessage: null,
-  };
+function existingItems(photos?: DailyReportDetail["photos"]): PhotoQueueItem[] {
+  return (photos ?? []).map((photo): PhotoQueueItem => ({ id: photo.id, fileName: "Foto tersimpan",
+    contentType: "image/jpeg", previewUrl: photo.signedViewUrl, file: new Blob(),
+    status: "uploaded", progress: 100, caption: photo.caption ?? "",
+    storageKey: photo.storageKey, takenAt: photo.takenAt, errorMessage: null }));
 }
-
-async function compressPhotoBlob(
-  rawFile: Blob,
-  contentType: SupportedImageMime
-): Promise<Blob> {
-  const fileObj =
-    rawFile instanceof File
-      ? rawFile
-      : new File([rawFile], "photo.jpg", { type: contentType });
-  return imageCompression(fileObj, {
-    maxSizeMB: 0.8,
-    maxWidthOrHeight: 1600,
-    useWebWorker: true,
-    fileType: contentType,
+function fromLocal(photo: LocalPhoto): PhotoQueueItem {
+  return { ...photo, previewUrl: URL.createObjectURL(photo.file),
+    status: photo.storageKey ? "uploaded" : "local", progress: 100, errorMessage: null };
+}
+function toLocal(item: PhotoQueueItem): LocalPhoto {
+  return { id: item.id, fileName: item.fileName, contentType: item.contentType,
+    file: item.file, caption: item.caption, takenAt: item.takenAt, storageKey: item.storageKey };
+}
+async function prepareFile(file: File, id: string): Promise<PhotoQueueItem> {
+  const contentType: SupportedImageMime = isSupportedImageMime(file.type) ? file.type : "image/jpeg";
+  const takenAt = await readPhotoTakenAt(file);
+  const compressed = await imageCompression(file, {
+    maxSizeMB: 0.8, maxWidthOrHeight: 1600, useWebWorker: true, fileType: contentType,
   });
+  return { id, fileName: file.name, contentType,
+    previewUrl: URL.createObjectURL(compressed), file: compressed,
+    status: "local", progress: 100, caption: "", storageKey: null,
+    takenAt, errorMessage: null };
 }
 
 export function usePhotoUploadQueue(params: {
-  areaId: string;
-  reportDate: string;
-  initialPhotos?: DailyReportPhotoDto[];
+  areaId: string; reportDate: string; initialPhotos?: DailyReportDetail["photos"];
 }) {
-  const [items, setItems] = useState<PhotoQueueItem[]>(() =>
-    mapInitialPhotos(params.initialPhotos)
-  );
-  const patchItem = useCallback((itemId: string, patch: Partial<PhotoQueueItem>) => {
-    setItems((prev) => applyQueueItemPatch(prev, itemId, patch));
+  const [items, setItems] = useState<PhotoQueueItem[]>(() => existingItems(params.initialPhotos));
+  const patch = useCallback((id: string, change: Partial<PhotoQueueItem>) => {
+    setItems((current) => current.map((item) => item.id === id ? { ...item, ...change } : item));
   }, []);
-
-  const uploadSingleItem = useCallback(
-    async (item: PhotoQueueItem) => {
+  const addFiles = useCallback(async (incoming: FileList | File[]) => {
+    const files = Array.from(incoming);
+    if (!files.length) return;
+    const check = validateSelectedPhotoFiles(items.length, files);
+    if (!check.ok) { toast.error(check.message); return; }
+    const pending: PhotoQueueItem[] = files.map((file) => ({
+      id: crypto.randomUUID(), fileName: file.name,
+      contentType: file.type as SupportedImageMime,
+      previewUrl: URL.createObjectURL(file), file, status: "compressing",
+      progress: 10, caption: "", storageKey: null, takenAt: null, errorMessage: null,
+    }));
+    setItems((current) => [...current, ...pending]);
+    await Promise.all(pending.map(async (item) => {
       try {
-        patchItem(item.id, { status: "compressing", progress: 10, errorMessage: null });
-        const takenAt = await readPhotoTakenAt(item.file as File);
-        patchItem(item.id, { takenAt });
-        const compressed = await compressPhotoBlob(item.file, item.contentType);
-        patchItem(item.id, { status: "signing", progress: 25 });
-        const [signed] = await uploadApi.signUploadUrls({
-          areaId: params.areaId,
-          reportDate: params.reportDate,
-          files: [{ contentType: item.contentType, fileSizeBytes: compressed.size }],
-        });
-        if (!signed) throw new Error("Presigned URL tidak tersedia.");
-        patchItem(item.id, { status: "uploading", storageKey: signed.storageKey, progress: 35 });
-        await uploadApi.putFileToSignedUrl({
-          uploadUrl: signed.uploadUrl,
-          file: compressed,
-          contentType: item.contentType,
-          onProgress: (pct) => patchItem(item.id, { progress: Math.max(35, pct) }),
-        });
-        patchItem(item.id, { status: "uploaded", progress: 100 });
-      } catch (err) {
-        const msg =
-          err instanceof Error && err.message
-            ? err.message
-            : "Gagal mengunggah foto. Periksa sinyal HP lalu tekan Ulangi Foto Ini.";
-        patchItem(item.id, { status: "failed", errorMessage: msg });
-        toast.error(`Foto "${item.fileName}" gagal diunggah.`);
+        const prepared = await prepareFile(item.file as File, item.id);
+        URL.revokeObjectURL(item.previewUrl);
+        patch(item.id, prepared);
+      } catch {
+        patch(item.id, { status: "failed", errorMessage: "Gagal menyiapkan foto." });
       }
-    },
-    [params.areaId, params.reportDate, patchItem]
-  );
-
-  const addFiles = useCallback(
-    (incoming: FileList | File[]) => {
-      const files = Array.from(incoming);
-      if (files.length === 0) return;
-      const check = validateSelectedPhotoFiles(items.length, files);
-      if (!check.ok) {
-        toast.error(check.message);
-        return;
-      }
-      const nextItems = files.map(createInitialQueueItem);
-      setItems((prev) => [...prev, ...nextItems]);
-      nextItems.forEach((item) => void uploadSingleItem(item));
-    },
-    [items.length, uploadSingleItem]
-  );
-
-  const retryPhoto = useCallback(
-    (itemId: string) => {
-      const target = items.find((item) => item.id === itemId);
-      if (!target) return;
-      setItems((prev) => prepareRetryItem(prev, itemId));
-      void uploadSingleItem({ ...target, status: "idle", progress: 0, errorMessage: null });
-    },
-    [items, uploadSingleItem]
-  );
-
-  const updateCaption = useCallback(
-    (itemId: string, caption: string) => patchItem(itemId, { caption }),
-    [patchItem]
-  );
-
-  const removePhoto = useCallback((itemId: string) => {
-    setItems((prev) => {
-      const target = prev.find((item) => item.id === itemId);
-      if (target?.previewUrl) URL.revokeObjectURL(target.previewUrl);
-      return removeQueueItem(prev, itemId);
+    }));
+  }, [items.length, patch]);
+  const restoreItems = useCallback((photos: LocalPhoto[]) => {
+    setItems((current) => {
+      const ids = new Set(current.map((item) => item.id));
+      return [...current, ...photos.filter((photo) => !ids.has(photo.id)).map(fromLocal)];
     });
   }, []);
-
-  return {
-    items,
-    submitReadiness: canSubmitPhotoQueue(items),
-    addFiles,
-    retryPhoto,
-    updateCaption,
-    removePhoto,
-  };
+  const retryPhoto = useCallback(async (id: string) => {
+    const item = items.find((photo) => photo.id === id);
+    if (!item) return;
+    if (item.errorMessage === "Gagal menyiapkan foto." && item.file instanceof File) {
+      patch(id, { status: "compressing", progress: 10, errorMessage: null });
+      try {
+        const prepared = await prepareFile(item.file, id);
+        URL.revokeObjectURL(item.previewUrl);
+        patch(id, prepared);
+      } catch { patch(id, { status: "failed", errorMessage: "Gagal menyiapkan foto." }); }
+      return;
+    }
+    patch(id, { status: "local", progress: 100, errorMessage: null, storageKey: null });
+  }, [items, patch]);
+  const updateCaption = useCallback((id: string, caption: string) => patch(id, { caption }), [patch]);
+  const removePhoto = useCallback((id: string) => {
+    setItems((current) => {
+      const removed = current.find((item) => item.id === id);
+      if (removed?.previewUrl.startsWith("blob:")) URL.revokeObjectURL(removed.previewUrl);
+      return current.filter((item) => item.id !== id);
+    });
+  }, []);
+  const uploadAll = useCallback(async (sessionId: string): Promise<ReportPhotoInput[]> => {
+    const result: ReportPhotoInput[] = [];
+    for (const [index, item] of items.entries()) {
+      let storageKey = item.storageKey;
+      if (!storageKey) {
+        try {
+          patch(item.id, { status: "signing", progress: 10 });
+          const [signed] = await uploadApi.signUploadUrls({
+            areaId: params.areaId, reportDate: params.reportDate, sessionId,
+            files: [{ contentType: item.contentType, fileSizeBytes: item.file.size }],
+          });
+          if (!signed) throw new Error("URL unggah foto tidak tersedia.");
+          patch(item.id, { status: "uploading", progress: 20 });
+          await uploadApi.putFileToSignedUrl({ uploadUrl: signed.uploadUrl,
+            file: item.file, contentType: item.contentType,
+            onProgress: (progress) => patch(item.id, { progress }),
+          });
+          storageKey = signed.storageKey;
+          patch(item.id, { status: "uploaded", progress: 100, storageKey });
+        } catch (error) {
+          patch(item.id, { status: "failed", errorMessage:
+            error instanceof Error ? error.message : "Gagal mengunggah foto." });
+          throw error;
+        }
+      }
+      result.push({ storageKey, caption: item.caption.trim() || null,
+        sortOrder: index, takenAt: item.takenAt });
+    }
+    return result;
+  }, [items, params.areaId, params.reportDate, patch]);
+  const localPhotos = useMemo(() => items.filter((item) => item.file.size > 0 &&
+    item.status !== "compressing").map(toLocal), [items]);
+  return { items, submitReadiness: canSubmitPhotoQueue(items), addFiles, restoreItems,
+    retryPhoto, updateCaption, removePhoto, uploadAll, localPhotos };
 }

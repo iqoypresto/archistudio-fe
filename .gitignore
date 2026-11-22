@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local Supervisor design references; keep editable SVG wireframes off Git.
+/docs/wireframes/supervisor/*.svg

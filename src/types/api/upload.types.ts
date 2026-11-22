@@ -8,6 +8,7 @@ export interface SignUploadFileRequest {
 export interface SignUploadPayload {
   areaId: string;
   reportDate: string;
+  sessionId?: string;
   files: SignUploadFileRequest[];
 }
 
@@ -32,6 +33,7 @@ export interface SignedPhotoViewItem {
 
 export type UploadQueueStatus =
   | "idle"
+  | "local"
   | "compressing"
   | "signing"
   | "uploading"

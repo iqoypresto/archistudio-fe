@@ -12,6 +12,13 @@ import type {
 import { api } from "./axios";
 
 export class ReportApi {
+  async createUploadSession(payload: { areaId: string; reportDate: string; reportId?: string }): Promise<{ sessionId: string; expiresAt: string }> {
+    const res = await api.post<ApiResponse<{ sessionId: string; expiresAt: string }>>(
+      "/reports/upload-sessions", payload
+    );
+    return res.data.data;
+  }
+
   async listArchive(params: ListArchivedReportsQuery): Promise<PaginatedArchivedReportsResponse> {
     const res = await api.get<PaginatedArchivedReportsResponse>("/reports/archive", { params });
     return res.data;
@@ -27,19 +34,8 @@ export class ReportApi {
     return res.data.data;
   }
 
-  async saveDraft(payload: SaveDraftPayload): Promise<DailyReportDetail> {
-    const res = await api.post<ApiResponse<DailyReportDetail>>("/reports/draft", payload);
-    return res.data.data;
-  }
-
-  async updateDraft(
-    reportId: string,
-    payload: UpdateDraftPayload
-  ): Promise<DailyReportDetail> {
-    const res = await api.put<ApiResponse<DailyReportDetail>>(
-      `/reports/${reportId}/draft`,
-      payload
-    );
+  async submitNew(payload: SaveDraftPayload & { sessionId: string }): Promise<DailyReportDetail> {
+    const res = await api.post<ApiResponse<DailyReportDetail>>("/reports/submit", payload);
     return res.data.data;
   }
 

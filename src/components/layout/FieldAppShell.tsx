@@ -39,6 +39,7 @@ export function FieldAppShell({ children }: { children: ReactNode }) {
   const isOnline = useOnlineStatus();
   const user = useAuthStore((state) => state.user);
   const logoutMutation = useLogoutMutation();
+  const showNavigation = !pathname.endsWith("/success");
 
   async function handleLogout(): Promise<void> {
     await logoutMutation.mutateAsync();
@@ -46,14 +47,14 @@ export function FieldAppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-canvas shadow-xs">
-      <header className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b border-border bg-surface px-4 py-3">
+    <div className="supervisor-mobile mx-auto flex min-h-dvh w-full max-w-md flex-col bg-canvas shadow-xs">
+      <header className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b border-border bg-surface px-5 py-4">
         <div className="min-w-0">
           <p className="truncate text-base font-bold text-text-primary">
-            ArchiStudio Lapangan
+            ArchiStudio
           </p>
           <p className="truncate text-sm text-text-secondary">
-            {user?.name ?? "Pengawas Lapangan"}
+            {user?.name ?? "Pengawas Lapangan"} · Supervisor
           </p>
         </div>
 
@@ -71,22 +72,21 @@ export function FieldAppShell({ children }: { children: ReactNode }) {
             variant="outline"
             onClick={handleLogout}
             disabled={logoutMutation.isPending}
-            className="min-h-12 px-3 text-sm font-medium"
+            className="min-h-12 min-w-12 px-3 text-sm font-medium"
             aria-label="Keluar akun"
           >
             <LogOut className="size-4" />
-            <span>Keluar</span>
           </Button>
         </div>
       </header>
 
-      <main className="flex-1 px-4 py-5 pb-24 text-base text-text-primary">
+      <main className={`flex-1 px-5 py-6 text-base text-text-primary ${showNavigation ? "pb-28" : "pb-8"}`}>
         {children}
       </main>
 
-      <nav
+      {showNavigation && <nav
         aria-label="Navigasi lapangan"
-        className="fixed bottom-0 left-1/2 z-30 grid w-full max-w-md -translate-x-1/2 grid-cols-3 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)]"
+        className="fixed bottom-0 left-1/2 z-30 grid w-full max-w-md -translate-x-1/2 grid-cols-3 border-t border-border bg-surface px-2 pb-[env(safe-area-inset-bottom)]"
       >
         {FIELD_TABS.map((tab) => {
           const Icon = tab.icon;
@@ -97,9 +97,9 @@ export function FieldAppShell({ children }: { children: ReactNode }) {
               key={tab.href}
               href={tab.href}
               className={cn(
-                "flex min-h-14 flex-col items-center justify-center gap-1 text-sm font-semibold transition-colors",
+                "flex min-h-16 flex-col items-center justify-center gap-1 rounded-xl text-xs font-semibold transition-colors",
                 isActive
-                  ? "bg-primary-soft text-text-primary"
+                  ? "bg-primary-soft text-primary"
                   : "text-text-secondary hover:bg-secondary"
               )}
             >
@@ -108,7 +108,7 @@ export function FieldAppShell({ children }: { children: ReactNode }) {
             </Link>
           );
         })}
-      </nav>
+      </nav>}
     </div>
   );
 }

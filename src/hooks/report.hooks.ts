@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { MY_AREAS_STATUS_QUERY_KEY } from "@/hooks/report-lock.hooks";
 import { reportApi } from "@/lib/api/report.api";
-import { toUpdateDraftPayload } from "@/lib/validation/report.validation";
 import type {
   ListReportsQuery,
   ListArchivedReportsQuery,
@@ -43,48 +42,15 @@ export function useOfficeReportsQuery(query: ListReportsQuery, enabled = true) {
   });
 }
 
-export function useSaveDraftMutation() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (params: { reportId?: string | null; payload: SaveDraftPayload }) => {
-      if (params.reportId) {
-        return reportApi.updateDraft(
-          params.reportId,
-          toUpdateDraftPayload(params.payload)
-        );
-      }
-      return reportApi.saveDraft(params.payload);
-    },
-    onSuccess: async (data) => {
-      await queryClient.invalidateQueries({ queryKey: REPORTS_QUERY_KEY });
-      await queryClient.invalidateQueries({ queryKey: MY_AREAS_STATUS_QUERY_KEY });
-      await queryClient.invalidateQueries({
-        queryKey: [...REPORTS_QUERY_KEY, "detail", data.id],
-      });
-      toast.success("Draf laporan berhasil disimpan.");
-    },
-    onError: (err) => {
-      toast.error(err instanceof Error ? err.message : "Gagal menyimpan draf laporan.");
-    },
-  });
-}
-
 export function useSubmitReportMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (params: {
-      reportId?: string | null;
-      savePayload: SaveDraftPayload;
-      submitPayload: UpdateDraftPayload;
+      reportId: string;
+      submitPayload: UpdateDraftPayload & { sessionId?: string };
     }) => {
-      let targetId = params.reportId;
-      if (!targetId) {
-        const draft = await reportApi.saveDraft(params.savePayload);
-        targetId = draft.id;
-      }
-      return reportApi.submitReport(targetId, params.submitPayload);
+      return reportApi.submitReport(params.reportId, params.submitPayload);
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: REPORTS_QUERY_KEY });
@@ -94,6 +60,18 @@ export function useSubmitReportMutation() {
     onError: (err) => {
       toast.error(err instanceof Error ? err.message : "Gagal mengirim laporan harian.");
     },
+  });
+}
+
+export function useSubmitNewReportMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: SaveDraftPayload & { sessionId: string }) => reportApi.submitNew(payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: REPORTS_QUERY_KEY });
+      await queryClient.invalidateQueries({ queryKey: MY_AREAS_STATUS_QUERY_KEY });
+    },
+    onError: (error) => toast.error(error instanceof Error ? error.message : "Gagal mengirim laporan."),
   });
 }
 
