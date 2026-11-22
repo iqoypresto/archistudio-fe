@@ -2,19 +2,19 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
-import { Building2, LogOut, Menu } from "lucide-react";
+import { LogOut, Menu } from "lucide-react";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { StatusBadge } from "@/components/ui/StatusBadge";
 import { useLogoutMutation } from "@/hooks/auth.hooks";
 import { useProjectDetailQuery } from "@/hooks/project.hooks";
 import { useAuthStore } from "@/stores/auth.store";
+import type { AuthUserProfile } from "@/types/api/auth.types";
 import { ProjectNavList } from "./ProjectNavList";
 import { ProjectNavigation } from "./ProjectNavigation";
-import { WorkspaceBreadcrumbs } from "./WorkspaceBreadcrumbs";
-import { getGlobalNavGroups, getProjectNavGroups } from "./workspace-nav.config";
+import { getGlobalNavGroups } from "./workspace-nav.config";
 
 export function OfficeAppShell({ children, projectId: propProjectId }: { children: ReactNode; projectId?: string }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -26,12 +26,7 @@ export function OfficeAppShell({ children, projectId: propProjectId }: { childre
   const isSupervisor = role === "SUPERVISOR";
   const projectQuery = useProjectDetailQuery(activeProjectId ?? "");
   const project = activeProjectId ? projectQuery.data : undefined;
-  const navGroups = [
-    ...getGlobalNavGroups(role, true),
-    ...(activeProjectId ? getProjectNavGroups(activeProjectId, role) : []),
-  ];
   const projectTitle = project ? `${project.code} · ${project.name}` : activeProjectId ? "Project" : undefined;
-  const projectHref = activeProjectId ? `/projects/${activeProjectId}` : undefined;
   const logoutMutation = useLogoutMutation();
 
   async function handleLogout(): Promise<void> {
@@ -78,90 +73,92 @@ export function OfficeAppShell({ children, projectId: propProjectId }: { childre
           />
         </div>
         {user && (
-          <div className="p-3 pt-1">
-            <div className="rounded-xl border border-border bg-surface p-3">
-              <div className="flex items-center justify-between gap-2">
-                <p className="truncate text-xs font-medium text-text-primary">{user.name}</p>
-                <StatusBadge tone="info">{user.role}</StatusBadge>
-              </div>
-              <p className="mt-1 truncate text-[11px] text-text-muted">
-                {projectTitle ?? "ArchiStudio Internal Office"}
-              </p>
-            </div>
-          </div>
+          <SidebarAccountFooter user={user} onLogout={handleLogout} isLoggingOut={logoutMutation.isPending} />
         )}
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-13 items-center justify-between gap-3 border-b border-border/70 bg-canvas/85 px-4 backdrop-blur-md sm:px-6 lg:top-4">
-          <div className="flex min-w-0 items-center gap-3">
-            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-              <SheetTrigger
-                render={
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    className="size-9 lg:hidden"
-                    aria-label="Buka menu navigasi"
-                  />
-                }
-              >
-                <Menu className="size-4" />
-              </SheetTrigger>
-              <SheetContent
-                side="left"
-                className="sidebar-scrollable data-[side=left]:inset-y-4 data-[side=left]:left-4 data-[side=left]:h-[calc(100dvh-2rem)] data-[side=left]:w-[min(18rem,calc(100vw-2rem))] gap-0 overflow-y-auto rounded-3xl border border-sidebar-border bg-sidebar p-0 shadow-2xl"
-              >
-                <SheetHeader className="border-b border-sidebar-border px-4 py-3.5">
-                  <SheetTitle className="truncate text-sm">{projectTitle ?? "ArchiStudio Office"}</SheetTitle>
-                  <WorkspaceBreadcrumbs
-                    groups={navGroups}
-                    projectTitle={projectTitle}
-                    projectHref={projectHref}
-                    className="text-left"
-                  />
-                </SheetHeader>
-                <div className="space-y-4 p-3">
-                  <ProjectNavList
-                    groups={getGlobalNavGroups(role, false)}
-                    onNavigate={() => setMobileOpen(false)}
-                    largeTouchTarget={isSupervisor}
-                    layoutGroupId="office-mobile-global"
-                    resetKey={activeProjectId}
-                  />
-                  <ProjectNavigation
-                    projectId={activeProjectId}
-                    activeProject={project}
-                    role={role}
-                    onNavigate={() => setMobileOpen(false)}
-                    largeTouchTarget={isSupervisor}
-                    layoutGroupId="office-mobile-project"
-                  />
-                </div>
-              </SheetContent>
-            </Sheet>
-            <WorkspaceBreadcrumbs groups={navGroups} projectTitle={projectTitle} projectHref={projectHref} />
-          </div>
-          <div className="flex shrink-0 items-center gap-2.5">
-            {user && (
-              <div className="hidden items-center gap-2 sm:flex">
-                <span className="max-w-36 truncate text-xs font-medium text-text-secondary">{user.name}</span>
-                <StatusBadge tone="info">{user.role}</StatusBadge>
-              </div>
-            )}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleLogout}
-              disabled={logoutMutation.isPending}
-              className="h-8 gap-1.5 border-border bg-surface px-2.5 text-xs text-text-secondary hover:bg-surface-active hover:text-text-primary"
+        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+          <div className="px-4 pt-4 sm:px-6 lg:hidden">
+            <SheetTrigger
+              render={
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="size-10"
+                  aria-label="Buka menu navigasi"
+                />
+              }
             >
-              <LogOut className="size-3.5" /> Keluar
-            </Button>
+              <Menu className="size-4" />
+            </SheetTrigger>
           </div>
-        </header>
+          <SheetContent
+            side="left"
+            className="sidebar-scrollable data-[side=left]:inset-y-4 data-[side=left]:left-4 data-[side=left]:h-[calc(100dvh-2rem)] data-[side=left]:w-[min(18rem,calc(100vw-2rem))] flex flex-col gap-0 overflow-y-auto rounded-3xl border border-sidebar-border bg-sidebar p-0 shadow-2xl"
+          >
+            <SheetHeader className="border-b border-sidebar-border p-3">
+              <SheetTitle className="sr-only">Navigasi utama</SheetTitle>
+              <BrandHeader
+                homeHref={isSupervisor ? "/field/tasks" : "/dashboard"}
+                subtitle={projectTitle ?? "Internal Office"}
+              />
+            </SheetHeader>
+            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-3">
+              <ProjectNavList
+                groups={getGlobalNavGroups(role, false)}
+                onNavigate={() => setMobileOpen(false)}
+                largeTouchTarget={isSupervisor}
+                layoutGroupId="office-mobile-global"
+                resetKey={activeProjectId}
+              />
+              <ProjectNavigation
+                projectId={activeProjectId}
+                activeProject={project}
+                role={role}
+                onNavigate={() => setMobileOpen(false)}
+                largeTouchTarget={isSupervisor}
+                layoutGroupId="office-mobile-project"
+              />
+            </div>
+            {user && (
+              <SidebarAccountFooter user={user} onLogout={handleLogout} isLoggingOut={logoutMutation.isPending} />
+            )}
+          </SheetContent>
+        </Sheet>
         <main className="mx-auto w-full max-w-7xl flex-1 p-4 sm:p-6">{content}</main>
+      </div>
+    </div>
+  );
+}
+
+function SidebarAccountFooter({
+  user,
+  onLogout,
+  isLoggingOut,
+}: {
+  user: AuthUserProfile;
+  onLogout: () => Promise<void>;
+  isLoggingOut: boolean;
+}) {
+  return (
+    <div className="p-3 pt-1">
+      <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface p-3">
+        <div className="min-w-0">
+          <p className="truncate text-xs font-medium text-text-primary">{user.name}</p>
+          <p className="mt-1 truncate text-[11px] text-text-muted">{user.role}</p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onLogout}
+          disabled={isLoggingOut}
+          aria-label="Keluar"
+          className="h-9 shrink-0 gap-1.5 px-2.5 text-xs text-text-secondary hover:text-text-primary"
+        >
+          <LogOut className="size-3.5" /> Keluar
+        </Button>
       </div>
     </div>
   );
@@ -172,16 +169,18 @@ function BrandHeader({ homeHref, subtitle }: { homeHref: string; subtitle: strin
     <div className="p-3 pb-1">
       <Link
         href={homeHref}
-        className="flex items-center justify-between rounded-xl border border-border bg-surface-input/90 px-3 py-2 transition-colors hover:bg-surface-active/70"
+        className="flex items-center gap-2.5 rounded-xl border border-border bg-surface-input/90 px-3 py-2 transition-colors hover:bg-surface-active/70"
       >
-        <div className="flex min-w-0 items-center gap-2.5">
-          <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-surface-active text-text-primary ring-1 ring-white/[0.08]">
-            <Building2 className="size-4" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-[13px] leading-tight font-semibold tracking-tight text-text-primary">ArchiStudio</p>
-            <p className="truncate text-[11px] leading-tight text-text-muted">{subtitle}</p>
-          </div>
+        <Image
+          src="/brand/archistudio-logo.webp"
+          alt=""
+          width={36}
+          height={36}
+          className="size-9 shrink-0 object-contain"
+        />
+        <div className="min-w-0">
+          <p className="text-[13px] leading-tight font-semibold tracking-tight text-text-primary">ArchiStudio</p>
+          <p className="truncate text-[11px] leading-tight text-text-muted">{subtitle}</p>
         </div>
       </Link>
     </div>
