@@ -135,7 +135,7 @@
 }
 
 .auth-viewport { box-sizing: border-box; padding-block: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-bottom)); padding-inline: max(clamp(28px, 10vw, 40px), env(safe-area-inset-left)) max(clamp(28px, 10vw, 40px), env(safe-area-inset-right)); overscroll-behavior: none; }
-.auth-viewport__content { gap: clamp(10px, 2.2dvh, 24px); }
+.auth-viewport__content { gap: clamp(28px, 4dvh, 40px); }
 .auth-viewport__logo { width: clamp(28px, 7dvh, 44px); height: clamp(28px, 7dvh, 44px); margin-bottom: clamp(2px, 0.6dvh, 6px); }
 .auth-viewport__wordmark { font-size: clamp(20px, 4.5dvh, 26px); }
 .auth-login-stack { gap: clamp(8px, 2dvh, 16px); }
