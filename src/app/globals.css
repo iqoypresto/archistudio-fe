@@ -139,6 +139,7 @@
 .auth-viewport__logo { width: clamp(32px, 8dvh, 56px); height: clamp(32px, 8dvh, 56px); margin-bottom: clamp(2px, 1dvh, 12px); }
 .auth-viewport__wordmark { font-size: clamp(20px, 4.5dvh, 26px); }
 .auth-login-stack { gap: clamp(8px, 2.5dvh, 16px); }
+html[data-login-splash-skip="true"] .login-splash-overlay { visibility: hidden; }
 @media (max-height: 480px) {
   .auth-viewport__content { gap: clamp(6px, 1.5dvh, 12px); }
   .auth-viewport__logo { width: clamp(24px, 6dvh, 32px); height: clamp(24px, 6dvh, 32px); }
