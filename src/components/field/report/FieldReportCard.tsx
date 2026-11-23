@@ -6,9 +6,6 @@ import { cn } from "@/lib/utils";
 import type { DailyReportListItem } from "@/types/api/report.types";
 
 function resolveStatusBadge(report: DailyReportListItem) {
-  if (report.status === "DRAFT") {
-    return { tone: "muted" as const, label: "Draf" };
-  }
   if (report.isRevised) {
     return { tone: "info" as const, label: "Direvisi (Owner)" };
   }
@@ -20,10 +17,7 @@ function resolveStatusBadge(report: DailyReportListItem) {
 
 export function FieldReportCard({ report }: { report: DailyReportListItem }) {
   const badge = resolveStatusBadge(report);
-  const href =
-    report.status === "DRAFT"
-      ? `/field/reports/new?areaId=${report.area.id}&date=${report.reportDate}&draftId=${report.id}`
-      : `/field/reports/${report.id}`;
+  const href = `/field/reports/${report.id}`;
 
   return (
     <Card className="border border-border bg-surface shadow-xs">
@@ -52,13 +46,12 @@ export function FieldReportCard({ report }: { report: DailyReportListItem }) {
           href={href}
           className={cn(
             buttonVariants({
-              variant: report.status === "DRAFT" ? "default" : "outline",
+              variant: "outline",
             }),
             "min-h-12 w-full text-base font-semibold",
-            report.status === "DRAFT" && "bg-primary text-primary-foreground"
           )}
         >
-          {report.status === "DRAFT" ? "Lanjutkan Draf" : "Lihat Detail Laporan"}
+          Lihat Detail Laporan
         </Link>
       </CardContent>
     </Card>
