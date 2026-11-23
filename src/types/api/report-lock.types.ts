@@ -20,6 +20,4 @@ export interface SupervisorAreaTaskStatus {
   overdueBusinessDaysCount: number;
   isOverdueMoreThan3Days: boolean;
   oldestOverdueDate: string | null;
-  draftReportId: string | null;
-  draftReportDate: string | null;
 }

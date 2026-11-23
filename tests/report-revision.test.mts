@@ -22,7 +22,6 @@ describe("TASK-09 Frontend Revision Validation, Role Guard & Snapshot Parser", (
 
   it("[BR-02 / BR-24] mengizinkan tombol revisi hanya bagi OWNER pada laporan SUBMITTED", () => {
     assert.equal(canOwnerReviseReport("OWNER", "SUBMITTED"), true);
-    assert.equal(canOwnerReviseReport("OWNER", "DRAFT"), false);
     assert.equal(canOwnerReviseReport("ADMIN", "SUBMITTED"), false);
     assert.equal(canOwnerReviseReport("SUPERVISOR", "SUBMITTED"), false);
   });

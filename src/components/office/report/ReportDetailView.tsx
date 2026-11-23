@@ -1,11 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { Calendar, Edit3, MapPin, ShieldCheck, Users } from "lucide-react";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { cn } from "@/lib/utils";
 import { canOwnerReviseReport } from "@/lib/validation/report-revision.validation";
 import type { UserRole } from "@/types/api/auth.types";
 import type { DailyReportDetail } from "@/types/api/report.types";
@@ -23,12 +21,8 @@ function formatUtcInTimezone(iso: string | null, timeZone: string): string {
 function ReportStatusBadges({ report }: { report: DailyReportDetail }) {
   return (
     <div className="flex flex-wrap gap-2">
-      <StatusBadge tone={report.status === "DRAFT" ? "muted" : report.isLate ? "warning" : "success"}>
-        {report.status === "DRAFT"
-          ? "Draf"
-          : report.isLate
-            ? report.lateLabel ?? "Diunggah terlambat"
-            : "Tepat Waktu"}
+      <StatusBadge tone={report.isLate ? "warning" : "success"}>
+        {report.isLate ? report.lateLabel ?? "Diunggah terlambat" : "Tepat Waktu"}
       </StatusBadge>
       {report.isRevised && (
         <StatusBadge tone="info">Direvisi (Owner #{report.revisionNo})</StatusBadge>
@@ -82,14 +76,6 @@ export function ReportDetailView({
                 <Edit3 className="size-3.5" />
                 Revisi Laporan (Owner)
               </Button>
-            )}
-            {userRole === "SUPERVISOR" && report.status === "DRAFT" && (
-              <Link
-                href={`/field/reports/new?areaId=${report.area.id}&date=${report.reportDate}&draftId=${report.id}`}
-                className={cn(buttonVariants({ variant: "default" }), "min-h-12 bg-primary text-primary-foreground")}
-              >
-                Lanjutkan Edit Draf
-              </Link>
             )}
           </div>
           <ReportStatusBadges report={report} />

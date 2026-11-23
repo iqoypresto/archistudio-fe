@@ -11,7 +11,7 @@ import { FieldReportCard } from "./FieldReportCard";
 export function FieldHistoryContent() {
   const [page, setPage] = useState(1);
   const historyQuery = useMyReportHistoryQuery({
-    page, pageSize: 10, status: "SUBMITTED", sortBy: "submittedAt", sortOrder: "desc",
+    page, pageSize: 10, sortBy: "submittedAt", sortOrder: "desc",
   });
 
   return (

@@ -22,7 +22,7 @@ function flattenPendingDates(areas: SupervisorAreaTaskStatus[]) {
 function NewSubmissionNotice({ reportId }: { reportId: string }) {
   const reportQuery = useReportDetailQuery(reportId);
   if (reportQuery.isLoading) return <Skeleton className="h-24 w-full rounded-2xl" />;
-  if (!reportQuery.data || reportQuery.data.status !== "SUBMITTED") return null;
+  if (!reportQuery.data) return null;
 
   const report = reportQuery.data;
   return (

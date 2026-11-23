@@ -45,8 +45,8 @@ const COLUMNS: DataColumn<DailyReportListItem>[] = [
     header: "Status",
     cell: (row) => (
       <div className="flex flex-wrap gap-1.5">
-        <StatusBadge tone={row.status === "DRAFT" ? "muted" : row.isLate ? "warning" : "success"}>
-          {row.status === "DRAFT" ? "Draf" : row.isLate ? row.lateLabel ?? "Diunggah terlambat" : "Tepat Waktu"}
+        <StatusBadge tone={row.isLate ? "warning" : "success"}>
+          {row.isLate ? row.lateLabel ?? "Diunggah terlambat" : "Tepat Waktu"}
         </StatusBadge>
         {row.isRevised && <StatusBadge tone="info">Direvisi</StatusBadge>}
       </div>

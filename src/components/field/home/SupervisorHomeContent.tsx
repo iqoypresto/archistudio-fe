@@ -153,7 +153,7 @@ export function SupervisorHomeContent() {
   const name = useAuthStore((state) => state.user?.name?.split(" ")[0] ?? "Supervisor");
   const areasQuery = useMyAreasStatusQuery();
   const reportsQuery = useMyReportHistoryQuery({
-    page: 1, pageSize: 3, status: "SUBMITTED", sortBy: "submittedAt", sortOrder: "desc",
+    page: 1, pageSize: 3, sortBy: "submittedAt", sortOrder: "desc",
   });
 
   return (

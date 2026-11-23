@@ -10,13 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { ListReportsQuery, ReportStatus, ReportType } from "@/types/api/report.types";
-
-const STATUS_LABELS: Record<string, string> = {
-  ALL: "Semua Status",
-  SUBMITTED: "Terkirim",
-  DRAFT: "Draf",
-};
+import type { ListReportsQuery, ReportType } from "@/types/api/report.types";
 
 const TYPE_LABELS: Record<string, string> = {
   ALL: "Semua Tipe",
@@ -33,11 +27,10 @@ export function OfficeReportFilters({
   onChange: (patch: Partial<ListReportsQuery>) => void;
   onReset: () => void;
 }) {
-  const statusVal = filters.status ?? "ALL";
   const typeVal = filters.reportType ?? "ALL";
 
   return (
-    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-6">
+    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-5">
       <div className="relative lg:col-span-2">
         <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-text-muted" />
         <Input
@@ -64,24 +57,6 @@ export function OfficeReportFilters({
         aria-label="Sampai tanggal"
         className="h-9 font-mono text-xs"
       />
-
-      <Select
-        value={statusVal}
-        onValueChange={(val: string | null) =>
-          onChange({
-            status: !val || val === "ALL" ? undefined : (val as ReportStatus),
-          })
-        }
-      >
-        <SelectTrigger aria-label="Filter status laporan" className="h-9 text-xs">
-          <SelectValue placeholder="Semua Status">{STATUS_LABELS[statusVal]}</SelectValue>
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="ALL">Semua Status</SelectItem>
-          <SelectItem value="SUBMITTED">Terkirim</SelectItem>
-          <SelectItem value="DRAFT">Draf</SelectItem>
-        </SelectContent>
-      </Select>
 
       <div className="flex gap-2">
         <div className="min-w-0 flex-1">

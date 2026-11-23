@@ -1,7 +1,7 @@
 import type { PaginatedResponse } from "@/types/api";
 
 export type ReportType = "WORK" | "NO_WORK";
-export type ReportStatus = "DRAFT" | "SUBMITTED";
+export type ReportStatus = "SUBMITTED";
 export type WeatherType = "CERAH" | "BERAWAN" | "HUJAN";
 
 export interface ReportPhotoInput {
@@ -73,7 +73,6 @@ export interface ListReportsQuery {
   reportDate?: string;
   dateFrom?: string;
   dateTo?: string;
-  status?: ReportStatus;
   reportType?: ReportType;
   isLate?: boolean;
   sortBy?: "reportDate" | "createdAt" | "submittedAt";
