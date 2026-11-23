@@ -42,7 +42,7 @@ export function LoginFormCard() {
     <div className="auth-login-stack flex w-full flex-col gap-3">
       <Card className="auth-login-card gap-0 rounded-none bg-transparent py-0 ring-0 sm:rounded-[22px] sm:bg-[#1e2023] sm:py-6 sm:ring-1 sm:ring-white/15 sm:shadow-2xl">
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
-          <CardContent className="auth-form-fields space-y-4 px-0 sm:space-y-5 sm:px-8">
+          <CardContent className="auth-form-fields space-y-6 px-0 sm:space-y-5 sm:px-8">
             {errorMessage && (
               <div
                 role="alert"
@@ -53,7 +53,7 @@ export function LoginFormCard() {
               </div>
             )}
 
-            <div className="auth-form-field space-y-1 sm:space-y-1.5">
+            <div className="auth-form-field space-y-2 sm:space-y-1.5">
               <Label htmlFor="identifier" className="text-sm font-medium text-neutral-200">
                 Nomor HP atau Username
               </Label>
@@ -69,7 +69,7 @@ export function LoginFormCard() {
               {errors.identifier && <p className="text-sm font-medium text-red-300">{errors.identifier.message}</p>}
             </div>
 
-            <div className="auth-form-field space-y-1 sm:space-y-1.5">
+            <div className="auth-form-field space-y-2 sm:space-y-1.5">
               <Label htmlFor="password" className="text-sm font-medium text-neutral-200">
                 Kata Sandi
               </Label>
