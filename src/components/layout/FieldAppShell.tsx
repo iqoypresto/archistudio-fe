@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore, type ReactNode } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { ClipboardList, FolderKanban, History, House, LogOut, Wifi, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -63,7 +64,7 @@ export function FieldAppShell({ children }: { children: ReactNode }) {
               aria-label="Home Supervisor"
               className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-white/15 text-white backdrop-blur-sm transition-colors hover:bg-white/25"
             >
-              <House className="size-7" aria-hidden="true" />
+              <Image src="/brand/archistudio-logo.webp" alt="" width={36} height={36} className="size-9 object-contain" />
             </Link>
             <p className="truncate font-heading text-xl font-bold tracking-tight text-white">ArchiStudio</p>
           </div>
