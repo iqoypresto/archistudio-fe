@@ -62,7 +62,7 @@ export function FieldAppShell({ children }: { children: ReactNode }) {
             <Link
               href="/field/home"
               aria-label="Home Supervisor"
-              className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-white/15 text-white backdrop-blur-sm transition-colors hover:bg-white/25"
+              className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-black/40 text-white backdrop-blur-sm transition-colors hover:bg-black/55"
             >
               <Image src="/brand/archistudio-logo.webp" alt="" width={36} height={36} className="size-9 object-contain" />
             </Link>
