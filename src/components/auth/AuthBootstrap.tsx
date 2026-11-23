@@ -23,7 +23,7 @@ function computeRedirectPath(
     return getDefaultRouteForRole(role);
   }
   if (scope === "office" && role === "SUPERVISOR") {
-    return "/field/tasks";
+    return "/field/home";
   }
   if (scope === "field" && role !== "SUPERVISOR") {
     return "/dashboard";

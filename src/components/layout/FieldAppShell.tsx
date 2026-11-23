@@ -3,7 +3,7 @@
 import { useSyncExternalStore, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ClipboardList, FolderKanban, History, LogOut, Wifi, WifiOff } from "lucide-react";
+import { ClipboardList, FolderKanban, History, House, LogOut, Wifi, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { useLogoutMutation } from "@/hooks/auth.hooks";
@@ -28,8 +28,9 @@ function useOnlineStatus(): boolean {
 }
 
 const FIELD_TABS = [
-  { href: "/field/tasks", label: "Tugas Lapor", icon: ClipboardList },
-  { href: "/field/history", label: "Riwayat Saya", icon: History },
+  { href: "/field/home", label: "Home", icon: House },
+  { href: "/field/reports", label: "Laporan", icon: ClipboardList },
+  { href: "/field/history", label: "Riwayat", icon: History },
   { href: "/projects", label: "Project", icon: FolderKanban },
 ] as const;
 
@@ -48,7 +49,7 @@ export function FieldAppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="supervisor-mobile mx-auto flex min-h-dvh w-full max-w-md flex-col bg-canvas shadow-xs">
-      <header className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b border-border bg-surface px-5 py-4">
+      <header className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b border-border bg-surface px-3 pt-[calc(1rem+env(safe-area-inset-top))] pb-3 sm:px-5 sm:py-4">
         <div className="min-w-0">
           <p className="truncate text-base font-bold text-text-primary">
             ArchiStudio
@@ -58,14 +59,14 @@ export function FieldAppShell({ children }: { children: ReactNode }) {
           </p>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2">
-          <StatusBadge tone={isOnline ? "success" : "danger"}>
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+          <StatusBadge tone={isOnline ? "success" : "danger"} className="max-w-[7rem] px-1.5 sm:max-w-none sm:px-2">
             {isOnline ? (
               <Wifi className="size-3.5" />
             ) : (
               <WifiOff className="size-3.5" />
             )}
-            <span>{isOnline ? "Online" : "Koneksi Terputus"}</span>
+            <span className="truncate">{isOnline ? "Online" : "Koneksi Terputus"}</span>
           </StatusBadge>
           <Button
             type="button"
@@ -80,13 +81,13 @@ export function FieldAppShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main className={`flex-1 px-5 py-6 text-base text-text-primary ${showNavigation ? "pb-28" : "pb-8"}`}>
+      <main className={`flex-1 px-4 py-6 text-base text-text-primary sm:px-5 ${showNavigation ? "pb-28" : "pb-8"}`}>
         {children}
       </main>
 
       {showNavigation && <nav
         aria-label="Navigasi lapangan"
-        className="fixed bottom-0 left-1/2 z-30 grid w-full max-w-md -translate-x-1/2 grid-cols-3 border-t border-border bg-surface px-2 pb-[env(safe-area-inset-bottom)]"
+        className="fixed bottom-0 left-1/2 z-30 grid w-full max-w-md -translate-x-1/2 grid-cols-4 border-t border-border bg-surface px-1 pb-[env(safe-area-inset-bottom)]"
       >
         {FIELD_TABS.map((tab) => {
           const Icon = tab.icon;
