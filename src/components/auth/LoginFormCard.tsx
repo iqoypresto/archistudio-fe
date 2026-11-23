@@ -42,7 +42,7 @@ export function LoginFormCard() {
     <div className="auth-login-stack flex w-full flex-col gap-3">
       <Card className="auth-login-card gap-0 rounded-none bg-transparent py-0 ring-0 sm:rounded-[22px] sm:bg-[#1e2023] sm:py-6 sm:ring-1 sm:ring-white/15 sm:shadow-2xl">
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
-          <CardContent className="auth-form-fields space-y-5 px-0 sm:px-8">
+          <CardContent className="auth-form-fields space-y-4 px-0 sm:space-y-5 sm:px-8">
             {errorMessage && (
               <div
                 role="alert"
@@ -53,7 +53,7 @@ export function LoginFormCard() {
               </div>
             )}
 
-            <div className="auth-form-field space-y-1.5">
+            <div className="auth-form-field space-y-1 sm:space-y-1.5">
               <Label htmlFor="identifier" className="text-sm font-medium text-neutral-200">
                 Nomor HP atau Username
               </Label>
@@ -63,13 +63,13 @@ export function LoginFormCard() {
                 autoComplete="username"
                 placeholder="081234567890 atau username"
                 aria-invalid={Boolean(errors.identifier)}
-                className="auth-form-control h-12 border-white/15 bg-[#17181a] px-3.5 text-base text-white placeholder:text-neutral-400 focus-visible:border-neutral-400 focus-visible:ring-neutral-300/30"
+                className="auth-form-control h-11 border-white/15 bg-[#17181a] px-3 text-base text-white placeholder:text-neutral-400 focus-visible:border-neutral-400 focus-visible:ring-neutral-300/30 sm:h-12 sm:px-3.5"
                 {...register("identifier")}
               />
               {errors.identifier && <p className="text-sm font-medium text-red-300">{errors.identifier.message}</p>}
             </div>
 
-            <div className="auth-form-field space-y-1.5">
+            <div className="auth-form-field space-y-1 sm:space-y-1.5">
               <Label htmlFor="password" className="text-sm font-medium text-neutral-200">
                 Kata Sandi
               </Label>
@@ -80,7 +80,7 @@ export function LoginFormCard() {
                   autoComplete="current-password"
                   placeholder="Masukkan kata sandi"
                   aria-invalid={Boolean(errors.password)}
-                  className="auth-form-control h-12 border-white/15 bg-[#17181a] px-3.5 pr-14 text-base text-white placeholder:text-neutral-400 focus-visible:border-neutral-400 focus-visible:ring-neutral-300/30"
+                  className="auth-form-control h-11 border-white/15 bg-[#17181a] px-3 pr-12 text-base text-white placeholder:text-neutral-400 focus-visible:border-neutral-400 focus-visible:ring-neutral-300/30 sm:h-12 sm:px-3.5 sm:pr-14"
                   {...register("password")}
                 />
                 <Button
@@ -88,7 +88,7 @@ export function LoginFormCard() {
                   variant="ghost"
                   onClick={() => setShowPassword((prev) => !prev)}
                   aria-label={showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
-                  className="auth-password-toggle absolute right-0.5 size-12 text-neutral-400 hover:bg-white/10 hover:text-white focus-visible:ring-white/30"
+                  className="auth-password-toggle absolute right-0.5 size-11 text-neutral-400 hover:bg-white/10 hover:text-white focus-visible:ring-white/30 sm:size-12"
                 >
                   {showPassword ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
                 </Button>
@@ -99,7 +99,7 @@ export function LoginFormCard() {
             <Button
               type="submit"
               disabled={loginMutation.isPending}
-              className="auth-submit h-12 w-full rounded-lg bg-[#52575f] text-base font-medium tracking-wide text-white transition-colors duration-200 hover:bg-[#5e646d] focus-visible:border-neutral-300 focus-visible:ring-neutral-300/50 motion-reduce:transition-none"
+              className="auth-submit h-11 w-full rounded-lg bg-[#52575f] text-sm font-medium tracking-wide text-white transition-colors duration-200 hover:bg-[#5e646d] focus-visible:border-neutral-300 focus-visible:ring-neutral-300/50 motion-reduce:transition-none sm:h-12 sm:text-base"
             >
               {loginMutation.isPending ? (
                 <>

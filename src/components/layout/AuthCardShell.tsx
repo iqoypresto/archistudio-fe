@@ -3,7 +3,7 @@ import Image from "next/image";
 
 export function AuthCardShell({ children }: { children: ReactNode }) {
   return (
-    <div className="auth-viewport flex h-dvh w-full flex-col items-center justify-center overflow-hidden bg-[#161719] px-6 text-white sm:px-4">
+    <div className="auth-viewport flex h-dvh w-full flex-col items-center justify-center overflow-hidden bg-[#161719] text-white">
       <div className="auth-viewport__content flex w-full max-w-[440px] flex-col items-center">
         <header className="auth-viewport__brand flex flex-col items-center text-center">
           <Image
