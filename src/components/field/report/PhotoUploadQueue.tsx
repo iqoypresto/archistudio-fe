@@ -11,7 +11,7 @@ import type { PhotoQueueItem, UploadQueueStatus } from "@/types/api/upload.types
 
 const STATUS_BADGE_MAP: Record<UploadQueueStatus, { label: string; tone: StatusTone }> = {
   idle: { label: "Menunggu", tone: "muted" },
-  local: { label: "Di perangkat", tone: "info" },
+  local: { label: "Siap diunggah", tone: "info" },
   compressing: { label: "Mengompres...", tone: "info" },
   signing: { label: "Menyiapkan...", tone: "info" },
   uploading: { label: "Mengunggah", tone: "info" },
@@ -67,14 +67,14 @@ function PhotoQueueItemCard({
 
           <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
             <div
-              className={`h-full transition-all ${
+              className={`h-full w-full origin-left transition-transform duration-150 ${
                 item.status === "failed"
                   ? "bg-status-danger-fg"
                   : item.status === "uploaded"
                     ? "bg-status-success-fg"
                     : "bg-primary"
               }`}
-              style={{ width: `${item.progress}%` }}
+              style={{ transform: `scaleX(${item.progress / 100})` }}
             />
           </div>
 
@@ -129,7 +129,7 @@ export function PhotoUploadQueue({
 }: {
   items: PhotoQueueItem[];
   disabled?: boolean;
-  onAddFiles: (files: FileList) => void;
+  onAddFiles: (files: FileList) => void | Promise<void>;
   onRetry: (id: string) => void;
   onCaptionChange: (id: string, caption: string) => void;
   onRemove: (id: string) => void;
@@ -143,7 +143,7 @@ export function PhotoUploadQueue({
         <p className="text-base font-semibold text-text-primary">
           Foto Lapangan ({items.length}/{MAX_REPORT_PHOTOS})
         </p>
-        <span className="text-sm text-text-secondary">Min. 1 foto · diunggah saat Kirim</span>
+        <span className="text-sm text-text-secondary">Min. 1 foto · unggah di langkah ini</span>
       </div>
 
       <Input
@@ -154,7 +154,7 @@ export function PhotoUploadQueue({
         className="hidden"
         onChange={(e) => {
           if (e.target.files && e.target.files.length > 0) {
-            onAddFiles(e.target.files);
+            void onAddFiles(e.target.files);
           }
           e.target.value = "";
         }}

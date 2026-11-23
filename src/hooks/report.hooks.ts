@@ -6,8 +6,7 @@ import type {
   ListReportsQuery,
   ListArchivedReportsQuery,
   ReviseReportPayload,
-  SaveDraftPayload,
-  UpdateDraftPayload,
+  SubmitReportPayload,
 } from "@/types/api/report.types";
 
 export const REPORTS_QUERY_KEY = ["reports"] as const;
@@ -42,36 +41,15 @@ export function useOfficeReportsQuery(query: ListReportsQuery, enabled = true) {
   });
 }
 
-export function useSubmitReportMutation() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (params: {
-      reportId: string;
-      submitPayload: UpdateDraftPayload & { sessionId?: string };
-    }) => {
-      return reportApi.submitReport(params.reportId, params.submitPayload);
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: REPORTS_QUERY_KEY });
-      await queryClient.invalidateQueries({ queryKey: MY_AREAS_STATUS_QUERY_KEY });
-      toast.success("Laporan harian berhasil dikirim dan diparaf otomatis.");
-    },
-    onError: (err) => {
-      toast.error(err instanceof Error ? err.message : "Gagal mengirim laporan harian.");
-    },
-  });
-}
-
 export function useSubmitNewReportMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload: SaveDraftPayload & { sessionId: string }) => reportApi.submitNew(payload),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: REPORTS_QUERY_KEY });
-      await queryClient.invalidateQueries({ queryKey: MY_AREAS_STATUS_QUERY_KEY });
+    mutationFn: (payload: SubmitReportPayload & { sessionId: string }) => reportApi.submitNew(payload),
+    onSuccess: (report) => {
+      queryClient.setQueryData([...REPORTS_QUERY_KEY, "detail", report.id], report);
+      void queryClient.invalidateQueries({ queryKey: REPORTS_QUERY_KEY });
+      void queryClient.invalidateQueries({ queryKey: MY_AREAS_STATUS_QUERY_KEY });
     },
-    onError: (error) => toast.error(error instanceof Error ? error.message : "Gagal mengirim laporan."),
   });
 }
 

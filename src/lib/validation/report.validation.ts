@@ -1,10 +1,5 @@
 import * as z from "zod";
-import type {
-  DailyReportDetail,
-  ReportPhotoInput,
-  SaveDraftPayload,
-  UpdateDraftPayload,
-} from "@/types/api/report.types";
+import type { ReportPhotoInput, SubmitReportPayload } from "@/types/api/report.types";
 
 export const NO_WORK_REASONS = [
   "Hujan Lebat",
@@ -86,52 +81,24 @@ export function isPastProjectCutoff1700(
     (value("hour") === 17 && (value("minute") > 0 || value("second") > 0));
 }
 
-export function buildDefaultReportValues(
-  draft?: DailyReportDetail | null,
-  backup?: Partial<ReportFormValues> | null
-): ReportFormValues {
-  if (draft) {
-    if (draft.reportType === "NO_WORK") {
-      return {
-        reportType: "NO_WORK",
-        noWorkReason: draft.noWorkReason ?? "",
-        locationText: draft.locationText ?? "",
-      };
-    }
-    return {
-      reportType: "WORK",
-      progressText: draft.progressText ?? "",
-      obstaclesText: draft.obstaclesText ?? "",
-      tomorrowPlanText: draft.tomorrowPlanText ?? "",
-      weather: draft.weather ?? "CERAH",
-      workerCount: draft.workerCount ?? 0,
-      locationText: draft.locationText ?? "",
-    };
-  }
-  if (backup?.reportType === "NO_WORK") {
-    return {
-      reportType: "NO_WORK",
-      noWorkReason: backup.noWorkReason ?? "",
-      locationText: backup.locationText ?? "",
-    };
-  }
+export function buildDefaultReportValues(): ReportFormValues {
   return {
     reportType: "WORK",
-    progressText: backup?.progressText ?? "",
-    obstaclesText: backup?.obstaclesText ?? "",
-    tomorrowPlanText: backup?.tomorrowPlanText ?? "",
-    weather: backup?.weather ?? "CERAH",
-    workerCount: backup?.workerCount ?? 0,
-    locationText: backup?.locationText ?? "",
+    progressText: "",
+    obstaclesText: "",
+    tomorrowPlanText: "",
+    weather: "CERAH",
+    workerCount: 0,
+    locationText: "",
   };
 }
 
-export function buildSaveDraftPayload(params: {
+export function buildSubmitReportPayload(params: {
   areaId: string;
   reportDate: string;
   values: Partial<ReportFormValues>;
   photos: ReportPhotoInput[];
-}): SaveDraftPayload {
+}): SubmitReportPayload {
   const reportType = params.values.reportType ?? "WORK";
   return {
     areaId: params.areaId,
@@ -145,19 +112,5 @@ export function buildSaveDraftPayload(params: {
     noWorkReason: reportType === "NO_WORK" ? params.values.noWorkReason || null : null,
     locationText: params.values.locationText || null,
     photos: params.photos,
-  };
-}
-
-export function toUpdateDraftPayload(payload: SaveDraftPayload): UpdateDraftPayload {
-  return {
-    reportType: payload.reportType,
-    progressText: payload.progressText,
-    obstaclesText: payload.obstaclesText,
-    tomorrowPlanText: payload.tomorrowPlanText,
-    weather: payload.weather,
-    workerCount: payload.workerCount,
-    noWorkReason: payload.noWorkReason,
-    locationText: payload.locationText,
-    photos: payload.photos,
   };
 }

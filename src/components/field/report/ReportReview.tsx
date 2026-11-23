@@ -1,14 +1,16 @@
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import type { ReportFormValues } from "@/lib/validation/report.validation";
+import type { PhotoQueueItem } from "@/types/api/upload.types";
 
 export function ReportReview({
-  values, areaName, projectName, reportDate, photoCount, onEdit,
+  values, areaName, projectName, reportDate, photos, onEdit,
 }: {
   values: ReportFormValues;
   areaName: string;
   projectName: string;
   reportDate: string;
-  photoCount: number;
+  photos: PhotoQueueItem[];
   onEdit: (step: 1 | 2) => void;
 }) {
   return <div className="space-y-4">
@@ -31,9 +33,20 @@ export function ReportReview({
       </dl> : <p className="whitespace-pre-wrap text-sm text-text-primary">{values.noWorkReason}</p>}
       {values.locationText && <p className="text-sm text-text-secondary">Lokasi: {values.locationText}</p>}
     </section>
-    <section className="flex items-center justify-between rounded-2xl border border-border bg-surface p-4">
-      <span className="font-semibold text-text-primary">{photoCount} foto siap dikirim</span>
-      <Button type="button" variant="outline" className="min-h-12" onClick={() => onEdit(2)}>Ubah</Button>
+    <section className="space-y-3 rounded-2xl border border-border bg-surface p-4">
+      <div className="flex items-center justify-between gap-3">
+        <span className="font-semibold text-text-primary">Foto laporan ({photos.length})</span>
+        <Button type="button" variant="outline" className="min-h-12" onClick={() => onEdit(2)}>Ubah</Button>
+      </div>
+      <div className="space-y-2">
+        {photos.map((photo, index) => <div key={photo.id} className="flex items-center gap-3 rounded-xl bg-secondary/70 p-2.5">
+          <Image src={photo.previewUrl} alt={`Foto laporan ${index + 1}`} width={56} height={56} unoptimized className="size-14 shrink-0 rounded-lg object-cover" />
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-text-primary">Foto {index + 1}</p>
+            <p className="truncate text-sm text-text-secondary">{photo.caption.trim() || "Tanpa keterangan"}</p>
+          </div>
+        </div>)}
+      </div>
     </section>
     <p className="rounded-xl bg-primary-soft p-4 text-sm text-text-primary">Setelah dikirim, laporan terkunci dan paraf nama serta waktu kirim dibubuhkan otomatis.</p>
   </div>;

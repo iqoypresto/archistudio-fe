@@ -4,37 +4,30 @@ import { useSearchParams } from "next/navigation";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { useMyAreasStatusQuery } from "@/hooks/report-lock.hooks";
-import { useReportDetailQuery } from "@/hooks/report.hooks";
 import { DailyReportEditor } from "./DailyReportEditor";
 
 export function DailyReportFormShell() {
   const searchParams = useSearchParams();
   const areaId = searchParams.get("areaId") ?? "";
   const reportDate = searchParams.get("date") ?? "";
-  const draftId = searchParams.get("draftId");
-
   const areasQuery = useMyAreasStatusQuery();
-  const draftQuery = useReportDetailQuery(draftId);
 
   if (!areaId || !reportDate) {
     return (
       <ErrorState
         title="Parameter laporan tidak lengkap"
-        description="Pilih area dan tanggal langsung dari halaman Tugas Lapor."
+        description="Pilih area dan tanggal langsung dari halaman Laporan."
       />
     );
   }
 
   return (
     <AsyncStateView
-      isLoading={areasQuery.isLoading || (Boolean(draftId) && draftQuery.isLoading)}
-      isError={areasQuery.isError || (Boolean(draftId) && draftQuery.isError)}
-      error={areasQuery.error ?? draftQuery.error}
+      isLoading={areasQuery.isLoading}
+      isError={areasQuery.isError}
+      error={areasQuery.error}
       data={areasQuery.data}
-      onRetry={() => {
-        void areasQuery.refetch();
-        if (draftId) void draftQuery.refetch();
-      }}
+      onRetry={() => void areasQuery.refetch()}
       emptyTitle="Area tidak ditemukan"
     >
       {(areas) => {
@@ -47,12 +40,19 @@ export function DailyReportFormShell() {
             />
           );
         }
+        if (areaTask.nextRequiredDate !== reportDate) {
+          return (
+            <ErrorState
+              title="Tanggal laporan belum dapat dibuat"
+              description="Selesaikan kewajiban tanggal sebelumnya terlebih dahulu. Pilih laporan dari daftar kewajiban yang tersedia."
+            />
+          );
+        }
         return (
           <DailyReportEditor
-            key={`${areaId}:${reportDate}:${draftQuery.data?.id ?? "new"}`}
+            key={`${areaId}:${reportDate}`}
             areaTask={areaTask}
             reportDate={reportDate}
-            draft={draftQuery.data}
           />
         );
       }}

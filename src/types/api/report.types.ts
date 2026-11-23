@@ -103,11 +103,12 @@ export interface ReportRevisionSnapshot {
   }>;
 }
 
-export interface ReviseReportPayload extends UpdateDraftPayload {
+export interface ReviseReportPayload extends Omit<SubmitReportPayload, "areaId" | "reportDate" | "photos"> {
   changeSummary: string;
+  photos?: ReportPhotoInput[];
 }
 
-export interface SaveDraftPayload {
+export interface SubmitReportPayload {
   areaId: string;
   reportDate: string;
   reportType: ReportType;
@@ -120,8 +121,6 @@ export interface SaveDraftPayload {
   locationText?: string | null;
   photos?: ReportPhotoInput[];
 }
-
-export type UpdateDraftPayload = Omit<SaveDraftPayload, "areaId" | "reportDate">;
 export type PaginatedReportsResponse = PaginatedResponse<DailyReportListItem>;
 
 export type ListArchivedReportsQuery = Pick<ListReportsQuery,

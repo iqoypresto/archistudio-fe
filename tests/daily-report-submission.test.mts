@@ -1,29 +1,11 @@
 import assert from "node:assert/strict";
-import { afterEach, beforeEach, describe, it } from "node:test";
-import {
-  buildDraftBackupKey,
-  clearDraftBackup,
-  readDraftBackup,
-  writeDraftBackup,
-} from "@/hooks/local-form-backup.hooks";
+import { describe, it } from "node:test";
 import {
   isPastProjectCutoff1700,
   reportFormSchema,
 } from "@/lib/validation/report.validation";
-import { createMemoryStorage } from "./helpers/http-mock.helper.mjs";
 
-describe("TASK-07 Frontend Form Validation, Cutoff & Local Backup", () => {
-  beforeEach(() => {
-    Object.defineProperty(globalThis, "window", {
-      value: { localStorage: createMemoryStorage() },
-      configurable: true,
-    });
-  });
-
-  afterEach(() => {
-    clearDraftBackup(buildDraftBackupKey("area-1", "2026-11-16"));
-  });
-
+describe("TASK-07 Frontend Form Validation & Cutoff", () => {
   it("[AC-08.1 / AC-09.1] memvalidasi skema discriminatedUnion WORK vs NO_WORK", () => {
     const invalidWork = reportFormSchema.safeParse({
       reportType: "WORK",
@@ -70,23 +52,4 @@ describe("TASK-07 Frontend Form Validation, Cutoff & Local Backup", () => {
     assert.equal(isPastProjectCutoff1700(utcNineOneSec, "2026-11-16", "Asia/Makassar"), true);
   });
 
-  it("[NFR-02] menyimpan, membaca, dan menghapus auto-backup form di localStorage", () => {
-    const key = buildDraftBackupKey("area-1", "2026-11-16");
-    assert.equal(key, "draft-backup:area-1:2026-11-16");
-
-    writeDraftBackup(key, {
-      values: { reportType: "WORK", progressText: "Draf progres tersimpan" },
-      uploadedPhotos: [
-        { storageKey: "projects/p/areas/area-1/2026-11-16/1.jpg", sortOrder: 0 },
-      ],
-      savedAt: "2026-11-16T10:00:00.000Z",
-    });
-
-    const loaded = readDraftBackup(key);
-    assert.equal(loaded?.values.progressText, "Draf progres tersimpan");
-    assert.equal(loaded?.uploadedPhotos.length, 1);
-
-    clearDraftBackup(key);
-    assert.equal(readDraftBackup(key), null);
-  });
 });

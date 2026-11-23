@@ -6,8 +6,7 @@ import type {
   ListReportsQuery,
   PaginatedReportsResponse,
   ReviseReportPayload,
-  SaveDraftPayload,
-  UpdateDraftPayload,
+  SubmitReportPayload,
 } from "@/types/api/report.types";
 import { api } from "./axios";
 
@@ -34,19 +33,8 @@ export class ReportApi {
     return res.data.data;
   }
 
-  async submitNew(payload: SaveDraftPayload & { sessionId: string }): Promise<DailyReportDetail> {
+  async submitNew(payload: SubmitReportPayload & { sessionId: string }): Promise<DailyReportDetail> {
     const res = await api.post<ApiResponse<DailyReportDetail>>("/reports/submit", payload);
-    return res.data.data;
-  }
-
-  async submitReport(
-    reportId: string,
-    payload: UpdateDraftPayload
-  ): Promise<DailyReportDetail> {
-    const res = await api.post<ApiResponse<DailyReportDetail>>(
-      `/reports/${reportId}/submit`,
-      payload
-    );
     return res.data.data;
   }
 
