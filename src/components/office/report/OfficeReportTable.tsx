@@ -55,7 +55,7 @@ const COLUMNS: DataColumn<DailyReportListItem>[] = [
   {
     key: "action",
     header: "Aksi",
-    headerClassName: "text-right",
+    headerClassName: "text-center",
     cellClassName: "text-right",
     cell: (row) => (
       <Link

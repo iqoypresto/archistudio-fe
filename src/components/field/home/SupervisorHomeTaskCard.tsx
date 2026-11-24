@@ -68,15 +68,15 @@ function TaskCardContent({ areas }: { areas: SupervisorAreaTaskStatus[] | undefi
       : "bg-primary-soft text-primary";
 
   return (
-    <div className="flex items-center gap-4 rounded-2xl border border-primary/25 bg-surface p-4 sm:p-5">
-      <span className={`flex size-16 shrink-0 items-center justify-center rounded-2xl ${iconToneClass}`}>
-        <Icon className="size-8" strokeWidth={2.5} aria-hidden="true" />
+    <div className="flex items-center gap-2 rounded-2xl border border-primary/25 bg-surface p-4">
+      <span className={`flex size-14 shrink-0 items-center justify-center rounded-xl ${iconToneClass}`}>
+        <Icon className="size-7" strokeWidth={2.5} aria-hidden="true" />
       </span>
       <div className="min-w-0 flex-1">
-        <h2 className="text-lg font-bold leading-7 text-text-primary sm:text-xl">
+        <h2 className="text-lg font-bold leading-[1.25] text-text-primary">
           {message.title}
         </h2>
-        <p className="mt-1 text-base leading-6 text-text-secondary">
+        <p className="mt-2 text-base leading-5 text-text-secondary">
           {message.description}
         </p>
         {message.tone === "warning" && (
@@ -90,12 +90,12 @@ function TaskCardContent({ areas }: { areas: SupervisorAreaTaskStatus[] | undefi
 }
 
 export function SupervisorHomeTaskCard({ areas, loading, failed, retry }: TaskCardProps) {
-  if (loading) return <Skeleton className="h-36 w-full rounded-2xl" aria-label="Memuat ringkasan tugas" />;
+  if (loading) return <Skeleton className="h-32 w-full rounded-2xl" aria-label="Memuat ringkasan tugas" />;
   if (failed) {
     return (
-      <div className="rounded-2xl border border-border bg-surface p-5">
+      <div className="rounded-2xl border border-border bg-surface p-4">
         <p className="font-semibold text-text-primary">Ringkasan tugas belum dapat dimuat.</p>
-        <Button type="button" variant="outline" onClick={retry} className="mt-3 min-h-12">Coba lagi</Button>
+        <Button type="button" variant="outline" onClick={retry} className="mt-2 min-h-12">Coba lagi</Button>
       </div>
     );
   }

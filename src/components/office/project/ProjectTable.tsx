@@ -114,7 +114,7 @@ export function ProjectTable({
       key: "actions",
       header: "Aksi",
       cellClassName: "text-right",
-      headerClassName: "text-right",
+      headerClassName: "text-center",
       cell: (row) => (
         <div className="flex items-center justify-end gap-1">
           {canManage && (

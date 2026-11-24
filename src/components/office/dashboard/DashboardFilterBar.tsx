@@ -1,6 +1,5 @@
 import { FileDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -15,8 +14,6 @@ import type { ProjectListItem } from "@/types/api/project.types";
 interface DashboardFilterBarProps {
   projectId: string;
   onProjectChange: (id: string) => void;
-  targetDate: string;
-  onDateChange: (date: string) => void;
   statusFilter: DashboardStatusFilter;
   onStatusFilterChange: (status: DashboardStatusFilter) => void;
   onOpenExportDialog: () => void;
@@ -32,8 +29,6 @@ const STATUS_OPTIONS: { value: DashboardStatusFilter; label: string }[] = [
 export function DashboardFilterBar({
   projectId,
   onProjectChange,
-  targetDate,
-  onDateChange,
   statusFilter,
   onStatusFilterChange,
   onOpenExportDialog,
@@ -43,7 +38,7 @@ export function DashboardFilterBar({
   const selectedProject = projects.find((p) => p.id === projectId);
   const selectedProjectLabel = selectedProject
     ? `[${selectedProject.code}] ${selectedProject.name}`
-    : "Semua Proyek";
+    : "Semua project";
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface-input/60 p-3 lg:flex-row lg:items-center lg:justify-between">
@@ -58,8 +53,8 @@ export function DashboardFilterBar({
             <SelectTrigger className="h-8 text-xs">
               <SelectValue placeholder="Pilih Proyek">{selectedProjectLabel}</SelectValue>
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">Semua Proyek</SelectItem>
+            <SelectContent alignItemWithTrigger={false}>
+              <SelectItem value="ALL">Semua project</SelectItem>
               {projects.map((p: ProjectListItem) => (
                 <SelectItem key={p.id} value={p.id}>
                   [{p.code}] {p.name}
@@ -67,15 +62,6 @@ export function DashboardFilterBar({
               ))}
             </SelectContent>
           </Select>
-        </div>
-
-        <div className="w-40">
-          <Input
-            type="date"
-            className="h-8 font-mono text-xs"
-            value={targetDate}
-            onChange={(e) => onDateChange(e.target.value)}
-          />
         </div>
 
         <div className="flex flex-wrap items-center gap-1 rounded-lg border border-border/80 bg-surface p-1">

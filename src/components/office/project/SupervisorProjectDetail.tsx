@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, FileImage, MapPin } from "lucide-react";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import type { ProjectAreaSummary, ProjectDetail } from "@/types/api/project.types";
+import { projectStatusLabel } from "@/lib/utils/project-status";
 
 export function SupervisorProjectDetail({ project, areas, isLoading, isError, error, onRetry }: {
   project?: ProjectDetail;
@@ -19,7 +20,7 @@ export function SupervisorProjectDetail({ project, areas, isLoading, isError, er
       onRetry={onRetry} emptyTitle="Project tidak ditemukan">
       {(item) => <>
         <header className="space-y-2">
-          <p className="text-sm font-bold uppercase tracking-wide text-primary">{item.code} · {item.status}</p>
+          <p className="text-sm font-bold normal-case tracking-wide text-primary">{item.code} · {projectStatusLabel(item.status)}</p>
           <h1 className="text-2xl font-bold text-text-primary">{item.name}</h1>
           <p className="flex items-center gap-2 text-sm text-text-secondary"><MapPin className="size-4" />{item.location}</p>
         </header>

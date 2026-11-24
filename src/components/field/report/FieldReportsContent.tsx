@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { RefreshCw } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useReportDetailQuery } from "@/hooks/report.hooks";
 import { useMyAreasStatusQuery } from "@/hooks/report-lock.hooks";
+import { consumeRecentSupervisorSubmission } from "@/lib/session/supervisor-report-session";
 import type { SupervisorAreaTaskStatus } from "@/types/api/report-lock.types";
 import { ReportListEmptyState, ReportObligationCard } from "./ReportObligationCard";
 
@@ -18,7 +19,6 @@ function flattenPendingDates(areas: SupervisorAreaTaskStatus[]) {
     isUnlocked: date === task.nextRequiredDate,
   }))).sort((a, b) => a.date.localeCompare(b.date) || a.task.projectName.localeCompare(b.task.projectName));
 }
-
 function NewSubmissionNotice({ reportId }: { reportId: string }) {
   const reportQuery = useReportDetailQuery(reportId);
   if (reportQuery.isLoading) return <Skeleton className="h-24 w-full rounded-2xl" />;
@@ -26,11 +26,11 @@ function NewSubmissionNotice({ reportId }: { reportId: string }) {
 
   const report = reportQuery.data;
   return (
-    <section className="rounded-2xl border border-status-success-fg/30 bg-status-success-bg p-4" aria-label="Laporan baru terkirim">
+      <section role="status" aria-live="polite" className="rounded-2xl border border-status-success-fg/30 bg-status-success-bg p-4" aria-label="Laporan baru terkirim">
       <p className="text-xs font-bold uppercase tracking-wide text-status-success-fg">Baru terkirim</p>
       <p className="mt-1 font-semibold text-text-primary">{report.project.name} · {report.area.name}</p>
       <p className="mt-0.5 text-sm text-text-secondary">Laporan tanggal {report.reportDate} berhasil tersimpan.</p>
-      <Link href={`/field/reports/${report.id}`} className="mt-2 inline-flex min-h-11 items-center font-semibold text-status-success-fg">
+      <Link href={`/field/reports/${report.id}`} className="mt-2 inline-flex min-h-12 items-center font-semibold text-status-success-fg">
         Lihat laporan
       </Link>
     </section>
@@ -38,11 +38,17 @@ function NewSubmissionNotice({ reportId }: { reportId: string }) {
 }
 
 export function FieldReportsContent() {
-  const searchParams = useSearchParams();
-  const submittedId = searchParams.get("submittedId");
+  const [submittedId, setSubmittedId] = useState<string | null>(null);
   const areasQuery = useMyAreasStatusQuery();
   const tasks = areasQuery.data ?? [];
   const obligations = flattenPendingDates(tasks);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      setSubmittedId(consumeRecentSupervisorSubmission());
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
 
   return (
     <div className="space-y-5">

@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   dashboardApi,
@@ -19,13 +19,18 @@ export function useDashboardSummary(params: DashboardSummaryParams) {
   return useQuery({
     queryKey: DASHBOARD_QUERY_KEYS.summary(params),
     queryFn: () => dashboardApi.getDashboardSummary(params),
+    placeholderData: keepPreviousData,
   });
 }
 
-export function useSupervisorLateness(params: SupervisorLatenessParams = {}) {
+export function useSupervisorLateness(
+  params: SupervisorLatenessParams = {},
+  options: { enabled?: boolean } = {},
+) {
   return useQuery({
     queryKey: DASHBOARD_QUERY_KEYS.supervisorLateness(params),
     queryFn: () => dashboardApi.getSupervisorLateness(params),
+    enabled: options.enabled ?? true,
   });
 }
 

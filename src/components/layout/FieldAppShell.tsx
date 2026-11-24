@@ -40,6 +40,7 @@ export function FieldAppShell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const isOnline = useOnlineStatus();
   const isHome = pathname === "/field/home";
+  const isReportDetail = pathname.startsWith("/field/reports/") && pathname !== "/field/reports/new";
   const user = useAuthStore((state) => state.user);
   const logoutMutation = useLogoutMutation();
   const showNavigation = !pathname.endsWith("/success");
@@ -54,7 +55,7 @@ export function FieldAppShell({ children }: { children: ReactNode }) {
       <header className={cn(
         "z-30 flex items-center justify-between gap-2",
         isHome
-          ? "absolute inset-x-0 top-0 bg-gradient-to-b from-black/60 to-transparent px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-4 text-white"
+          ? "absolute inset-x-0 top-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.75)_0%,rgba(0,0,0,0.58)_78%,transparent_100%)] px-4 pt-[calc(env(safe-area-inset-top)+0.5rem)] pb-2 text-white"
           : "sticky top-0 border-b border-border bg-surface px-3 pt-[calc(1rem+env(safe-area-inset-top))] pb-3 sm:px-5 sm:py-4",
       )}>
         {isHome ? (
@@ -62,9 +63,9 @@ export function FieldAppShell({ children }: { children: ReactNode }) {
             <Link
               href="/field/home"
               aria-label="Home Supervisor"
-              className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-black/40 text-white backdrop-blur-sm transition-colors hover:bg-black/55"
+              className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-black/10 text-white backdrop-blur-sm transition-colors hover:bg-black/20"
             >
-              <Image src="/brand/archistudio-logo.webp" alt="" width={36} height={36} className="size-9 object-contain" />
+              <Image src="/brand/archistudio-logo.webp" alt="" width={32} height={32} className="size-8 object-contain" />
             </Link>
             <p className="truncate font-heading text-xl font-bold tracking-tight text-white">ArchiStudio</p>
           </div>
@@ -102,27 +103,31 @@ export function FieldAppShell({ children }: { children: ReactNode }) {
       <main className={cn(
         "flex-1 text-base text-text-primary",
         isHome ? "p-0" : "px-4 py-6 sm:px-5",
-        showNavigation ? "pb-28" : "pb-8",
+        showNavigation ? "pb-[calc(6.5rem+env(safe-area-inset-bottom))]" : "pb-8",
       )}>
         {children}
       </main>
 
       {showNavigation && <nav
         aria-label="Navigasi lapangan"
-        className="fixed bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] left-1/2 z-30 grid w-[calc(100%-2rem)] max-w-[26.5rem] -translate-x-1/2 grid-cols-4 gap-1 rounded-[2rem] border border-border/80 bg-surface/95 p-2 shadow-[0_12px_32px_rgba(23,38,59,0.14)] backdrop-blur-xl"
+        className="fixed bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] left-1/2 z-30 grid w-[calc(100%-2rem)] max-w-[26.5rem] -translate-x-1/2 grid-cols-4 gap-1 rounded-[2rem] border border-border/80 bg-surface/95 p-2 shadow-sm backdrop-blur-xl"
       >
         {FIELD_TABS.map((tab) => {
           const Icon = tab.icon;
-          const isActive =
-            pathname === tab.href || pathname.startsWith(`${tab.href}/`);
+          const isActive = tab.href === "/field/history"
+            ? pathname === tab.href || isReportDetail
+            : tab.href === "/field/reports"
+              ? pathname === tab.href || (pathname.startsWith(`${tab.href}/`) && !isReportDetail)
+            : pathname === tab.href || pathname.startsWith(`${tab.href}/`);
           return (
             <Link
               key={tab.href}
               href={tab.href}
+              aria-current={isActive ? "page" : undefined}
               className={cn(
                 "flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
                 isActive
-                  ? "bg-text-primary text-white shadow-sm"
+                  ? "bg-primary-soft text-primary"
                   : "text-text-secondary hover:bg-secondary"
               )}
             >

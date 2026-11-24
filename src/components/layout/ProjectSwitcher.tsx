@@ -34,7 +34,7 @@ export function ProjectSwitcher({
     page: 1,
     pageSize: 100,
     search: search.trim() || undefined,
-  });
+  }, { staleTime: 60_000 });
   const options = projectsQuery.data?.data ?? [];
   const includesActive =
     activeProject && options.every((project) => project.id !== activeProject.id);
@@ -47,7 +47,7 @@ export function ProjectSwitcher({
   }
 
   return (
-    <section className={compact ? "w-56 space-y-2" : "space-y-2"} aria-label="Project Switcher">
+    <section className={compact ? "w-full space-y-2" : "space-y-2"} aria-label="Project Switcher">
       {!compact && <div className="flex items-center gap-2 px-1 text-sm font-semibold text-text-primary">
         <FolderKanban className="size-4" aria-hidden="true" />
         <span>Project Switcher</span>

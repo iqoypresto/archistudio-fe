@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { ReportFormValues } from "@/lib/validation/report.validation";
 import type { PhotoQueueItem } from "@/types/api/upload.types";
@@ -40,9 +41,16 @@ export function ReportReview({
       </div>
       <div className="space-y-2">
         {photos.map((photo, index) => <div key={photo.id} className="flex items-center gap-3 rounded-xl bg-secondary/70 p-2.5">
-          <Image src={photo.previewUrl} alt={`Foto laporan ${index + 1}`} width={56} height={56} unoptimized className="size-14 shrink-0 rounded-lg object-cover" />
+          {photo.previewUrl ? (
+            <Image src={photo.previewUrl} alt={`Foto laporan ${index + 1}`} width={56} height={56} unoptimized className="size-14 shrink-0 rounded-lg object-cover" />
+          ) : (
+            <div role="img" aria-label={`Pratinjau foto ${index + 1} tidak tersedia; nama file ${photo.fileName}`} className="flex size-14 shrink-0 items-center justify-center rounded-lg bg-surface text-text-secondary">
+              <ImageIcon aria-hidden="true" className="size-5" />
+            </div>
+          )}
           <div className="min-w-0">
             <p className="text-sm font-semibold text-text-primary">Foto {index + 1}</p>
+            <p className="truncate text-xs text-text-secondary">{photo.fileName}</p>
             <p className="truncate text-sm text-text-secondary">{photo.caption.trim() || "Tanpa keterangan"}</p>
           </div>
         </div>)}

@@ -20,7 +20,7 @@ export function SupervisorHomeContent() {
   return (
     <div className="min-h-full bg-surface">
       <SupervisorHomeHero name={name} />
-      <div className="relative -mt-7 min-h-[calc(100dvh-224px)] rounded-t-[2rem] bg-surface px-5 pb-8 pt-7 shadow-[0_-8px_28px_rgba(5,14,29,0.12)]">
+      <div className="relative -mt-6 min-h-[81dvh] rounded-t-2xl bg-surface px-5 pb-8 pt-6 shadow-[0_-4px_16px_rgba(5,14,29,0.10)]">
         <SupervisorHomeTaskCard
           areas={areasQuery.data}
           loading={areasQuery.isLoading}

@@ -8,6 +8,7 @@ import { readPhotoTakenAt } from "@/lib/utils/photo-exif";
 import { canSubmitPhotoQueue, isSupportedImageMime, validateSelectedPhotoFiles } from "@/lib/validation/upload.validation";
 import type { ReportPhotoInput } from "@/types/api/report.types";
 import type { PhotoQueueItem, SupportedImageMime } from "@/types/api/upload.types";
+import type { PersistedReportPhoto } from "@/lib/session/supervisor-report-session";
 
 export function applyQueueItemPatch(items: PhotoQueueItem[], id: string, change: Partial<PhotoQueueItem>) {
   return items.map((item) => item.id === id ? { ...item, ...change } : item);
@@ -59,7 +60,7 @@ export function usePhotoUploadQueue(params: { areaId: string; reportDate: string
   }, []);
 
   const uploadItem = useCallback(async (item: PhotoQueueItem, sessionId: string) => {
-    if (item.storageKey) return;
+    if (item.storageKey || !item.file) return;
     try {
       patch(item.id, { status: "signing", progress: 10, errorMessage: null });
       const [signed] = await uploadApi.signUploadUrls({
@@ -114,7 +115,7 @@ export function usePhotoUploadQueue(params: { areaId: string; reportDate: string
 
   const retryPhoto = useCallback(async (id: string, sessionId: string) => {
     let item = currentItems.current.find((photo) => photo.id === id);
-    if (!item) return;
+    if (!item?.file) return;
     if (item.errorMessage === "Gagal menyiapkan foto." && item.file instanceof File) {
       patch(id, { status: "compressing", progress: 10, errorMessage: null });
       try {
@@ -139,6 +140,31 @@ export function usePhotoUploadQueue(params: { areaId: string; reportDate: string
     });
   }, []);
 
+  const restoreItems = useCallback((saved: PersistedReportPhoto[]) => {
+    setItems(saved.map((photo) => ({
+      ...photo,
+      previewUrl: "",
+      file: null,
+      status: photo.storageKey ? "uploaded" : "failed",
+      progress: photo.storageKey ? 100 : 0,
+      errorMessage: photo.storageKey
+        ? null
+        : "File foto belum tersimpan di tab. Hapus item ini, lalu pilih ulang fotonya.",
+    })));
+  }, []);
+
+  const requireReselection = useCallback(() => {
+    setItems((current) => current.map((item) => ({
+      ...item,
+      status: "failed",
+      progress: 0,
+      storageKey: null,
+      errorMessage: item.file
+        ? "Sesi unggah kedaluwarsa. Tekan ulang untuk mengunggah foto ini lagi."
+        : "Sesi unggah kedaluwarsa. Hapus item ini, lalu pilih ulang fotonya.",
+    })));
+  }, []);
+
   return {
     items,
     submitReadiness: useMemo(() => canSubmitPhotoQueue(items), [items]),
@@ -147,5 +173,7 @@ export function usePhotoUploadQueue(params: { areaId: string; reportDate: string
     retryPhoto,
     updateCaption,
     removePhoto,
+    restoreItems,
+    requireReselection,
   };
 }

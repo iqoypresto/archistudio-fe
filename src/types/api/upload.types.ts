@@ -45,7 +45,7 @@ export interface PhotoQueueItem {
   fileName: string;
   contentType: SupportedImageMime;
   previewUrl: string;
-  file: Blob;
+  file: Blob | null;
   status: UploadQueueStatus;
   progress: number;
   caption: string;

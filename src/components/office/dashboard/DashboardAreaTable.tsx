@@ -40,9 +40,9 @@ export function DashboardAreaTable({ areas, onOpenUnlockModal }: DashboardAreaTa
           <TableRow className="border-border/80 hover:bg-transparent">
             <TableHead className="h-10 w-1/4 px-4 text-[11px] font-medium tracking-wider text-text-muted uppercase">Area & Proyek</TableHead>
             <TableHead className="h-10 w-1/5 px-4 text-[11px] font-medium tracking-wider text-text-muted uppercase">Supervisor Aktif</TableHead>
-            <TableHead className="h-10 w-1/5 px-4 text-[11px] font-medium tracking-wider text-text-muted uppercase">Status Tanggal Ini</TableHead>
+            <TableHead className="h-10 w-1/5 px-4 text-[11px] font-medium tracking-wider text-text-muted uppercase">Status Hari Ini</TableHead>
             <TableHead className="h-10 w-1/5 px-4 text-[11px] font-medium tracking-wider text-text-muted uppercase">Kunci & Tunggakan</TableHead>
-            <TableHead className="h-10 w-1/6 px-4 text-right text-[11px] font-medium tracking-wider text-text-muted uppercase">Aksi</TableHead>
+            <TableHead className="h-10 w-1/6 px-4 text-center text-[11px] font-medium tracking-wider text-text-muted uppercase">Aksi</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

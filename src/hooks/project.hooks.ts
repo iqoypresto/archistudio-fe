@@ -12,10 +12,12 @@ import type {
 export const PROJECTS_QUERY_KEY = ["projects"] as const;
 export const ARCHIVED_PROJECTS_QUERY_KEY = ["projects", "archive"] as const;
 
-export function useProjectsQuery(params: ProjectFilterParams) {
+export function useProjectsQuery(params: ProjectFilterParams, options?: { enabled?: boolean; staleTime?: number }) {
   return useQuery({
     queryKey: [...PROJECTS_QUERY_KEY, params],
     queryFn: () => projectApi.getProjects(params),
+    enabled: options?.enabled ?? true,
+    staleTime: options?.staleTime,
   });
 }
 

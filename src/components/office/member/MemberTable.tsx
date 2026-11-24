@@ -87,7 +87,7 @@ export function MemberTable({
       key: "actions",
       header: "Aksi",
       cellClassName: "text-right",
-      headerClassName: "text-right",
+      headerClassName: "text-center",
       cell: (row) => {
         const isSelf = row.id === currentActor?.id;
         const isProtectedFromAdmin =

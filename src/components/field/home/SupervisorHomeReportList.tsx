@@ -46,20 +46,20 @@ function ReportRow({ report }: { report: DailyReportListItem }) {
   return (
     <Link
       href={`/field/reports/${report.id}`}
-      className="flex min-h-24 items-center gap-3 rounded-2xl border border-border bg-surface p-3.5 transition-colors hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      className="flex min-h-20 flex-wrap items-center gap-2 rounded-2xl border border-border bg-surface p-4 transition-colors hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
     >
-      <span className={`flex size-14 shrink-0 items-center justify-center rounded-2xl ${iconClass}`}>
-        <Icon className="size-7" aria-hidden="true" />
+      <span className={`flex size-12 shrink-0 items-center justify-center rounded-xl ${iconClass}`}>
+        <Icon className="size-6" aria-hidden="true" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-base font-bold text-text-primary">
+        <span className="line-clamp-2 text-base font-bold leading-5 text-text-primary">
           Laporan Proyek {report.project.name}
         </span>
-        <span className="mt-1 block truncate text-sm text-text-secondary">
+        <span className="mt-2 block truncate text-sm text-text-secondary">
           Area {report.area.name} · Terkirim
         </span>
       </span>
-      <span className="max-w-24 shrink-0 text-right text-sm text-text-secondary">
+      <span className="w-[4.5rem] shrink-0 text-right text-xs leading-4 text-text-secondary max-[359px]:ml-14 max-[359px]:w-auto max-[359px]:shrink max-[359px]:basis-[calc(100%_-_3.5rem)]">
         {formatSubmittedAt(report)}
       </span>
     </Link>
@@ -75,8 +75,8 @@ type ReportListProps = {
 
 export function SupervisorHomeReportList({ reports, loading, failed, retry }: ReportListProps) {
   return (
-    <section aria-labelledby="home-recent-title" className="mt-8 space-y-3">
-      <div className="flex min-h-11 items-center justify-between gap-2">
+    <section aria-labelledby="home-recent-title" className="mt-8 space-y-2">
+      <div className="flex min-h-12 items-center justify-between gap-2">
         <h2 id="home-recent-title" className="text-xl font-bold text-text-primary">Riwayat Terbaru</h2>
         <Link href="/field/history" className="inline-flex min-h-12 shrink-0 items-center gap-1 font-semibold text-primary">
           Lihat Semua <ChevronRight className="size-5" />
@@ -84,13 +84,13 @@ export function SupervisorHomeReportList({ reports, loading, failed, retry }: Re
       </div>
       {loading ? (
         <div className="space-y-2" aria-busy="true" aria-label="Memuat laporan terbaru">
-          <Skeleton className="h-24 w-full rounded-2xl" />
-          <Skeleton className="h-24 w-full rounded-2xl" />
+          <Skeleton className="h-20 w-full rounded-2xl" />
+          <Skeleton className="h-20 w-full rounded-2xl" />
         </div>
       ) : failed ? (
         <div className="rounded-2xl border border-border bg-surface p-5">
           <p className="text-text-secondary">Laporan terbaru belum dapat dimuat.</p>
-          <Button type="button" variant="outline" onClick={retry} className="mt-3 min-h-12">Coba lagi</Button>
+          <Button type="button" variant="outline" onClick={retry} className="mt-2 min-h-12">Coba lagi</Button>
         </div>
       ) : reports?.length ? (
         <div className="space-y-2">{reports.map((report) => <ReportRow key={report.id} report={report} />)}</div>
