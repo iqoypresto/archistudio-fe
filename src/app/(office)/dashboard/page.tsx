@@ -1,12 +1,5 @@
-import type { Metadata } from "next";
-import { DashboardContent } from "@/components/office/dashboard/DashboardContent";
+import { redirect } from "next/navigation";
 
-export const instant = false;
-
-export const metadata: Metadata = {
-  title: "Dashboard Monitoring | ArchiStudio Office",
-};
-
-export default function DashboardPage() {
-  return <DashboardContent />;
+export default function LegacyDashboardPage() {
+  redirect("/office/dashboard");
 }

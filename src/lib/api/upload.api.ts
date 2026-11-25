@@ -12,7 +12,7 @@ import { api } from "./axios";
 export class UploadApi {
   async signUploadUrls(payload: SignUploadPayload): Promise<SignedUploadUrlItem[]> {
     const res = await api.post<ApiResponse<SignedUploadUrlItem[]>>(
-      "/uploads/sign",
+      "/field/uploads/sign",
       payload
     );
     return res.data.data;
@@ -37,7 +37,7 @@ export class UploadApi {
 
   async getReportViewUrls(payload: ViewUrlsPayload): Promise<SignedPhotoViewItem[]> {
     const res = await api.post<ApiResponse<SignedPhotoViewItem[]>>(
-      "/uploads/view-urls",
+      "/field/uploads/view-urls",
       payload
     );
     return res.data.data;

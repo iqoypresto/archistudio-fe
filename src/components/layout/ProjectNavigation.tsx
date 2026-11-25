@@ -15,6 +15,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import { isFieldRole } from "@/lib/utils/role";
 import {
   isProjectRoutePath,
   resolveProjectSectionOpen,
@@ -45,8 +46,9 @@ export function ProjectNavigation({
   const reduceMotion = useReducedMotion();
   const { open, isMobile, setOpen } = useSidebar();
   const isCollapsed = !open && !isMobile;
-  const isCurrentProject = Boolean(projectId && pathname.startsWith(`/projects/${projectId}`));
-  const isProjectList = pathname === "/projects";
+  const projectRoot = isFieldRole(role) ? "/field/projects" : "/office/projects";
+  const isCurrentProject = Boolean(projectId && pathname.startsWith(`${projectRoot}/${projectId}`));
+  const isProjectList = pathname === projectRoot;
   const isActive = isCurrentProject || isProjectList;
   const isProjectRoute = isProjectRoutePath(pathname);
   const projectSectionPreference = useSidebarNavStore((state) => state.projectSectionPreference);
@@ -113,7 +115,7 @@ export function ProjectNavigation({
             <SidebarMenuItem>
               <SidebarMenuButton
                 nativeButton={false}
-                render={<Link href="/projects" prefetch={false} onClick={onNavigate} aria-current={isProjectList ? "page" : undefined} />}
+                render={<Link href={projectRoot} prefetch={false} onClick={onNavigate} aria-current={isProjectList ? "page" : undefined} />}
                 isActive={isProjectList}
                 title={isCollapsed ? "Semua Project" : undefined}
                 className={cn(largeTouchTarget && "min-h-12", isProjectList && "bg-primary-soft")}
@@ -123,7 +125,7 @@ export function ProjectNavigation({
             </SidebarMenuItem>
           </SidebarMenu>
           <div className="mt-2 border-t border-border pt-2">
-            {isOpen && <ProjectSwitcher activeProject={activeProject} onNavigate={onNavigate} compact />}
+            {isOpen && <ProjectSwitcher activeProject={activeProject} onNavigate={onNavigate} role={role} compact />}
             {projectId && isOpen ? (
               <div className="mt-2">
                 <ProjectNavList

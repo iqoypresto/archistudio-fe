@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import imageCompression from "browser-image-compression";
 import { toast } from "sonner";
 import { drawingApi } from "@/lib/api/drawing.api";
+import type { ApiSurface } from "@/lib/api/api-surface";
 import {
   validateCompressedDrawingSize,
   validateDrawingFileType,
@@ -18,10 +19,11 @@ export function useProjectDrawingsQuery(
   projectId: string,
   params?: DrawingFilterParams,
   options?: { enabled?: boolean },
+  surface: ApiSurface = "office",
 ) {
   return useQuery({
-    queryKey: [...DRAWINGS_QUERY_KEY, projectId, params ?? {}],
-    queryFn: () => drawingApi.getDrawings(projectId, params),
+    queryKey: [...DRAWINGS_QUERY_KEY, surface, projectId, params ?? {}],
+    queryFn: () => drawingApi.getDrawings(projectId, params, surface),
     enabled: Boolean(projectId) && (options?.enabled ?? true),
   });
 }
@@ -32,7 +34,7 @@ export function useArchiveDrawingMutation(projectId: string) {
     mutationFn: (drawingId: string) => drawingApi.archiveDrawing(drawingId),
     onSuccess: () => {
       toast.success("Drawing berhasil diarsipkan.");
-      queryClient.invalidateQueries({ queryKey: [...DRAWINGS_QUERY_KEY, projectId] });
+      queryClient.invalidateQueries({ queryKey: [...DRAWINGS_QUERY_KEY, "office", projectId] });
     },
     onError: (error: Error) => {
       toast.error(error.message || "Gagal mengarsipkan Drawing.");
@@ -86,7 +88,7 @@ export function useDrawingUpload(projectId: string) {
       });
 
       toast.success("Drawing berhasil diunggah.");
-      queryClient.invalidateQueries({ queryKey: [...DRAWINGS_QUERY_KEY, projectId] });
+      queryClient.invalidateQueries({ queryKey: [...DRAWINGS_QUERY_KEY, "office", projectId] });
       return true;
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Gagal mengunggah Drawing.";

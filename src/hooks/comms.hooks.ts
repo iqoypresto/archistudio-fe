@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { commsApi } from "@/lib/api/comms.api";
+import type { ApiSurface } from "@/lib/api/api-surface";
 import { validateCommsAttachmentFile } from "@/lib/validation/comms.validation";
 import type {
   CommsAttachmentPayload,
@@ -16,21 +17,22 @@ export function useProjectCommsQuery(
   projectId: string,
   params?: CommsFilterParams,
   options?: { enabled?: boolean },
+  surface: ApiSurface = "office",
 ) {
   return useQuery({
-    queryKey: [...COMMS_QUERY_KEY, projectId, params ?? {}],
-    queryFn: () => commsApi.getEntries(projectId, params),
+    queryKey: [...COMMS_QUERY_KEY, surface, projectId, params ?? {}],
+    queryFn: () => commsApi.getEntries(projectId, params, surface),
     enabled: Boolean(projectId) && (options?.enabled ?? true),
   });
 }
 
-export function useCreateCommsMutation(projectId: string, onSuccessCallback?: () => void) {
+export function useCreateCommsMutation(projectId: string, onSuccessCallback?: () => void, surface: ApiSurface = "office") {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload: CreateCommsPayload) => commsApi.createEntry(projectId, payload),
+    mutationFn: (payload: CreateCommsPayload) => commsApi.createEntry(projectId, payload, surface),
     onSuccess: () => {
       toast.success("Catatan Comms berhasil disimpan.");
-      queryClient.invalidateQueries({ queryKey: [...COMMS_QUERY_KEY, projectId] });
+      queryClient.invalidateQueries({ queryKey: [...COMMS_QUERY_KEY, surface, projectId] });
       onSuccessCallback?.();
     },
     onError: (error: Error) => {
@@ -39,14 +41,14 @@ export function useCreateCommsMutation(projectId: string, onSuccessCallback?: ()
   });
 }
 
-export function useUpdateCommsMutation(projectId: string, onSuccessCallback?: () => void) {
+export function useUpdateCommsMutation(projectId: string, onSuccessCallback?: () => void, surface: ApiSurface = "office") {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ commsId, payload }: { commsId: string; payload: UpdateCommsPayload }) =>
-      commsApi.updateEntry(commsId, payload),
+      commsApi.updateEntry(commsId, payload, surface),
     onSuccess: () => {
       toast.success("Catatan Comms berhasil diperbarui.");
-      queryClient.invalidateQueries({ queryKey: [...COMMS_QUERY_KEY, projectId] });
+      queryClient.invalidateQueries({ queryKey: [...COMMS_QUERY_KEY, surface, projectId] });
       onSuccessCallback?.();
     },
     onError: (error: Error) => {
@@ -55,7 +57,7 @@ export function useUpdateCommsMutation(projectId: string, onSuccessCallback?: ()
   });
 }
 
-export function useCommsAttachmentUpload(projectId: string) {
+export function useCommsAttachmentUpload(projectId: string, surface: ApiSurface = "office") {
   const [isUploading, setIsUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -73,7 +75,7 @@ export function useCommsAttachmentUpload(projectId: string) {
         fileName: file.name,
         contentType: file.type,
         fileSizeBytes: file.size,
-      });
+      }, surface);
       await commsApi.uploadAttachmentToSignedUrl({
         uploadUrl: signed.uploadUrl,
         file,

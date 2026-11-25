@@ -8,29 +8,30 @@ import type {
   UpdateCommsPayload,
 } from "@/types/api/comms.types";
 import { api } from "./axios";
+import { apiSurfacePath, type ApiSurface } from "./api-surface";
 
 export const commsApi = {
   /** Mengambil daftar catatan Comms project dengan hydrated attachmentViewUrl (US-20, BR-35). */
-  async getEntries(projectId: string, params?: CommsFilterParams): Promise<CommsEntryItem[]> {
+  async getEntries(projectId: string, params?: CommsFilterParams, surface: ApiSurface = "office"): Promise<CommsEntryItem[]> {
     const response = await api.get<ApiResponse<CommsEntryItem[]>>(
-      `/projects/${projectId}/comms`,
+      apiSurfacePath(surface, `/projects/${projectId}/comms`),
       { params },
     );
     return response.data.data;
   },
 
   /** Menambahkan catatan Comms baru oleh OWNER (US-20, AC-20.1, BR-35). */
-  async createEntry(projectId: string, payload: CreateCommsPayload): Promise<CommsEntryItem> {
+  async createEntry(projectId: string, payload: CreateCommsPayload, surface: ApiSurface = "office"): Promise<CommsEntryItem> {
     const response = await api.post<ApiResponse<CommsEntryItem>>(
-      `/projects/${projectId}/comms`,
+      apiSurfacePath(surface, `/projects/${projectId}/comms`),
       payload,
     );
     return response.data.data;
   },
 
   /** Memperbarui catatan Comms oleh OWNER (US-20, BR-35). */
-  async updateEntry(commsId: string, payload: UpdateCommsPayload): Promise<CommsEntryItem> {
-    const response = await api.patch<ApiResponse<CommsEntryItem>>(`/comms/${commsId}`, payload);
+  async updateEntry(commsId: string, payload: UpdateCommsPayload, surface: ApiSurface = "office"): Promise<CommsEntryItem> {
+    const response = await api.patch<ApiResponse<CommsEntryItem>>(apiSurfacePath(surface, `/comms/${commsId}`), payload);
     return response.data.data;
   },
 
@@ -40,8 +41,8 @@ export const commsApi = {
     fileName: string;
     contentType: string;
     fileSizeBytes: number;
-  }): Promise<SignedCommsAttachmentResponse> {
-    const response = await api.post<ApiResponse<SignedCommsAttachmentResponse>>("/uploads/sign", {
+  }, surface: ApiSurface = "office"): Promise<SignedCommsAttachmentResponse> {
+    const response = await api.post<ApiResponse<SignedCommsAttachmentResponse>>(apiSurfacePath(surface, "/uploads/sign"), {
       purpose: "comms-attachment",
       projectId: params.projectId,
       file: {

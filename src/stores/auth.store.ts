@@ -66,7 +66,7 @@ function readStorage(): StoredAuthPayload | null {
 }
 
 export function getDefaultRouteForRole(role: UserRole): string {
-  return isFieldRole(role) ? "/field/home" : "/dashboard";
+  return isFieldRole(role) ? "/field/home" : "/office/dashboard";
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({

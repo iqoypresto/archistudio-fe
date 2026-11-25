@@ -16,7 +16,7 @@ export const projectDocumentApi = {
     params?: ProjectDocumentFilterParams,
   ): Promise<ProjectDocumentItem[]> {
     const response = await api.get<ApiResponse<ProjectDocumentItem[]>>(
-      `/projects/${projectId}/documents`,
+      `/office/projects/${projectId}/documents`,
       { params },
     );
     return response.data.data;
@@ -28,7 +28,7 @@ export const projectDocumentApi = {
     payload: CreateProjectDocumentPayload,
   ): Promise<ProjectDocumentItem> {
     const response = await api.post<ApiResponse<ProjectDocumentItem>>(
-      `/projects/${projectId}/documents`,
+      `/office/projects/${projectId}/documents`,
       payload,
     );
     return response.data.data;
@@ -37,7 +37,7 @@ export const projectDocumentApi = {
   /** Menghapus permanen file dokumen keluar (DB + R2) oleh OWNER (US-19, BR-34). */
   async deleteDocument(documentId: string): Promise<{ id: string; deleted: true }> {
     const response = await api.delete<ApiResponse<{ id: string; deleted: true }>>(
-      `/documents/${documentId}`,
+      `/office/documents/${documentId}`,
     );
     return response.data.data;
   },
@@ -51,7 +51,7 @@ export const projectDocumentApi = {
     fileSizeBytes: number;
   }): Promise<SignedProjectDocumentUploadResponse> {
     const response = await api.post<ApiResponse<SignedProjectDocumentUploadResponse>>(
-      "/uploads/sign",
+      "/office/uploads/sign",
       {
         purpose: "project-document",
         projectId: params.projectId,

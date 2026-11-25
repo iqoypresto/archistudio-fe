@@ -37,18 +37,18 @@ export function getGlobalNavGroups(role: UserRole, includeProjects = true): Work
         { href: "/field/history", label: "Riwayat", icon: FileText },
       ] },
       ...(includeProjects ? [{ label: "Project", collapsible: false, items: [
-        { href: "/projects", label: "Semua Project", icon: FolderKanban, exact: true },
+        { href: "/field/projects", label: "Semua Project", icon: FolderKanban, exact: true },
       ] }] : []),
     ];
   }
 
   const workspaceItems: WorkspaceNavItem[] = [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
-    { href: "/reports", label: "Laporan Harian", icon: FileText },
-    { href: "/members", label: "Anggota Tim", icon: Users },
+    { href: "/office/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
+    { href: "/office/reports", label: "Laporan Harian", icon: FileText },
+    { href: "/office/members", label: "Anggota Tim", icon: Users },
   ];
   if (includeProjects) {
-    workspaceItems.push({ href: "/projects", label: "Semua Project", icon: FolderKanban, exact: true });
+    workspaceItems.push({ href: "/office/projects", label: "Semua Project", icon: FolderKanban, exact: true });
   }
 
   const groups: WorkspaceNavGroup[] = [{
@@ -63,8 +63,8 @@ export function getGlobalNavGroups(role: UserRole, includeProjects = true): Work
       icon: BriefcaseBusiness,
       collapsible: true,
       items: [
-        { href: "/hr/freelance/payment", label: "Freelance" },
-        { href: "/hr/agent/payment", label: "Agent" },
+        { href: "/office/hr/freelance/payment", label: "Freelance" },
+        { href: "/office/hr/agent/payment", label: "Agent" },
       ],
     });
   }
@@ -72,13 +72,13 @@ export function getGlobalNavGroups(role: UserRole, includeProjects = true): Work
     label: "Arsip",
     collapsible: false,
     showLabel: false,
-    items: [{ href: "/archive", label: "Archive Project", icon: Archive }],
+    items: [{ href: "/office/archive", label: "Archive Project", icon: Archive }],
   });
   return groups;
 }
 
 export function getProjectNavGroups(projectId: string, role: UserRole): WorkspaceNavGroup[] {
-  const base = `/projects/${projectId}`;
+  const base = `${isFieldRole(role) ? "/field" : "/office"}/projects/${projectId}`;
   const groups: WorkspaceNavGroup[] = [
     {
       label: "Project",

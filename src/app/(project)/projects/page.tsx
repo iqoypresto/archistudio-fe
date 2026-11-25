@@ -1,7 +1,7 @@
-import { ProjectListContent } from "@/components/office/project/ProjectListContent";
+import { LegacyProjectRedirect } from "@/components/routing/LegacyProjectRedirect";
 
 export const instant = false;
 
 export default function ProjectsPage() {
-  return <ProjectListContent />;
+  return <LegacyProjectRedirect />;
 }

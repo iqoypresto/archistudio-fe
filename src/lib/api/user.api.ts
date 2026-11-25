@@ -12,7 +12,7 @@ import type {
 export const userApi = {
   /** Mengambil daftar anggota berpaginasi beserta filter. */
   async getUsers(params?: UserFilterParams): Promise<PaginatedResponse<UserListItem>> {
-    const response = await api.get<PaginatedResponse<UserListItem>>("/users", {
+    const response = await api.get<PaginatedResponse<UserListItem>>("/office/users", {
       params,
     });
     return response.data;
@@ -20,7 +20,7 @@ export const userApi = {
 
   /** Membuat akun pengguna baru. */
   async createUser(payload: CreateUserPayload): Promise<UserListItem> {
-    const response = await api.post<ApiResponse<UserListItem>>("/users", payload);
+    const response = await api.post<ApiResponse<UserListItem>>("/office/users", payload);
     return response.data.data;
   },
 
@@ -30,7 +30,7 @@ export const userApi = {
     payload: UpdateUserPayload,
   ): Promise<UserListItem> {
     const response = await api.patch<ApiResponse<UserListItem>>(
-      `/users/${id}`,
+      `/office/users/${id}`,
       payload,
     );
     return response.data.data;
@@ -42,7 +42,7 @@ export const userApi = {
     payload: ResetPasswordPayload,
   ): Promise<{ id: string; username: string }> {
     const response = await api.patch<ApiResponse<{ id: string; username: string }>>(
-      `/users/${id}/reset-password`,
+      `/office/users/${id}/reset-password`,
       payload,
     );
     return response.data.data;
@@ -54,7 +54,7 @@ export const userApi = {
     payload: ToggleStatusPayload,
   ): Promise<{ id: string; isActive: boolean }> {
     const response = await api.patch<ApiResponse<{ id: string; isActive: boolean }>>(
-      `/users/${id}/status`,
+      `/office/users/${id}/status`,
       payload,
     );
     return response.data.data;

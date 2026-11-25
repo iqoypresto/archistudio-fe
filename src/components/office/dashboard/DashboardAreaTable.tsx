@@ -150,7 +150,7 @@ export function DashboardAreaTable({ areas, onOpenUnlockModal }: DashboardAreaTa
                     )}
                     {area.reportId && (
                       <Link
-                        href={`/reports/${area.reportId}`}
+                        href={`/office/reports/${area.reportId}`}
                         className="inline-flex h-8 items-center gap-1 rounded-lg border border-border bg-surface-input px-2.5 text-xs font-medium text-text-secondary transition-colors hover:bg-surface-active hover:text-text-primary"
                       >
                         Detail

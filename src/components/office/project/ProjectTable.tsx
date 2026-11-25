@@ -120,7 +120,7 @@ export function ProjectTable({
             </Button>
           )}
           <Link
-            href={`/projects/${row.id}`}
+            href={`/office/projects/${row.id}`}
             className="inline-flex h-8 items-center gap-1 rounded-lg border border-border bg-surface-input px-2.5 text-xs font-medium text-text-secondary transition-colors hover:bg-surface-active hover:text-text-primary"
           >
             Detail

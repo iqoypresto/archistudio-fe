@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/combobox";
 import { useProjectsQuery } from "@/hooks/project.hooks";
 import type { ProjectListItem } from "@/types/api/project.types";
+import type { UserRole } from "@/types/api/auth.types";
+import { isFieldRole } from "@/lib/utils/role";
 
 function projectLabel(project: ProjectListItem): string {
   return `${project.code} · ${project.name}`;
@@ -22,19 +24,23 @@ function projectLabel(project: ProjectListItem): string {
 export function ProjectSwitcher({
   activeProject,
   onNavigate,
+  role,
   compact = false,
 }: {
   activeProject?: ProjectListItem | null;
   onNavigate?: () => void;
+  role: UserRole;
   compact?: boolean;
 }) {
   const router = useRouter();
   const [search, setSearch] = useState("");
+  const surface = isFieldRole(role) ? "field" : "office";
+  const projectRoot = `/${surface}/projects`;
   const projectsQuery = useProjectsQuery({
     page: 1,
     pageSize: 100,
     search: search.trim() || undefined,
-  }, { staleTime: 60_000 });
+  }, { staleTime: 60_000, surface });
   const options = projectsQuery.data?.data ?? [];
   const includesActive =
     activeProject && options.every((project) => project.id !== activeProject.id);
@@ -44,7 +50,7 @@ export function ProjectSwitcher({
     if (!project) return;
     setSearch("");
     onNavigate?.();
-    router.push(`/projects/${project.id}`);
+    router.push(`${projectRoot}/${project.id}`);
   }
 
   function handleInputValueChange(

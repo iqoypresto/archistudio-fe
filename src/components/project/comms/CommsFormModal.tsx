@@ -14,6 +14,7 @@ import { commsFormSchema, type CommsFormValues } from "@/lib/validation/comms.va
 import type {
   CommsAttachmentPayload, CommsDirection, CommsEntryItem, CreateCommsPayload, UpdateCommsPayload,
 } from "@/types/api/comms.types";
+import type { ApiSurface } from "@/lib/api/api-surface";
 import { CommsAttachmentField } from "./CommsAttachmentField";
 
 const DIRECTION_OPTIONS: readonly { value: CommsDirection; label: string }[] = [
@@ -25,6 +26,7 @@ interface CommsFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   projectId: string;
+  surface: ApiSurface;
   fixedDirection?: CommsDirection;
   entryToEdit: CommsEntryItem | null;
   onSubmitCreate: (payload: CreateCommsPayload) => void;
@@ -41,11 +43,11 @@ function toInitialAttachment(entry: CommsEntryItem | null): CommsAttachmentPaylo
 }
 
 export function CommsFormModal({
-  isOpen, onClose, projectId, fixedDirection, entryToEdit, onSubmitCreate, onSubmitUpdate, isSubmitting,
+  isOpen, onClose, projectId, surface, fixedDirection, entryToEdit, onSubmitCreate, onSubmitUpdate, isSubmitting,
 }: CommsFormModalProps) {
   const isEditing = Boolean(entryToEdit);
   const [attachment, setAttachment] = useState<CommsAttachmentPayload | null>(() => toInitialAttachment(entryToEdit));
-  const { uploadFile, isUploading, errorMessage, clearError } = useCommsAttachmentUpload(projectId);
+  const { uploadFile, isUploading, errorMessage, clearError } = useCommsAttachmentUpload(projectId, surface);
 
   const { register, control, handleSubmit, formState: { errors } } = useForm<CommsFormValues>({
     resolver: zodResolver(commsFormSchema),

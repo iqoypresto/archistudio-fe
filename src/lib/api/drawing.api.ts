@@ -8,15 +8,17 @@ import type {
   SignedDrawingUploadResponse,
 } from "@/types/api/drawing.types";
 import { api } from "./axios";
+import { apiSurfacePath, type ApiSurface } from "./api-surface";
 
 export const drawingApi = {
   /** Mengambil galeri Drawing project dengan hydrated signed viewUrl (US-18, BR-32). */
   async getDrawings(
     projectId: string,
     params?: DrawingFilterParams,
+    surface: ApiSurface = "office",
   ): Promise<DrawingItem[]> {
     const response = await api.get<ApiResponse<DrawingItem[]>>(
-      `/projects/${projectId}/drawings`,
+      apiSurfacePath(surface, `/projects/${projectId}/drawings`),
       {
         params: params?.includeArchived ? { includeArchived: "true" } : undefined,
       },
@@ -30,7 +32,7 @@ export const drawingApi = {
     payload: CreateDrawingPayload,
   ): Promise<DrawingItem> {
     const response = await api.post<ApiResponse<DrawingItem>>(
-      `/projects/${projectId}/drawings`,
+      apiSurfacePath("office", `/projects/${projectId}/drawings`),
       payload,
     );
     return response.data.data;
@@ -39,7 +41,7 @@ export const drawingApi = {
   /** Mengarsipkan Drawing oleh OWNER (US-18, BR-32). */
   async archiveDrawing(drawingId: string): Promise<DrawingItem> {
     const response = await api.post<ApiResponse<DrawingItem>>(
-      `/drawings/${drawingId}/archive`,
+      apiSurfacePath("office", `/drawings/${drawingId}/archive`),
     );
     return response.data.data;
   },
@@ -51,7 +53,7 @@ export const drawingApi = {
     contentType: DrawingMimeType;
     fileSizeBytes: number;
   }): Promise<SignedDrawingUploadResponse> {
-    const response = await api.post<ApiResponse<SignedDrawingUploadResponse>>("/uploads/sign", {
+    const response = await api.post<ApiResponse<SignedDrawingUploadResponse>>(apiSurfacePath("office", "/uploads/sign"), {
       purpose: "drawing",
       projectId: params.projectId,
       file: {

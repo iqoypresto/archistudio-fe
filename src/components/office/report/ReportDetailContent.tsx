@@ -11,17 +11,20 @@ import { canOwnerReviseReport } from "@/lib/validation/report-revision.validatio
 import { useAuthStore } from "@/stores/auth.store";
 import { OwnerReviseReportModal } from "./OwnerReviseReportModal";
 import { ReportDetailView } from "./ReportDetailView";
+import type { ApiSurface } from "@/lib/api/api-surface";
 
 export function ReportDetailContent({
   reportId,
   backHref,
+  surface = "office",
 }: {
   reportId: string;
   backHref: string;
+  surface?: ApiSurface;
 }) {
   const [reviseOpen, setReviseOpen] = useState(false);
   const userRole = useAuthStore((state) => state.user?.role);
-  const detailQuery = useReportDetailQuery(reportId);
+  const detailQuery = useReportDetailQuery(reportId, surface);
   const report = detailQuery.data;
   const canRevise = Boolean(report && canOwnerReviseReport(userRole, report.status));
 

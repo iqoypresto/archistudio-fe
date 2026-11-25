@@ -13,5 +13,5 @@ export default async function FieldReportDetailPage({
   params: Promise<{ reportId: string }>;
 }) {
   const { reportId } = await params;
-  return <ReportDetailContent reportId={reportId} backHref="/field/history" />;
+  return <ReportDetailContent reportId={reportId} backHref="/field/history" surface="field" />;
 }

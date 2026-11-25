@@ -45,7 +45,7 @@ export function OfficeSidebar({
       <SidebarHeader>
         <div className="group-data-[collapsible=icon]/sidebar:justify-center flex min-w-0 items-center gap-2">
           <Link
-            href={isFieldRole(role) ? "/field/home" : "/dashboard"}
+            href={isFieldRole(role) ? "/field/home" : "/office/dashboard"}
             aria-label="ArchiStudio beranda"
             className="group-data-[collapsible=icon]/sidebar:size-9 group-data-[collapsible=icon]/sidebar:flex-none group-data-[collapsible=icon]/sidebar:justify-center group-data-[collapsible=icon]/sidebar:border-transparent group-data-[collapsible=icon]/sidebar:bg-transparent group-data-[collapsible=icon]/sidebar:p-0 flex min-w-0 flex-1 items-center gap-2.5 rounded-xl border border-border bg-surface-input/90 px-2.5 py-2 transition-colors hover:bg-surface-active/70"
           >

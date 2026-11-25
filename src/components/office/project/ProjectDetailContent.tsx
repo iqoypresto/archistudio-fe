@@ -13,7 +13,6 @@ import {
   useArchiveProjectMutation, useCompleteProjectMutation, useProjectDetailQuery,
   useRestoreProjectMutation, useUpdateProjectMutation,
 } from "@/hooks/project.hooks";
-import { isFieldRole } from "@/lib/utils/role";
 import { resolveAreaPermissions } from "@/lib/validation/area-access";
 import { resolveProjectArchiveActions } from "@/lib/validation/project.validation";
 import { useAuthStore } from "@/stores/auth.store";
@@ -25,7 +24,6 @@ import { AssignmentHistoryDrawer } from "./AssignmentHistoryDrawer";
 import { ProjectDetailHeader } from "./ProjectDetailHeader";
 import { ProjectFormModal } from "./ProjectFormModal";
 import { ProjectLifecycleDialogs } from "./ProjectLifecycleDialogs";
-import { SupervisorProjectDetail } from "./SupervisorProjectDetail";
 
 export function ProjectDetailContent({ projectId }: { projectId: string }) {
   const role = useAuthStore((state) => state.user?.role);
@@ -54,23 +52,11 @@ export function ProjectDetailContent({ projectId }: { projectId: string }) {
   const archiveProject = useArchiveProjectMutation(() => setLifecycleModal(null));
   const restoreProject = useRestoreProjectMutation(() => setLifecycleModal(null));
 
-  if (isFieldRole(role)) {
-    return (
-      <SupervisorProjectDetail
-        project={project} areas={areasQuery.data}
-        isLoading={projectQuery.isLoading || areasQuery.isLoading}
-        isError={projectQuery.isError || areasQuery.isError}
-        error={projectQuery.error ?? areasQuery.error}
-        onRetry={() => { void projectQuery.refetch(); void areasQuery.refetch(); }}
-      />
-    );
-  }
-
   if (projectQuery.isError) {
     const message = projectQuery.error instanceof Error ? projectQuery.error.message : "Gagal memuat detail project.";
     return (
       <div className="space-y-4">
-        <Link href="/projects" className="inline-flex items-center gap-1.5 text-xs text-text-secondary hover:text-text-primary">
+        <Link href="/office/projects" className="inline-flex items-center gap-1.5 text-xs text-text-secondary hover:text-text-primary">
           <ArrowLeft className="size-3.5" /> Kembali ke Daftar Project
         </Link>
         <ErrorState description={message} onRetry={() => projectQuery.refetch()} />

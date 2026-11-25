@@ -52,15 +52,15 @@ async function throwPdfError(blob: Blob, status: number): Promise<never> {
 
 export const pdfExportApi = {
   async downloadDailyReportPdf(params: ExportPdfParams): Promise<void> {
-    await requestPdf("/exports/daily-report-pdf", { projectId: params.projectId, date: params.date },
+    await requestPdf("/office/exports/daily-report-pdf", { projectId: params.projectId, date: params.date },
       `LH-${params.projectCode ?? "PROJ"}-${params.date.replace(/-/g, "")}.pdf`);
   },
   async downloadMonthlyReportPdf(params: MonthlyPdfParams): Promise<void> {
-    await requestPdf("/exports/monthly-report-pdf", { projectId: params.projectId, month: params.month },
+    await requestPdf("/office/exports/monthly-report-pdf", { projectId: params.projectId, month: params.month },
       `laporan-bulanan-${params.month}.pdf`);
   },
   async downloadDailyReportRangePdf(params: DailyRangePdfParams): Promise<void> {
-    await requestPdf("/exports/daily-report-range-pdf", {
+    await requestPdf("/office/exports/daily-report-range-pdf", {
       projectId: params.projectId, fromDate: params.fromDate, toDate: params.toDate,
     }, `laporan-harian-${params.fromDate}-${params.toDate}.pdf`);
   },

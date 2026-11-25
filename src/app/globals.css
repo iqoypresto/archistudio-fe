@@ -240,6 +240,51 @@ html[data-login-splash-skip="true"] .login-splash-overlay { visibility: hidden; 
   --status-muted-bg: #eef2f7;
 }
 
+.supervisor-mobile.project-mobile-shell {
+  --project-canvas: #faf8f6;
+  --project-surface: #ffffff;
+  --project-hero-start: #895137;
+  --project-hero-mid: #995f40;
+  --project-hero-end: #a06647;
+  --project-text-heading: #1d1c1b;
+  --project-text-secondary: #545454;
+  --project-text-body: #242220;
+  --project-text-empty: #38332f;
+  --project-accent: #a75024;
+  --project-border: #e8d9cf;
+  --project-card-shadow: 0 3px 12px rgba(89, 53, 33, 0.06);
+  --project-action: #9c471d;
+  --project-action-hover: #823b19;
+  --project-nav-active-start: #b55726;
+  --project-nav-active-end: #9c471d;
+  --project-nav-border: #eee6e0;
+  --project-nav-surface: rgba(255, 255, 255, 0.95);
+  --project-nav-shadow: 0 8px 28px rgba(65, 45, 33, 0.16);
+  --project-nav-text: #393633;
+  --project-nav-hover: #f7f3ef;
+  --project-status-preparation-bg: #e9e8ea;
+  --project-status-preparation-fg: #4d4a50;
+  --project-status-running-bg: #e4efdd;
+  --project-status-running-fg: #356b3b;
+  --project-status-complete-bg: #e3e9f2;
+  --project-status-complete-fg: #355a7b;
+  --project-skeleton: #eee4dd;
+  --project-illustration-shadow: #f4e4da;
+  --project-illustration-paper: #fff9f4;
+  --project-illustration-outline: #ae8068;
+  --project-illustration-drawing: #d0a58e;
+  --project-illustration-line: #ba7a54;
+  --project-illustration-folder: #fff5ed;
+  --project-illustration-folder-outline: #9b4a22;
+  --project-illustration-rays: #c97848;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .project-mobile-shell .project-list-skeleton [data-slot="skeleton"] {
+    animation: none;
+  }
+}
+
 .sidebar-scrollable {
   scrollbar-width: none;
   -ms-overflow-style: none;

@@ -1,5 +1,5 @@
-import { PaymentWorkspaceContent } from "@/components/office/payment/PaymentWorkspaceContent";
+import { redirect } from "next/navigation";
 
-export default function AgentPaymentPage() {
-  return <PaymentWorkspaceContent payeeType="AGENT" />;
+export default function LegacyAgentPaymentsPage() {
+  redirect("/office/hr/agent/payment");
 }

@@ -5,7 +5,7 @@ import { api } from "./axios";
 export class ReportLockApi {
   async getMyAreasStatus(): Promise<SupervisorAreaTaskStatus[]> {
     const res = await api.get<ApiResponse<SupervisorAreaTaskStatus[]>>(
-      "/reports/my-areas-status"
+      "/field/reports/my-areas-status"
     );
     return res.data.data;
   }

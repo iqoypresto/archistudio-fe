@@ -11,11 +11,12 @@ import { isFieldRole } from "@/lib/utils/role";
 import { canEditCommsEntry, resolveCommsPermissions } from "@/lib/validation/comms.validation";
 import { useAuthStore } from "@/stores/auth.store";
 import type { CommsDirection, CommsEntryItem } from "@/types/api/comms.types";
+import type { ApiSurface } from "@/lib/api/api-surface";
 import { CommsEntryRow } from "./CommsEntryRow";
 import { CommsFiltersBar } from "./CommsFiltersBar";
 import { CommsFormModal } from "./CommsFormModal";
 
-export function CommsContent({ projectId, fixedDirection }: { projectId: string; fixedDirection?: CommsDirection }) {
+export function CommsContent({ projectId, fixedDirection, surface = "office" }: { projectId: string; fixedDirection?: CommsDirection; surface?: ApiSurface }) {
   const user = useAuthStore((state) => state.user);
   const role = user?.role;
   const [search, setSearch] = useState("");
@@ -25,7 +26,7 @@ export function CommsContent({ projectId, fixedDirection }: { projectId: string;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [entryToEdit, setEntryToEdit] = useState<CommsEntryItem | null>(null);
 
-  const project = useProjectDetailQuery(projectId).data;
+  const project = useProjectDetailQuery(projectId, surface).data;
   const { canView, canMutate, isProjectReadOnly } = resolveCommsPermissions(role, project);
   const effectiveDirection = fixedDirection ?? direction;
   const fieldTouch = isFieldRole(role);
@@ -39,12 +40,13 @@ export function CommsContent({ projectId, fixedDirection }: { projectId: string;
       ...(effectiveDirection && { direction: effectiveDirection }),
     },
     { enabled: canView },
+    surface,
   );
-  const createMutation = useCreateCommsMutation(projectId, () => setIsModalOpen(false));
+  const createMutation = useCreateCommsMutation(projectId, () => setIsModalOpen(false), surface);
   const updateMutation = useUpdateCommsMutation(projectId, () => {
     setIsModalOpen(false);
     setEntryToEdit(null);
-  });
+  }, surface);
 
   if (!canView) {
     return (
@@ -155,6 +157,7 @@ export function CommsContent({ projectId, fixedDirection }: { projectId: string;
             setEntryToEdit(null);
           }}
           projectId={projectId}
+          surface={surface}
           fixedDirection={fixedDirection}
           entryToEdit={entryToEdit}
           onSubmitCreate={(payload) => createMutation.mutate(payload)}

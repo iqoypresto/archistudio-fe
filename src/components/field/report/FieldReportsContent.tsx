@@ -24,7 +24,7 @@ function flattenPendingDates(areas: SupervisorAreaTaskStatus[]) {
   }))).sort((a, b) => a.date.localeCompare(b.date) || a.task.projectName.localeCompare(b.task.projectName));
 }
 function NewSubmissionNotice({ reportId }: { reportId: string }) {
-  const reportQuery = useReportDetailQuery(reportId);
+  const reportQuery = useReportDetailQuery(reportId, "field");
   if (reportQuery.isLoading) return <Skeleton className="h-24 w-full rounded-2xl" />;
   if (!reportQuery.data) return null;
 

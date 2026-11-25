@@ -1,5 +1,6 @@
 import { api } from "./axios";
 import type { ApiResponse } from "@/types/api";
+import { apiSurfacePath, type ApiSurface } from "./api-surface";
 import type {
   ActiveAssignmentInfo,
   AreaListItem,
@@ -11,9 +12,9 @@ import type {
 
 export const areaApi = {
   /** Mengambil daftar area dalam project beserta penugasan aktif (US-05). */
-  async getAreasByProject(projectId: string): Promise<AreaListItem[]> {
+  async getAreasByProject(projectId: string, surface: ApiSurface = "office"): Promise<AreaListItem[]> {
     const response = await api.get<ApiResponse<AreaListItem[]>>(
-      `/projects/${projectId}/areas`,
+      apiSurfacePath(surface, `/projects/${projectId}/areas`),
     );
     return response.data.data;
   },
@@ -24,7 +25,7 @@ export const areaApi = {
     payload: CreateAreaPayload,
   ): Promise<AreaListItem> {
     const response = await api.post<ApiResponse<AreaListItem>>(
-      `/projects/${projectId}/areas`,
+      `/office/projects/${projectId}/areas`,
       payload,
     );
     return response.data.data;
@@ -36,7 +37,7 @@ export const areaApi = {
     payload: UpdateAreaPayload,
   ): Promise<AreaListItem> {
     const response = await api.patch<ApiResponse<AreaListItem>>(
-      `/areas/${areaId}`,
+      `/office/areas/${areaId}`,
       payload,
     );
     return response.data.data;
@@ -48,7 +49,7 @@ export const areaApi = {
     payload: AssignSupervisorPayload,
   ): Promise<ActiveAssignmentInfo> {
     const response = await api.post<ApiResponse<ActiveAssignmentInfo>>(
-      `/areas/${areaId}/assignments`,
+      `/office/areas/${areaId}/assignments`,
       payload,
     );
     return response.data.data;
@@ -57,7 +58,7 @@ export const areaApi = {
   /** Mengambil riwayat kronologis penugasan supervisor (US-06). */
   async getAssignmentHistory(areaId: string): Promise<AssignmentHistoryItem[]> {
     const response = await api.get<ApiResponse<AssignmentHistoryItem[]>>(
-      `/areas/${areaId}/assignments`,
+      `/office/areas/${areaId}/assignments`,
     );
     return response.data.data;
   },

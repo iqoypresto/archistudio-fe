@@ -16,7 +16,7 @@ import { api } from "./axios";
 export const paymentApi = {
   /** Mengambil daftar penerima pembayaran Freelance/Agent global (US-17, BR-36). */
   async getPeople(params?: PaymentPeopleFilterParams): Promise<PaymentPayeeItem[]> {
-    const response = await api.get<ApiResponse<PaymentPayeeItem[]>>("/payments/people", {
+    const response = await api.get<ApiResponse<PaymentPayeeItem[]>>("/office/payments/people", {
       params,
     });
     return response.data.data;
@@ -24,7 +24,7 @@ export const paymentApi = {
 
   /** Menambahkan penerima pembayaran Freelance/Agent baru (US-17, BR-36). */
   async createPerson(payload: CreatePayeePayload): Promise<PaymentPayeeItem> {
-    const response = await api.post<ApiResponse<PaymentPayeeItem>>("/payments/people", payload);
+    const response = await api.post<ApiResponse<PaymentPayeeItem>>("/office/payments/people", payload);
     return response.data.data;
   },
 
@@ -34,7 +34,7 @@ export const paymentApi = {
     params?: PaymentRecordsFilterParams,
   ): Promise<PaymentRecordItem[]> {
     const response = await api.get<ApiResponse<PaymentRecordItem[]>>(
-      `/payments/people/${personId}/records`,
+      `/office/payments/people/${personId}/records`,
       { params },
     );
     return response.data.data;
@@ -46,7 +46,7 @@ export const paymentApi = {
     payload: CreatePaymentRecordPayload,
   ): Promise<PaymentRecordItem> {
     const response = await api.post<ApiResponse<PaymentRecordItem>>(
-      `/payments/people/${personId}/records`,
+      `/office/payments/people/${personId}/records`,
       payload,
     );
     return response.data.data;
@@ -58,7 +58,7 @@ export const paymentApi = {
     payload: UpdatePaymentRecordPayload,
   ): Promise<PaymentRecordItem> {
     const response = await api.patch<ApiResponse<PaymentRecordItem>>(
-      `/payments/records/${recordId}`,
+      `/office/payments/records/${recordId}`,
       payload,
     );
     return response.data.data;
@@ -71,7 +71,7 @@ export const paymentApi = {
     contentType: PaymentProofMime;
     fileSizeBytes: number;
   }): Promise<SignedPaymentProofResponse> {
-    const response = await api.post<ApiResponse<SignedPaymentProofResponse>>("/uploads/sign", {
+    const response = await api.post<ApiResponse<SignedPaymentProofResponse>>("/office/uploads/sign", {
       purpose: "payment-proof",
       payeeId: params.payeeId,
       file: {

@@ -27,7 +27,7 @@ function computeRedirectPath(
     return "/field/home";
   }
   if (scope === "field" && !isFieldRole(role)) {
-    return "/dashboard";
+    return "/office/dashboard";
   }
   return null;
 }

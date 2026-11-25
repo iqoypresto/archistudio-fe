@@ -21,7 +21,7 @@ export function SupervisorProjectDetail({ project, areas, isLoading, isError, er
   const isSiteManager = role === "SITE_MANAGER";
 
   return <div className="space-y-5">
-    <Link href="/projects" className="inline-flex min-h-12 items-center gap-2 text-sm font-semibold text-primary">
+    <Link href="/field/projects" className="inline-flex min-h-12 items-center gap-2 text-sm font-semibold text-primary">
       <ArrowLeft className="size-5" /> Project Saya
     </Link>
     <AsyncStateView isLoading={isLoading} isError={isError} error={error} data={project}
@@ -49,17 +49,17 @@ export function SupervisorProjectDetail({ project, areas, isLoading, isError, er
           </div>) : <p className="rounded-2xl bg-surface p-4 text-text-secondary">Belum ada area aktif yang tersedia.</p>}
         </section>
         <section className="space-y-2.5" aria-label="Dokumen dan Komunikasi Project">
-          <Link href={`/projects/${item.id}/drawings`}
+          <Link href={`/field/projects/${item.id}/drawings`}
             className="flex min-h-16 items-center gap-3 rounded-2xl border border-border bg-surface p-4 font-semibold text-text-primary">
             <FileImage className="size-5 text-primary" /> Drawing <ArrowRight className="ml-auto size-5 text-primary" />
           </Link>
           {canAccessComms && (
             <>
-              <Link href={`/projects/${item.id}/comms/in`}
+              <Link href={`/field/projects/${item.id}/comms/in`}
                 className="flex min-h-16 items-center gap-3 rounded-2xl border border-border bg-surface p-4 font-semibold text-text-primary">
                 <ArrowDownLeft className="size-5 text-primary" /> Comms In <ArrowRight className="ml-auto size-5 text-primary" />
               </Link>
-              <Link href={`/projects/${item.id}/comms/out`}
+              <Link href={`/field/projects/${item.id}/comms/out`}
                 className="flex min-h-16 items-center gap-3 rounded-2xl border border-border bg-surface p-4 font-semibold text-text-primary">
                 <ArrowUpRight className="size-5 text-primary" /> Comms Out <ArrowRight className="ml-auto size-5 text-primary" />
               </Link>

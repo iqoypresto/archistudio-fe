@@ -56,7 +56,7 @@ export function ProjectDetailHeader({
     <div className="space-y-4 tabular-nums">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Link
-          href={isProjectReadOnly ? "/archive" : "/projects"}
+          href={isProjectReadOnly ? "/office/archive" : "/office/projects"}
           className={cn(
             buttonVariants({ variant: "outline", size: "sm" }),
             "h-9 gap-1.5 border-border bg-surface px-3 text-xs text-text-secondary hover:bg-surface-active hover:text-text-primary",

@@ -5,16 +5,18 @@ import type { PaginationMeta } from "@/types/api";
 interface ServerPaginationProps {
   meta: PaginationMeta;
   onPageChange: (page: number) => void;
+  isUpdating?: boolean;
 }
 
 export function ServerPagination({
   meta,
   onPageChange,
+  isUpdating = false,
 }: ServerPaginationProps) {
   const totalPages = Math.max(1, meta.totalPages);
 
   return (
-    <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between" aria-busy={isUpdating || undefined}>
       <p className="text-sm text-text-secondary">
         Menampilkan halaman{" "}
         <span className="font-mono font-semibold tabular-nums text-text-primary">
@@ -31,7 +33,7 @@ export function ServerPagination({
         <Button
           type="button"
           variant="outline"
-          disabled={!meta.hasPreviousPage}
+          disabled={isUpdating || !meta.hasPreviousPage}
           onClick={() => onPageChange(meta.page - 1)}
           className="min-h-11 px-3"
         >
@@ -41,7 +43,7 @@ export function ServerPagination({
         <Button
           type="button"
           variant="outline"
-          disabled={!meta.hasNextPage}
+          disabled={isUpdating || !meta.hasNextPage}
           onClick={() => onPageChange(meta.page + 1)}
           className="min-h-11 px-3"
         >

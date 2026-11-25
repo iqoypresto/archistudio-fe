@@ -13,7 +13,6 @@ import {
   useProjectsQuery,
   useUpdateProjectMutation,
 } from "@/hooks/project.hooks";
-import { isFieldRole } from "@/lib/utils/role";
 import { useAuthStore } from "@/stores/auth.store";
 import type {
   ActiveProjectStatus,
@@ -24,7 +23,6 @@ import { ConfirmArchiveProjectDialog } from "./ConfirmArchiveProjectDialog";
 import { ProjectFilters } from "./ProjectFilters";
 import { ProjectFormModal } from "./ProjectFormModal";
 import { ProjectTable } from "./ProjectTable";
-import { SupervisorProjectList } from "./SupervisorProjectList";
 
 type ProjectStatusTab = "ALL" | ActiveProjectStatus;
 
@@ -59,29 +57,6 @@ export function ProjectListContent() {
   const handleFilterChange = (updates: Partial<ProjectFilterParams>) => {
     setFilters((prev) => ({ ...prev, ...updates }));
   };
-
-  if (isFieldRole(role)) {
-    return (
-      <AsyncStateView
-        isLoading={projectsQuery.isLoading}
-        isError={projectsQuery.isError}
-        error={projectsQuery.error}
-        data={projectsQuery.data}
-        onRetry={() => projectsQuery.refetch()}
-        emptyTitle="Belum ada project ditugaskan"
-      >
-        {(result) => (
-          <SupervisorProjectList
-            projects={result.data}
-            meta={result.meta}
-            search={filters.search ?? ""}
-            onSearch={(search) => handleFilterChange({ search, page: 1 })}
-            onPageChange={(page) => handleFilterChange({ page })}
-          />
-        )}
-      </AsyncStateView>
-    );
-  }
 
   const activeTab: ProjectStatusTab = filters.status ?? "ALL";
 
@@ -124,7 +99,7 @@ export function ProjectListContent() {
           rightSlot={
             <span>
               Proyek selesai &amp; arsip tersedia di{" "}
-              <Link href="/archive" className="text-text-secondary underline-offset-4 hover:underline">
+              <Link href="/office/archive" className="text-text-secondary underline-offset-4 hover:underline">
                 Archive Project
               </Link>
             </span>

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { MY_AREAS_STATUS_QUERY_KEY } from "@/hooks/report-lock.hooks";
 import { reportApi } from "@/lib/api/report.api";
+import type { ApiSurface } from "@/lib/api/api-surface";
 import type {
   ListReportsQuery,
   ListArchivedReportsQuery,
@@ -13,33 +14,33 @@ export const REPORTS_QUERY_KEY = ["reports"] as const;
 
 export function useArchivedReportsQuery(query: ListArchivedReportsQuery, enabled = true) {
   return useQuery({
-    queryKey: [...REPORTS_QUERY_KEY, "archive", query],
+    queryKey: [...REPORTS_QUERY_KEY, "office", "archive", query],
     enabled,
     queryFn: () => reportApi.listArchive(query),
   });
 }
 
-export function useReportDetailQuery(reportId?: string | null) {
+export function useReportDetailQuery(reportId?: string | null, surface: ApiSurface = "office") {
   return useQuery({
-    queryKey: [...REPORTS_QUERY_KEY, "detail", reportId],
-    queryFn: () => reportApi.getReportById(reportId ?? ""),
+    queryKey: [...REPORTS_QUERY_KEY, surface, "detail", reportId],
+    queryFn: () => reportApi.getReportById(reportId ?? "", surface),
     enabled: Boolean(reportId),
   });
 }
 
 export function useMyReportHistoryQuery(query: ListReportsQuery, enabled = true) {
   return useQuery({
-    queryKey: [...REPORTS_QUERY_KEY, "history", query],
+    queryKey: [...REPORTS_QUERY_KEY, "field", "history", query],
     enabled,
-    queryFn: () => reportApi.listReports(query),
+    queryFn: () => reportApi.listReports(query, "field"),
   });
 }
 
 export function useOfficeReportsQuery(query: ListReportsQuery, enabled = true) {
   return useQuery({
-    queryKey: [...REPORTS_QUERY_KEY, "office", query],
+    queryKey: [...REPORTS_QUERY_KEY, "office", "list", query],
     enabled,
-    queryFn: () => reportApi.listReports(query),
+    queryFn: () => reportApi.listReports(query, "office"),
   });
 }
 
@@ -48,7 +49,7 @@ export function useSubmitNewReportMutation() {
   return useMutation({
     mutationFn: (payload: SubmitReportPayload & { sessionId: string }) => reportApi.submitNew(payload),
     onSuccess: (report) => {
-      queryClient.setQueryData([...REPORTS_QUERY_KEY, "detail", report.id], report);
+      queryClient.setQueryData([...REPORTS_QUERY_KEY, "field", "detail", report.id], report);
       void queryClient.invalidateQueries({ queryKey: REPORTS_QUERY_KEY });
       void queryClient.invalidateQueries({ queryKey: MY_AREAS_STATUS_QUERY_KEY });
     },
@@ -64,7 +65,7 @@ export function useReviseReportMutation() {
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: REPORTS_QUERY_KEY });
       await queryClient.invalidateQueries({
-        queryKey: [...REPORTS_QUERY_KEY, "detail", data.id],
+        queryKey: [...REPORTS_QUERY_KEY, "office", "detail", data.id],
       });
       toast.success("Revisi laporan berhasil disimpan dan dicatat ke riwayat.");
     },

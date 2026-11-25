@@ -13,20 +13,21 @@ import { isFieldRole } from "@/lib/utils/role";
 import { resolveDrawingPermissions } from "@/lib/validation/drawing.validation";
 import { useAuthStore } from "@/stores/auth.store";
 import type { DrawingItem } from "@/types/api/drawing.types";
+import type { ApiSurface } from "@/lib/api/api-surface";
 import { ConfirmArchiveDrawingDialog } from "./ConfirmArchiveDrawingDialog";
 import { DrawingPreviewModal } from "./DrawingPreviewModal";
 
-export function DrawingGalleryContent({ projectId }: { projectId: string }) {
+export function DrawingGalleryContent({ projectId, surface = "office" }: { projectId: string; surface?: ApiSurface }) {
   const role = useAuthStore((state) => state.user?.role);
   const [search, setSearch] = useState("");
   const [previewItem, setPreviewItem] = useState<DrawingItem | null>(null);
   const [archiveTarget, setArchiveTarget] = useState<DrawingItem | null>(null);
 
-  const projectQuery = useProjectDetailQuery(projectId);
+  const projectQuery = useProjectDetailQuery(projectId, surface);
   const project = projectQuery.data;
   const { canView, canManage, isProjectReadOnly } = resolveDrawingPermissions(role, project);
 
-  const drawingsQuery = useProjectDrawingsQuery(projectId, undefined, { enabled: canView });
+  const drawingsQuery = useProjectDrawingsQuery(projectId, undefined, { enabled: canView }, surface);
   const archiveMutation = useArchiveDrawingMutation(projectId);
   const { uploadDrawing, isUploading } = useDrawingUpload(projectId);
 

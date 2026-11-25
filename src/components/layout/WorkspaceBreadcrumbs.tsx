@@ -72,13 +72,14 @@ function getBreadcrumbItems(
 ): BreadcrumbItem[] {
   if (projectHref) {
     return [
-      { label: "Semua Project", href: "/projects" },
+      { label: "Semua Project", href: pathname.startsWith("/field/") ? "/field/projects" : "/office/projects" },
       { label: projectTitle ?? "Project", href: projectHref },
       { label: active?.item.label ?? "Overview & Area" },
     ];
   }
-  if (pathname === "/projects") return [{ label: "Project" }, { label: "Semua Project" }];
-  if (active?.item.href === "/dashboard") return [{ label: active.item.label }];
-  if (active) return [{ label: "Dashboard", href: "/dashboard" }, { label: active.item.label }];
+  if (pathname === "/office/projects") return [{ label: "Project" }, { label: "Semua Project" }];
+  if (pathname === "/field/projects") return [{ label: "Project" }, { label: "Semua Project" }];
+  if (active?.item.href === "/office/dashboard") return [{ label: active.item.label }];
+  if (active) return [{ label: "Dashboard", href: pathname.startsWith("/field/") ? "/field/home" : "/office/dashboard" }, { label: active.item.label }];
   return [{ label: "Workspace" }];
 }

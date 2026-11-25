@@ -1,7 +1,5 @@
-import { MemberContent } from "@/components/office/member/MemberContent";
+import { redirect } from "next/navigation";
 
-export const instant = false;
-
-export default function MembersPage() {
-  return <MemberContent />;
+export default function LegacyMembersPage() {
+  redirect("/office/members");
 }

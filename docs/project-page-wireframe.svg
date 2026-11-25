@@ -1,0 +1,254 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2600" height="2360" viewBox="0 0 2600 2360" role="img" aria-labelledby="title desc">
+  <title id="title">Wireframe halaman Project Supervisor dan ukuran FE</title>
+  <desc id="desc">Dua wireframe pada viewport 393 kali 852 piksel, keadaan ada project dan keadaan kosong, dengan tabel ukuran Tailwind persis dari kode FE.</desc>
+  <defs>
+    <linearGradient id="hero" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9e664a" />
+      <stop offset="0.54" stop-color="#c47c55" />
+      <stop offset="1" stop-color="#e9a574" />
+    </linearGradient>
+    <linearGradient id="active" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e68d5c" />
+      <stop offset="1" stop-color="#b85b31" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#47372d" flood-opacity="0.13" />
+    </filter>
+    <style>
+      text { font-family: Inter, Arial, sans-serif; fill: #292522; }
+      .mono { font-family: Consolas, 'Courier New', monospace; fill: #53443b; }
+      .title { font-size: 38px; font-weight: 750; letter-spacing: -0.6px; }
+      .subtitle { font-size: 20px; fill: #6a5c53; }
+      .phone-label { font-size: 17px; font-weight: 700; letter-spacing: 1.2px; fill: #885131; }
+      .table-title { font-size: 25px; font-weight: 750; }
+      .group { font-size: 17px; font-weight: 750; fill: #8d4e2f; letter-spacing: 0.6px; }
+      .head { font-size: 13px; font-weight: 750; fill: #87766b; letter-spacing: 0.8px; }
+      .row { font-size: 14px; }
+      .code { font-size: 13px; }
+      .small { font-size: 13px; fill: #766a62; }
+      .device-title { font-size: 28px; font-weight: 750; fill: #fff; }
+      .device-subtitle { font-size: 16px; fill: #fff; }
+      .card-title { font-size: 20px; font-weight: 750; }
+      .card-code { font-size: 16px; font-weight: 650; fill: #898582; }
+      .card-info { font-size: 16px; }
+      .chip { font-size: 14px; font-weight: 700; }
+      .nav-label { font-size: 12px; font-weight: 650; }
+    </style>
+  </defs>
+
+  <rect width="2600" height="2360" fill="#f5f2ee" />
+  <text x="64" y="76" class="title">PROJECT SAYA · WIREFRAME FE</text>
+  <text x="64" y="112" class="subtitle">Halaman aktif sebelum eksperimen terakhir · tampilan berisi project + state kosong · sumber ukuran: kelas Tailwind di FE</text>
+  <rect x="64" y="132" width="2468" height="44" rx="10" fill="#fffaf5" stroke="#e8d9cf" />
+  <text x="82" y="160" class="small">Konversi contoh memakai root 16px dan viewport 393 × 852 CSS px; safe-area diasumsikan 0 hanya untuk hitungan contoh. Ekspresi asli tetap ditulis apa adanya.</text>
+
+  <text x="64" y="207" class="phone-label">01 · PROJECT TERSEDIA</text>
+  <text x="500" y="207" class="phone-label">02 · STATE KOSONG</text>
+
+  <!-- Populated screen: drawn 1:1 at 393 × 852 CSS px. -->
+  <g transform="translate(64 226)" filter="url(#shadow)">
+    <rect width="393" height="852" rx="28" fill="#faf8f6" stroke="#cbbdb3" stroke-width="2" />
+    <path d="M0 28a28 28 0 0 1 28-28h337a28 28 0 0 1 28 28v236H0Z" fill="url(#hero)" />
+    <text x="20" y="82" class="device-title">Project Saya</text>
+    <text x="20" y="114" class="device-subtitle">Project yang ditugaskan kepada Anda</text>
+
+    <path d="M0 264v-20a32 32 0 0 1 32-32h329a32 32 0 0 1 32 32v20Z" fill="#faf8f6" />
+    <rect y="244" width="393" height="608" fill="#faf8f6" />
+    <path d="M0 276a32 32 0 0 1 32-32h329a32 32 0 0 1 32 32v576H0Z" fill="#faf8f6" />
+
+    <!-- Card 1 -->
+    <rect x="16" y="280" width="361" height="213" rx="20" fill="#fff" stroke="#e8d9cf" />
+    <text x="32" y="317" class="card-title">Renovasi Hotel Surya</text>
+    <text x="32" y="344" class="card-code">HS-014</text>
+    <path d="M36 365c-5 0-8 4-8 9 0 7 8 17 8 17s8-10 8-17c0-5-3-9-8-9Zm0 6a3 3 0 1 1 0 6 3 3 0 0 1 0-6Z" fill="none" stroke="#a75024" stroke-width="2" />
+    <text x="52" y="382" class="card-info">Surabaya, Jawa Timur</text>
+    <rect x="29" y="397" width="16" height="19" rx="1" fill="none" stroke="#a75024" stroke-width="2" />
+    <path d="M33 401h3v4h-3zm6 0h3v4h-3zm-6 7h3v4h-3zm6 0h3v4h-3z" fill="none" stroke="#a75024" stroke-width="1.5" />
+    <text x="52" y="413" class="card-info">Hotel Surya</text>
+    <line x1="32" y1="430" x2="361" y2="430" stroke="#e8d9cf" />
+    <rect x="32" y="441" width="139" height="40" rx="20" fill="#e9e8ea" />
+    <rect x="43" y="451" width="18" height="20" rx="2" fill="none" stroke="#4d4a50" stroke-width="2" />
+    <path d="M47 447h10v7H47zM47 459h10m-10 5h8" fill="none" stroke="#4d4a50" stroke-width="2" />
+    <text x="68" y="467" class="chip" fill="#4d4a50">Persiapan</text>
+    <line x1="183" y1="445" x2="183" y2="477" stroke="#d7b4a1" />
+    <rect x="203" y="441" width="158" height="48" rx="12" fill="#9c471d" />
+    <text x="282" y="471" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">Masuk ke Project</text>
+
+    <!-- Card 2 -->
+    <rect x="16" y="505" width="361" height="213" rx="20" fill="#fff" stroke="#e8d9cf" />
+    <text x="32" y="542" class="card-title">Renovasi Kantor Pusat</text>
+    <text x="32" y="569" class="card-code">AR-026</text>
+    <circle cx="36" cy="590" r="8" fill="none" stroke="#a75024" stroke-width="2" />
+    <path d="M36 598v6m0-18a3 3 0 1 1 0 6 3 3 0 0 1 0-6Z" fill="none" stroke="#a75024" stroke-width="2" />
+    <text x="52" y="607" class="card-info">Surabaya, Jawa Timur</text>
+    <rect x="29" y="622" width="16" height="19" rx="1" fill="none" stroke="#a75024" stroke-width="2" />
+    <path d="M33 626h3v4h-3zm6 0h3v4h-3zm-6 7h3v4h-3zm6 0h3v4h-3z" fill="none" stroke="#a75024" stroke-width="1.5" />
+    <text x="52" y="638" class="card-info">PT Aruna Properti</text>
+    <line x1="32" y1="655" x2="361" y2="655" stroke="#e8d9cf" />
+    <rect x="32" y="666" width="139" height="40" rx="20" fill="#e4efdd" />
+    <circle cx="52" cy="686" r="10" fill="none" stroke="#356b3b" stroke-width="2" />
+    <path d="m50 681 7 5-7 5Z" fill="#356b3b" />
+    <text x="68" y="692" class="chip" fill="#356b3b">Berjalan</text>
+    <line x1="183" y1="670" x2="183" y2="702" stroke="#d7b4a1" />
+    <rect x="203" y="666" width="158" height="48" rx="12" fill="#9c471d" />
+    <text x="282" y="696" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">Masuk ke Project</text>
+
+    <!-- Beginning of card 3 under the fixed navigation -->
+    <rect x="16" y="730" width="361" height="213" rx="20" fill="#fff" stroke="#e8d9cf" />
+    <text x="32" y="767" class="card-title">Pembangunan Gudang Sentra</text>
+    <text x="32" y="794" class="card-code">GS-008</text>
+    <text x="32" y="823" class="card-info">Sidoarjo, Jawa Timur</text>
+
+    <!-- Fixed bottom navigation: 361 × 90 px in the sample viewport -->
+    <g transform="translate(16 750)">
+      <rect width="361" height="90" rx="40" fill="#fff" fill-opacity="0.97" stroke="#eee6e0" />
+      <g transform="translate(35 19)" fill="none" stroke="#a75024" stroke-width="2">
+        <path d="m16 6-12 10v12h9v-8h7v8h8V16Z" />
+      </g>
+      <text x="51" y="62" text-anchor="middle" class="nav-label">Beranda</text>
+      <g transform="translate(121 23)" fill="none" stroke="#a75024" stroke-width="2">
+        <path d="M5 2h15l8 8v20H5Z" /><path d="M20 2v9h8M10 17h13M10 22h13" />
+      </g>
+      <text x="138" y="62" text-anchor="middle" class="nav-label">Laporan</text>
+      <g transform="translate(210 22)" fill="none" stroke="#a75024" stroke-width="2">
+        <path d="M27 15a12 12 0 1 1-4-9M27 3v8h-8" /><path d="M15 8v8l5 3" />
+      </g>
+      <text x="225" y="62" text-anchor="middle" class="nav-label">Riwayat</text>
+      <rect x="269" y="9" width="83" height="72" rx="24" fill="url(#active)" />
+      <g transform="translate(293 23)" fill="none" stroke="#fff" stroke-width="2">
+        <path d="m18 2 15 8-15 8L3 10Z" /><path d="m3 17 15 8 15-8M3 24l15 8 15-8" />
+      </g>
+      <text x="311" y="62" text-anchor="middle" class="nav-label" style="fill:#fff">Project</text>
+    </g>
+  </g>
+
+  <!-- Empty screen -->
+  <g transform="translate(500 226)" filter="url(#shadow)">
+    <rect width="393" height="852" rx="28" fill="#faf8f6" stroke="#cbbdb3" stroke-width="2" />
+    <path d="M0 28a28 28 0 0 1 28-28h337a28 28 0 0 1 28 28v236H0Z" fill="url(#hero)" />
+    <text x="20" y="82" class="device-title">Project Saya</text>
+    <text x="20" y="114" class="device-subtitle">Project yang ditugaskan kepada Anda</text>
+    <path d="M0 264v-20a32 32 0 0 1 32-32h329a32 32 0 0 1 32 32v20Z" fill="#faf8f6" />
+    <rect y="244" width="393" height="608" fill="#faf8f6" />
+    <path d="M0 276a32 32 0 0 1 32-32h329a32 32 0 0 1 32 32v576H0Z" fill="#faf8f6" />
+
+    <!-- Blueprint + folder illustration, sized to the current SVG constraints -->
+    <g transform="translate(44 355)">
+      <ellipse cx="152" cy="185" rx="111" ry="14" fill="#f4e4da" />
+      <path d="m52 33 114 14-8 93-114-12Z" fill="#fff9f4" stroke="#ae8068" stroke-width="3" />
+      <path d="m62 45 94 11-7 68-94-10Z" fill="none" stroke="#d0a58e" stroke-width="2" />
+      <path d="m78 91 39-28 42 30m-72-2v28m22-43v43m22-29v29m-44-13 67 7" fill="none" stroke="#ba7a54" stroke-width="2.5" stroke-linecap="round" />
+      <path d="M151 31c0-9 7-16 16-16s16 8 15 17l-7 106c-1 9-8 15-17 14-8-1-14-8-13-17Z" fill="#fff9f4" stroke="#ae8068" stroke-width="3" />
+      <path d="M31 82h54l13 12h74c9 0 16 7 16 16v43c0 9-7 16-16 16H31c-9 0-16-7-16-16V98c0-9 7-16 16-16Z" fill="#fff5ed" stroke="#9b4a22" stroke-width="3" />
+      <path d="m7 58 7 11m10-21 3 13m12-18-1 12" stroke="#c97848" stroke-width="3" stroke-linecap="round" />
+    </g>
+    <text x="196" y="596" text-anchor="middle" font-size="22" font-weight="750" fill="#38332f">Belum ada project yang</text>
+    <text x="196" y="626" text-anchor="middle" font-size="22" font-weight="750" fill="#38332f">ditugaskan kepadamu.</text>
+
+    <g transform="translate(16 750)">
+      <rect width="361" height="90" rx="40" fill="#fff" fill-opacity="0.97" stroke="#eee6e0" />
+      <g transform="translate(35 19)" fill="none" stroke="#a75024" stroke-width="2"><path d="m16 6-12 10v12h9v-8h7v8h8V16Z" /></g>
+      <text x="51" y="62" text-anchor="middle" class="nav-label">Beranda</text>
+      <g transform="translate(121 23)" fill="none" stroke="#a75024" stroke-width="2"><path d="M5 2h15l8 8v20H5Z" /><path d="M20 2v9h8M10 17h13M10 22h13" /></g>
+      <text x="138" y="62" text-anchor="middle" class="nav-label">Laporan</text>
+      <g transform="translate(210 22)" fill="none" stroke="#a75024" stroke-width="2"><path d="M27 15a12 12 0 1 1-4-9M27 3v8h-8" /><path d="M15 8v8l5 3" /></g>
+      <text x="225" y="62" text-anchor="middle" class="nav-label">Riwayat</text>
+      <rect x="269" y="9" width="83" height="72" rx="24" fill="url(#active)" />
+      <g transform="translate(293 23)" fill="none" stroke="#fff" stroke-width="2"><path d="m18 2 15 8-15 8L3 10Z" /><path d="m3 17 15 8 15-8M3 24l15 8 15-8" /></g>
+      <text x="311" y="62" text-anchor="middle" class="nav-label" style="fill:#fff">Project</text>
+    </g>
+  </g>
+
+  <!-- Measurements beside the wireframes -->
+  <g>
+    <rect x="930" y="190" width="1600" height="2100" rx="20" fill="#fffdfb" stroke="#e4d9d1" />
+    <text x="960" y="232" class="table-title">SEMUA UKURAN YANG TERPAKAI DI KODE</text>
+    <text x="960" y="260" class="small">px merupakan konversi pada root 16px; istilah %, vw, svh, dvh, dan env() tetap dinamis.</text>
+    <text x="960" y="302" class="head">AREA</text>
+    <text x="1165" y="302" class="head">KELAS / EKSPRESI TAILWIND</text>
+    <text x="1775" y="302" class="head">NILAI / CONTOH</text>
+    <text x="2110" y="302" class="head">PENGGUNAAN</text>
+    <line x1="960" y1="314" x2="2500" y2="314" stroke="#d9cbc1" />
+
+    <!-- Shell -->
+    <rect x="948" y="326" width="1564" height="28" rx="6" fill="#f4e8df" />
+    <text x="960" y="346" class="group">SHELL &amp; SAFE AREA</text>
+    <text x="960" y="376" class="row">Shell</text><text x="1165" y="376" class="mono code">w-full max-w-md</text><text x="1775" y="376" class="row">100%; max 28rem = 448px</text><text x="2110" y="376" class="row">contoh W=393 → 393px</text>
+    <text x="960" y="404" class="row">Tinggi shell</text><text x="1165" y="404" class="mono code">min-h-dvh</text><text x="1775" y="404" class="row">min 100dvh; contoh 852px</text><text x="2110" y="404" class="row">tinggi viewport dinamis</text>
+    <text x="960" y="432" class="row">Main</text><text x="1165" y="432" class="mono code">flex-1; p-0</text><text x="1775" y="432" class="row">mengisi sisa; padding 0</text><text x="2110" y="432" class="row">route /projects</text>
+    <text x="960" y="460" class="row">Ruang bawah main</text><text x="1165" y="460" class="mono code">pb-[calc(6.5rem+env(safe-area-inset-bottom))]</text><text x="1775" y="460" class="row">104px + inset bawah</text><text x="2110" y="460" class="row">ruang untuk nav fixed</text>
+    <text x="960" y="488" class="row">Header shell</text><text x="1165" y="488" class="mono code">isLandingPage → tidak dirender</text><text x="1775" y="488" class="row">—</text><text x="2110" y="488" class="row">tanpa ArchiStudio / Keluar</text>
+
+    <!-- Hero -->
+    <rect x="948" y="504" width="1564" height="28" rx="6" fill="#f4e8df" />
+    <text x="960" y="524" class="group">HERO</text>
+    <text x="960" y="554" class="row">Tinggi</text><text x="1165" y="554" class="mono code">h-[31svh] min-h-56 max-h-72</text><text x="1775" y="554" class="row">31svh; min 14rem=224px; max 18rem=288px</text><text x="2110" y="554" class="row">393×852 → ≈264.1px</text>
+    <text x="960" y="582" class="row">Inset kiri / kanan</text><text x="1165" y="582" class="mono code">inset-x-5 sm:inset-x-6</text><text x="1775" y="582" class="row">1.25rem=20px / 1.5rem=24px</text><text x="2110" y="582" class="row">sm mulai 40rem=640px</text>
+    <text x="960" y="610" class="row">Posisi teks</text><text x="1165" y="610" class="mono code">top-[calc(env(safe-area-inset-top)+3.25rem)]</text><text x="1775" y="610" class="row">safe top + 52px</text><text x="2110" y="610" class="row">posisi dari atas hero</text>
+    <text x="960" y="638" class="row">Lebar blok teks</text><text x="1165" y="638" class="mono code">max-w-[76%]</text><text x="1775" y="638" class="row">maksimum 76% dari hero</text><text x="2110" y="638" class="row">tetap persen</text>
+    <text x="960" y="666" class="row">Judul</text><text x="1165" y="666" class="mono code">text-[clamp(1.75rem,5vw,2rem)]</text><text x="1775" y="666" class="row">clamp(28px, 5vw, 32px)</text><text x="2110" y="666" class="row">393px viewport → 28px</text>
+    <text x="960" y="694" class="row">Subjudul</text><text x="1165" y="694" class="mono code">mt-2 text-base leading-6</text><text x="1775" y="694" class="row">margin 8px; font 16px; line 24px</text><text x="2110" y="694" class="row">Project yang ditugaskan…</text>
+
+    <!-- Panel and list -->
+    <rect x="948" y="710" width="1564" height="28" rx="6" fill="#f4e8df" />
+    <text x="960" y="730" class="group">PANEL &amp; DAFTAR</text>
+    <text x="960" y="760" class="row">Overlap panel</text><text x="1165" y="760" class="mono code">-mt-5</text><text x="1775" y="760" class="row">-1.25rem = -20px</text><text x="2110" y="760" class="row">panel menumpuk hero</text>
+    <text x="960" y="788" class="row">Tinggi minimum panel</text><text x="1165" y="788" class="mono code">min-h-[70dvh]</text><text x="1775" y="788" class="row">70dvh; contoh ≈596.4px</text><text x="2110" y="788" class="row">bisa tumbuh mengikuti isi</text>
+    <text x="960" y="816" class="row">Sudut panel</text><text x="1165" y="816" class="mono code">rounded-t-[2rem]</text><text x="1775" y="816" class="row">2rem = 32px</text><text x="2110" y="816" class="row">hanya sudut atas</text>
+    <text x="960" y="844" class="row">Padding panel</text><text x="1165" y="844" class="mono code">pt-1 pb-8</text><text x="1775" y="844" class="row">4px atas; 32px bawah</text><text x="2110" y="844" class="row">komponen luar list</text>
+    <text x="960" y="872" class="row">List</text><text x="1165" y="872" class="mono code">space-y-3 px-4 pt-8 pb-8</text><text x="1775" y="872" class="row">gap 12px; x 16px; top/bottom 32px</text><text x="2110" y="872" class="row">card list + skeleton</text>
+    <text x="960" y="900" class="row">Lebar kartu</text><text x="1165" y="900" class="mono code">parent width - px-4 × 2</text><text x="1775" y="900" class="row">393 - 32 = 361px</text><text x="2110" y="900" class="row">contoh viewport 393px</text>
+
+    <!-- Card -->
+    <rect x="948" y="916" width="1564" height="28" rx="6" fill="#f4e8df" />
+    <text x="960" y="936" class="group">KARTU PROJECT</text>
+    <text x="960" y="966" class="row">Bentuk kartu</text><text x="1165" y="966" class="mono code">rounded-[1.25rem] border p-4</text><text x="1775" y="966" class="row">radius 20px; border 1px; padding 16px</text><text x="2110" y="966" class="row">height alami, tanpa h tetap</text>
+    <text x="960" y="994" class="row">Nama project</text><text x="1165" y="994" class="mono code">text-xl leading-6 line-clamp-2</text><text x="1775" y="994" class="row">20px; line 24px; maks 2 baris</text><text x="2110" y="994" class="row">font-bold</text>
+    <text x="960" y="1022" class="row">Jarak nama / kode</text><text x="1165" y="1022" class="mono code">space-y-1</text><text x="1775" y="1022" class="row">0.25rem = 4px</text><text x="2110" y="1022" class="row">blok judul</text>
+    <text x="960" y="1050" class="row">Kode project</text><text x="1165" y="1050" class="mono code">text-base</text><text x="1775" y="1050" class="row">1rem = 16px</text><text x="2110" y="1050" class="row">font-semibold</text>
+    <text x="960" y="1078" class="row">Info project</text><text x="1165" y="1078" class="mono code">mt-2 space-y-1.5 text-base leading-5</text><text x="1775" y="1078" class="row">top 8px; gap 6px; font 16px; line 20px</text><text x="2110" y="1078" class="row">lokasi + client</text>
+    <text x="960" y="1106" class="row">Ikon / teks</text><text x="1165" y="1106" class="mono code">size-5 gap-2</text><text x="1775" y="1106" class="row">ikon 20px; gap 8px</text><text x="2110" y="1106" class="row">MapPin, Building2</text>
+    <text x="960" y="1134" class="row">Garis pemisah</text><text x="1165" y="1134" class="mono code">my-3 border-t</text><text x="1775" y="1134" class="row">margin vertikal 12px; border 1px</text><text x="2110" y="1134" class="row">di atas footer</text>
+    <text x="960" y="1162" class="row">Badge status</text><text x="1165" y="1162" class="mono code">min-h-10 gap-2 px-3 text-sm</text><text x="1775" y="1162" class="row">min 40px; gap 8px; x 12px; font 14px</text><text x="2110" y="1162" class="row">ikon size-5 = 20px</text>
+    <text x="960" y="1190" class="row">Pemisah footer</text><text x="1165" y="1190" class="mono code">h-8 w-px</text><text x="1775" y="1190" class="row">32px × 1px</text><text x="2110" y="1190" class="row">gap footer 8px</text>
+    <text x="960" y="1218" class="row">Tombol CTA</text><text x="1165" y="1218" class="mono code">min-h-12 rounded-xl px-3 text-base</text><text x="1775" y="1218" class="row">min 48px; radius 12px; x 12px; font 16px</text><text x="2110" y="1218" class="row">lebar flex-1</text>
+    <text x="960" y="1246" class="row">Tinggi contoh</text><text x="1165" y="1246" class="mono code">content-driven</text><text x="1775" y="1246" class="row">≈213px untuk teks contoh 1 baris</text><text x="2110" y="1246" class="row">berubah jika nama 2 baris</text>
+
+    <!-- Bottom navigation -->
+    <rect x="948" y="1262" width="1564" height="28" rx="6" fill="#f4e8df" />
+    <text x="960" y="1282" class="group">BOTTOM NAVIGATION</text>
+    <text x="960" y="1312" class="row">Lebar nav</text><text x="1165" y="1312" class="mono code">w-[calc(100%-2rem)]</text><text x="1775" y="1312" class="row">W - 2rem; contoh 361px</text><text x="2110" y="1312" class="row">lebar layar dikurangi 32px</text>
+    <text x="960" y="1340" class="row">Batas lebar</text><text x="1165" y="1340" class="mono code">max-w-[26.5rem]</text><text x="1775" y="1340" class="row">26.5rem = 424px</text><text x="2110" y="1340" class="row">center dengan left-1/2</text>
+    <text x="960" y="1368" class="row">Posisi bawah</text><text x="1165" y="1368" class="mono code">bottom-[calc(env(safe-area-inset-bottom)+0.75rem)]</text><text x="1775" y="1368" class="row">safe bottom + 12px</text><text x="2110" y="1368" class="row">fixed</text>
+    <text x="960" y="1396" class="row">Grid / jarak</text><text x="1165" y="1396" class="mono code">grid-cols-4 gap-1 p-2</text><text x="1775" y="1396" class="row">4 kolom; gap 4px; padding 8px</text><text x="2110" y="1396" class="row">satu baris</text>
+    <text x="960" y="1424" class="row">Bentuk nav</text><text x="1165" y="1424" class="mono code">rounded-[2.5rem]</text><text x="1775" y="1424" class="row">radius 40px</text><text x="2110" y="1424" class="row">outer capsule</text>
+    <text x="960" y="1452" class="row">Item tab</text><text x="1165" y="1452" class="mono code">min-h-[4.5rem] rounded-[1.5rem]</text><text x="1775" y="1452" class="row">min 72px; radius 24px</text><text x="2110" y="1452" class="row">nav terpilih Project</text>
+    <text x="960" y="1480" class="row">Isi item</text><text x="1165" y="1480" class="mono code">gap-1 text-xs; icon size-5</text><text x="1775" y="1480" class="row">gap 4px; label 12px; ikon 20px</text><text x="2110" y="1480" class="row">label Beranda/Laporan/…</text>
+    <text x="960" y="1508" class="row">Tinggi luar nav</text><text x="1165" y="1508" class="mono code">item 4.5rem + p-2 × 2 + border</text><text x="1775" y="1508" class="row">≈90px minimum</text><text x="2110" y="1508" class="row">sampel: y=750; bottom=12px</text>
+
+    <!-- States -->
+    <rect x="948" y="1524" width="1564" height="28" rx="6" fill="#f4e8df" />
+    <text x="960" y="1544" class="group">STATE KOSONG, LOADING, ERROR &amp; PAGINATION</text>
+    <text x="960" y="1574" class="row">Empty container</text><text x="1165" y="1574" class="mono code">min-h-[calc(100svh-19rem)]</text><text x="1775" y="1574" class="row">svh - 19rem (304px); contoh 548px</text><text x="2110" y="1574" class="row">minimum tinggi state kosong</text>
+    <text x="960" y="1602" class="row">Empty padding</text><text x="1165" y="1602" class="mono code">px-4 pb-16 pt-4</text><text x="1775" y="1602" class="row">x 16px; bawah 64px; atas 16px</text><text x="2110" y="1602" class="row">isi dipusatkan</text>
+    <text x="960" y="1630" class="row">Ilustrasi</text><text x="1165" y="1630" class="mono code">w-full max-w-[19rem]; viewBox 320 220</text><text x="1775" y="1630" class="row">maks 304px; aspect 320:220; tinggi ≈209px</text><text x="2110" y="1630" class="row">width dibatasi parent</text>
+    <text x="960" y="1658" class="row">Judul empty</text><text x="1165" y="1658" class="mono code">mt-2 max-w-[19rem] text-2xl leading-tight</text><text x="1775" y="1658" class="row">mt 8px; max 304px; font 24px; line 30px</text><text x="2110" y="1658" class="row">teks maksimal 2 baris</text>
+    <text x="960" y="1686" class="row">Skeleton kartu</text><text x="1165" y="1686" class="mono code">h-36 rounded-[1.25rem]</text><text x="1775" y="1686" class="row">144px; radius 20px; 3 buah; gap 12px</text><text x="2110" y="1686" class="row">loading project</text>
+    <text x="960" y="1714" class="row">Error card</text><text x="1165" y="1714" class="mono code">px-6 py-8; icon wrapper size-12</text><text x="1775" y="1714" class="row">x 24px; y 32px; wrapper 48px</text><text x="2110" y="1714" class="row">icon size-6 = 24px</text>
+    <text x="960" y="1742" class="row">Retry error</text><text x="1165" y="1742" class="mono code">mt-4 min-h-11 px-4</text><text x="1775" y="1742" class="row">top 16px; min 44px; x 16px</text><text x="2110" y="1742" class="row">ukuran tombol coba lagi</text>
+    <text x="960" y="1770" class="row">Pagination</text><text x="1165" y="1770" class="mono code">gap-3 pt-4; sm:flex-row</text><text x="1775" y="1770" class="row">gap 12px; top 16px; sm ≥640px</text><text x="2110" y="1770" class="row">tampil jika totalPages &gt; 1</text>
+    <text x="960" y="1798" class="row">Tombol pagination</text><text x="1165" y="1798" class="mono code">min-h-11 px-3; icon size-4; gap-2</text><text x="1775" y="1798" class="row">min 44px; x 12px; icon 16px; gap 8px</text><text x="2110" y="1798" class="row">wrapper tombol gap 8px</text>
+
+    <line x1="960" y1="1822" x2="2500" y2="1822" stroke="#d9cbc1" />
+    <text x="960" y="1852" class="small">Catatan tinggi kartu ≈213px dihitung dari padding 16px, border 1px, title+kode, dua baris info, separator, dan CTA pada teks contoh satu baris.</text>
+    <text x="960" y="1876" class="small">Tinggi aktual berubah bila nama project membungkus ke baris kedua. Width 76%, vw, svh, dvh, safe-area, dan clamp tidak boleh dianggap ukuran tetap.</text>
+    <text x="960" y="1900" class="small">Status bar perangkat tidak digambar sebagai komponen FE; hero mulai di tepi atas dan posisi teks memakai safe-area melalui env().</text>
+  </g>
+
+  <text x="64" y="1130" class="small">VIEWPORT YANG DIGAMBAR: 393 × 852 CSS px</text>
+  <text x="64" y="1154" class="small">Hero ≈264px · overlap panel −20px · list inset 16px · kartu lebar 361px</text>
+  <text x="64" y="1178" class="small">Nav lebar 361px × tinggi minimum ≈90px · posisi bottom 12px + safe-area</text>
+  <text x="64" y="1224" class="small">Wireframe menunjukkan susunan dan ukuran, bukan screenshot browser.</text>
+  <text x="64" y="1248" class="small">Sumber: FieldAppShell, ProjectListContent, SupervisorProjectHero, SupervisorProjectList,</text>
+  <text x="64" y="1272" class="small">SupervisorProjectEmptyIllustration, ServerPagination, dan ErrorState.</text>
+</svg>

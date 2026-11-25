@@ -8,5 +8,5 @@ export default async function LegacyProjectCommsPage({
   params: Promise<{ projectId: string }>;
 }) {
   const { projectId } = await params;
-  redirect(`/projects/${projectId}/comms/in`);
+  redirect(`/office/projects/${projectId}/comms/in`);
 }

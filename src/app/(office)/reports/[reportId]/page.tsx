@@ -1,17 +1,10 @@
-import type { Metadata } from "next";
-import { ReportDetailContent } from "@/components/office/report/ReportDetailContent";
+import { redirect } from "next/navigation";
 
-export const instant = false;
-
-export const metadata: Metadata = {
-  title: "Detail Laporan | ArchiStudio Office",
-};
-
-export default async function OfficeReportDetailPage({
+export default async function LegacyReportDetailPage({
   params,
 }: {
   params: Promise<{ reportId: string }>;
 }) {
   const { reportId } = await params;
-  return <ReportDetailContent reportId={reportId} backHref="/reports" />;
+  redirect(`/office/reports/${reportId}`);
 }

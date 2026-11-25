@@ -23,7 +23,7 @@ export interface SupervisorLatenessParams {
 export const dashboardApi = {
   /** Mengambil ringkasan metrik KPI dan status area harian (US-12). */
   async getDashboardSummary(params: DashboardSummaryParams): Promise<DashboardSummaryResponse> {
-    const res = await api.get<ApiResponse<DashboardSummaryResponse>>("/dashboard/summary", {
+    const res = await api.get<ApiResponse<DashboardSummaryResponse>>("/office/dashboard/summary", {
       params: {
         ...(params.projectId ? { projectId: params.projectId } : {}),
         ...(params.date ? { date: params.date } : {}),
@@ -40,7 +40,7 @@ export const dashboardApi = {
     params: SupervisorLatenessParams = {},
   ): Promise<SupervisorLatenessItem[]> {
     const res = await api.get<ApiResponse<SupervisorLatenessItem[]>>(
-      "/dashboard/supervisor-lateness",
+      "/office/dashboard/supervisor-lateness",
       { params },
     );
     return res.data.data;
@@ -49,7 +49,7 @@ export const dashboardApi = {
   /** Membuka kunci manual untuk area yang tertunggak > 3 hari kerja (US-11, BR-22). */
   async unlockArea(areaId: string, payload: UnlockAreaPayload): Promise<UnlockAreaResponse> {
     const res = await api.post<ApiResponse<UnlockAreaResponse>>(
-      `/reports/areas/${areaId}/unlock`,
+      `/office/reports/areas/${areaId}/unlock`,
       payload,
     );
     return res.data.data;

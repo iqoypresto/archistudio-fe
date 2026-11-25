@@ -51,13 +51,13 @@ export function OfficeReportListContent({ view = "reports" }: { view?: "reports"
               {
                 value: "reports",
                 label: "Laporan Aktif",
-                href: "/reports",
+                href: "/office/reports",
                 count: !showArchive ? reportsQuery.data?.meta.totalItems : undefined,
               },
               {
                 value: "archive",
                 label: "Arsip Harian",
-                href: "/reports?view=archive",
+                href: "/office/reports?view=archive",
                 count: !showArchive ? archiveCountQuery.data?.meta.totalItems : undefined,
               },
             ]}

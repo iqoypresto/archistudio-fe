@@ -2,15 +2,15 @@
 
 import { useSyncExternalStore, type ReactNode } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { ClipboardList, FolderKanban, History, House, LogOut, Wifi, WifiOff } from "lucide-react";
+import { LogOut, Wifi, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { useLogoutMutation } from "@/hooks/auth.hooks";
 import { cn } from "@/lib/utils";
 import { getRoleLabel } from "@/lib/utils/role";
 import { useAuthStore } from "@/stores/auth.store";
+import { FIELD_BOTTOM_TABS } from "./field-bottom-nav.config";
 
 function subscribeOnlineStatus(callback: () => void): () => void {
   window.addEventListener("online", callback);
@@ -29,18 +29,13 @@ function useOnlineStatus(): boolean {
   );
 }
 
-const FIELD_TABS = [
-  { href: "/field/home", label: "Home", icon: House },
-  { href: "/field/reports", label: "Laporan", icon: ClipboardList },
-  { href: "/field/history", label: "Riwayat", icon: History },
-  { href: "/projects", label: "Project", icon: FolderKanban },
-] as const;
-
 export function FieldAppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const isOnline = useOnlineStatus();
   const isHome = pathname === "/field/home";
+  const isProjectsHome = pathname === "/field/projects";
+  const isLandingPage = isHome || isProjectsHome;
   const isReportDetail = pathname.startsWith("/field/reports/") && pathname !== "/field/reports/new";
   const user = useAuthStore((state) => state.user);
   const logoutMutation = useLogoutMutation();
@@ -52,68 +47,58 @@ export function FieldAppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="supervisor-mobile relative isolate mx-auto flex min-h-dvh w-full max-w-md flex-col bg-canvas shadow-xs">
-      <header className={cn(
-        "z-30 flex items-center justify-between gap-2",
-        isHome
-          ? "absolute inset-x-0 top-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.75)_0%,rgba(0,0,0,0.58)_78%,transparent_100%)] px-4 pt-[calc(env(safe-area-inset-top)+0.5rem)] pb-2 text-white"
-          : "sticky top-0 border-b border-border bg-surface px-3 pt-[calc(1rem+env(safe-area-inset-top))] pb-3 sm:px-5 sm:py-4",
-      )}>
-        {isHome ? (
-          <div className="flex min-w-0 items-center gap-3">
-            <Link
-              href="/field/home"
-              aria-label="Home Supervisor"
-              className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-black/10 text-white backdrop-blur-sm transition-colors hover:bg-black/20"
-            >
-              <Image src="/brand/archistudio-logo.webp" alt="" width={32} height={32} className="size-8 object-contain" />
-            </Link>
-            <p className="truncate font-heading text-xl font-bold tracking-tight text-white">ArchiStudio</p>
-          </div>
-        ) : (
+    <div className={cn("supervisor-mobile relative isolate mx-auto flex min-h-dvh w-full max-w-md flex-col bg-canvas shadow-xs", isProjectsHome && "project-mobile-shell")}>
+      {!isLandingPage && <header className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b border-border bg-surface px-3 pt-[calc(1rem+env(safe-area-inset-top))] pb-3 sm:px-5 sm:py-4">
           <div className="min-w-0">
             <p className="truncate text-base font-bold text-text-primary">ArchiStudio</p>
             <p className="truncate text-sm text-text-secondary">
               {user?.name ?? "Pengawas Lapangan"} · {getRoleLabel(user?.role)}
             </p>
           </div>
-        )}
 
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
-          {!isHome && <StatusBadge tone={isOnline ? "success" : "danger"} className="max-w-[7rem] px-1.5 sm:max-w-none sm:px-2">
+          <StatusBadge tone={isOnline ? "success" : "danger"} className="max-w-[7rem] px-1.5 sm:max-w-none sm:px-2">
             {isOnline ? <Wifi className="size-3.5" /> : <WifiOff className="size-3.5" />}
             <span className="truncate">{isOnline ? "Online" : "Koneksi Terputus"}</span>
-          </StatusBadge>}
+          </StatusBadge>
           <Button
             type="button"
-            variant={isHome ? "ghost" : "outline"}
+            variant="outline"
             onClick={handleLogout}
             disabled={logoutMutation.isPending}
-            className={cn(
-              "min-h-12 min-w-12 px-3 text-sm font-medium",
-              isHome && "rounded-full bg-black/35 px-4 text-white hover:bg-black/50 hover:text-white",
-            )}
+            className="min-h-12 min-w-12 px-3 text-sm font-medium"
             aria-label="Keluar akun"
           >
             <LogOut className="size-4" />
-            {isHome && <span className="ml-1">Keluar</span>}
+            <span className="ml-1">Keluar</span>
           </Button>
         </div>
-      </header>
+      </header>}
 
       <main className={cn(
         "flex-1 text-base text-text-primary",
-        isHome ? "p-0" : "px-4 py-6 sm:px-5",
-        showNavigation ? "pb-[calc(6.5rem+env(safe-area-inset-bottom))]" : "pb-8",
+        isProjectsHome ? "bg-[var(--project-canvas)] p-0" : isHome ? "bg-[#faf8f6] p-0" : "px-4 py-6 sm:px-5",
+        showNavigation
+          ? isProjectsHome
+            ? "pb-[calc(7rem+env(safe-area-inset-bottom))]"
+            : "pb-[calc(6.5rem+env(safe-area-inset-bottom))]"
+          : "pb-8",
       )}>
         {children}
       </main>
 
       {showNavigation && <nav
         aria-label="Navigasi lapangan"
-        className="fixed bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] left-1/2 z-30 grid w-[calc(100%-2rem)] max-w-[26.5rem] -translate-x-1/2 grid-cols-4 gap-1 rounded-[2rem] border border-border/80 bg-surface/95 p-2 shadow-sm backdrop-blur-xl"
+        className={cn(
+          "fixed bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] left-1/2 z-30 grid w-[calc(100%-2rem)] max-w-[26.5rem] -translate-x-1/2 grid-cols-4 gap-1 p-2 backdrop-blur-xl",
+          isProjectsHome
+            ? "min-h-[5.125rem] rounded-[1.875rem] border border-[var(--project-nav-border)] bg-[var(--project-nav-surface)] shadow-[var(--project-nav-shadow)]"
+            : isLandingPage
+              ? "rounded-[2.5rem] border border-[#eee6e0] bg-white/95 shadow-[0_8px_28px_rgba(65,45,33,0.16)]"
+              : "rounded-[2rem] border border-border/80 bg-surface/95 shadow-sm",
+        )}
       >
-        {FIELD_TABS.map((tab) => {
+        {FIELD_BOTTOM_TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = tab.href === "/field/history"
             ? pathname === tab.href || isReportDetail
@@ -126,14 +111,27 @@ export function FieldAppShell({ children }: { children: ReactNode }) {
               href={tab.href}
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                "flex flex-col items-center justify-center gap-1 font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                isProjectsHome
+                  ? "min-h-16 min-w-0 rounded-[1.4375rem] text-sm"
+                  : isLandingPage
+                    ? "min-h-[4.5rem] rounded-[1.5rem] text-xs"
+                    : "min-h-14 rounded-2xl text-xs",
                 isActive
-                  ? "bg-primary-soft text-primary"
-                  : "text-text-secondary hover:bg-secondary"
+                  ? isProjectsHome
+                    ? "bg-gradient-to-br from-[var(--project-nav-active-start)] to-[var(--project-nav-active-end)] text-white shadow-sm"
+                    : isHome
+                      ? "bg-[#f3ece6] text-[#684832]"
+                      : "bg-primary-soft text-primary"
+                  : isProjectsHome
+                    ? "text-[var(--project-nav-text)] hover:bg-[var(--project-nav-hover)]"
+                    : isLandingPage
+                      ? "text-[#393633] hover:bg-[#f7f3ef]"
+                    : "text-text-secondary hover:bg-secondary"
               )}
             >
-              <Icon className="size-5" />
-              <span>{tab.label}</span>
+              <Icon className={isProjectsHome ? "size-[1.375rem] shrink-0" : "size-5"} />
+              <span className={isProjectsHome ? "max-w-full whitespace-normal break-words text-center leading-tight" : undefined}>{tab.label}</span>
             </Link>
           );
         })}

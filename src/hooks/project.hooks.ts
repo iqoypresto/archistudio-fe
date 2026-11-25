@@ -1,6 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { projectApi } from "@/lib/api/project.api";
+import type { ApiSurface } from "@/lib/api/api-surface";
 import type {
   ArchiveFilterParams,
   CreateProjectPayload,
@@ -12,12 +13,19 @@ import type {
 export const PROJECTS_QUERY_KEY = ["projects"] as const;
 export const ARCHIVED_PROJECTS_QUERY_KEY = ["projects", "archive"] as const;
 
-export function useProjectsQuery(params: ProjectFilterParams, options?: { enabled?: boolean; staleTime?: number }) {
+export function useProjectsQuery(params: ProjectFilterParams, options?: {
+  enabled?: boolean;
+  staleTime?: number;
+  keepPreviousData?: boolean;
+  surface?: ApiSurface;
+}) {
+  const surface = options?.surface ?? "office";
   return useQuery({
-    queryKey: [...PROJECTS_QUERY_KEY, params],
-    queryFn: () => projectApi.getProjects(params),
+    queryKey: [...PROJECTS_QUERY_KEY, surface, params],
+    queryFn: () => projectApi.getProjects(params, surface),
     enabled: options?.enabled ?? true,
     staleTime: options?.staleTime,
+    placeholderData: options?.keepPreviousData ? keepPreviousData : undefined,
   });
 }
 
@@ -26,16 +34,16 @@ export function useArchivedProjectsQuery(
   options?: { enabled?: boolean },
 ) {
   return useQuery({
-    queryKey: [...ARCHIVED_PROJECTS_QUERY_KEY, params ?? {}],
+    queryKey: [...ARCHIVED_PROJECTS_QUERY_KEY, "office", params ?? {}],
     queryFn: () => projectApi.getArchivedProjects(params),
     enabled: options?.enabled ?? true,
   });
 }
 
-export function useProjectDetailQuery(id: string) {
+export function useProjectDetailQuery(id: string, surface: ApiSurface = "office") {
   return useQuery({
-    queryKey: [...PROJECTS_QUERY_KEY, "detail", id],
-    queryFn: () => projectApi.getProjectById(id),
+    queryKey: [...PROJECTS_QUERY_KEY, surface, "detail", id],
+    queryFn: () => projectApi.getProjectById(id, surface),
     enabled: Boolean(id),
   });
 }

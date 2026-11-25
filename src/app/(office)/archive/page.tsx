@@ -1,5 +1,5 @@
-import { ProjectArchiveContent } from "@/components/office/project/ProjectArchiveContent";
+import { redirect } from "next/navigation";
 
-export default function ProjectArchivePage() {
-  return <ProjectArchiveContent />;
+export default function LegacyArchivePage() {
+  redirect("/office/archive");
 }

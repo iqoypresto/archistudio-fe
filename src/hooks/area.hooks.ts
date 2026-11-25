@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { PROJECTS_QUERY_KEY } from "@/hooks/project.hooks";
 import { areaApi } from "@/lib/api/area.api";
+import type { ApiSurface } from "@/lib/api/api-surface";
 import type {
   AssignSupervisorPayload,
   CreateAreaPayload,
@@ -10,10 +11,10 @@ import type {
 
 export const AREAS_QUERY_KEY = ["areas"] as const;
 
-export function useProjectAreasQuery(projectId: string) {
+export function useProjectAreasQuery(projectId: string, surface: ApiSurface = "office") {
   return useQuery({
-    queryKey: [...AREAS_QUERY_KEY, "project", projectId],
-    queryFn: () => areaApi.getAreasByProject(projectId),
+    queryKey: [...AREAS_QUERY_KEY, "project", surface, projectId],
+    queryFn: () => areaApi.getAreasByProject(projectId, surface),
     enabled: Boolean(projectId),
   });
 }
@@ -32,7 +33,7 @@ export function useCreateAreaMutation(projectId: string, onSuccessCallback?: () 
     mutationFn: (payload: CreateAreaPayload) => areaApi.createArea(projectId, payload),
     onSuccess: () => {
       toast.success("Area baru berhasil ditambahkan.");
-      queryClient.invalidateQueries({ queryKey: [...AREAS_QUERY_KEY, "project", projectId] });
+      queryClient.invalidateQueries({ queryKey: [...AREAS_QUERY_KEY, "project"] });
       queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
       onSuccessCallback?.();
     },
@@ -49,7 +50,7 @@ export function useUpdateAreaMutation(projectId: string, onSuccessCallback?: () 
       areaApi.updateArea(areaId, payload),
     onSuccess: () => {
       toast.success("Data area berhasil diperbarui.");
-      queryClient.invalidateQueries({ queryKey: [...AREAS_QUERY_KEY, "project", projectId] });
+      queryClient.invalidateQueries({ queryKey: [...AREAS_QUERY_KEY, "project"] });
       queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
       onSuccessCallback?.();
     },
@@ -74,7 +75,7 @@ export function useAssignSupervisorMutation(
     }) => areaApi.assignSupervisor(areaId, payload),
     onSuccess: () => {
       toast.success("Supervisor berhasil ditugaskan.");
-      queryClient.invalidateQueries({ queryKey: [...AREAS_QUERY_KEY, "project", projectId] });
+      queryClient.invalidateQueries({ queryKey: [...AREAS_QUERY_KEY, "project"] });
       queryClient.invalidateQueries({ queryKey: [...AREAS_QUERY_KEY, "assignments"] });
       queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
       onSuccessCallback?.();

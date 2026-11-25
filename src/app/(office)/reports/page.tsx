@@ -1,15 +1,10 @@
-import type { Metadata } from "next";
-import { OfficeReportListContent } from "@/components/office/report/OfficeReportListContent";
+import { redirect } from "next/navigation";
 
-export const instant = false;
-
-export const metadata: Metadata = {
-  title: "Laporan Harian | ArchiStudio Office",
-};
-
-export default async function OfficeReportsPage({ searchParams }: {
-  searchParams: Promise<{ view?: string | string[] }>;
+export default async function LegacyReportsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string }>;
 }) {
   const { view } = await searchParams;
-  return <OfficeReportListContent view={view === "archive" ? "archive" : "reports"} />;
+  redirect(`/office/reports${view ? `?view=${encodeURIComponent(view)}` : ""}`);
 }

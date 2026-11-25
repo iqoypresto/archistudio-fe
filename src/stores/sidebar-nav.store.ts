@@ -9,7 +9,9 @@ export interface SidebarNavState {
 }
 
 export function isProjectRoutePath(pathname: string): boolean {
-  return pathname === "/projects" || pathname.startsWith("/projects/");
+  return ["/office/projects", "/field/projects"].some((root) =>
+    pathname === root || pathname.startsWith(`${root}/`),
+  );
 }
 
 export function resolveProjectSectionOpen(
