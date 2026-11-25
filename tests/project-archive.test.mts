@@ -106,7 +106,7 @@ describe("TASK-17 Frontend Archive Project — Validation, Grouping, RBAC & API 
     assert.equal(supPerms.canViewArchive, false);
   });
 
-  it("[API Client / US-22] projectApi memanggil GET /projects/archive serta POST complete, archive, dan restore", async () => {
+  it("[API Client / US-22] projectApi memanggil endpoint Office archive serta POST complete, archive, dan restore", async () => {
     const calls: string[] = [];
 
     api.defaults.adapter = async (config) => {
@@ -114,7 +114,7 @@ describe("TASK-17 Frontend Archive Project — Validation, Grouping, RBAC & API 
       const url = config.url ?? "";
       calls.push(`${method} ${url}`);
 
-      if (method === "GET" && url === "/projects/archive") {
+      if (method === "GET" && url === "/office/projects/archive") {
         return {
           data: { success: true, message: "OK", data: [BASE_ARCHIVED] },
           status: 200,
@@ -123,7 +123,7 @@ describe("TASK-17 Frontend Archive Project — Validation, Grouping, RBAC & API 
           config,
         };
       }
-      if (method === "POST" && url.startsWith("/projects/proj-2026/")) {
+      if (method === "POST" && url.startsWith("/office/projects/proj-2026/")) {
         return {
           data: { success: true, message: "OK", data: BASE_ARCHIVED },
           status: 200,
@@ -142,10 +142,10 @@ describe("TASK-17 Frontend Archive Project — Validation, Grouping, RBAC & API 
     await projectApi.restoreProject("proj-2026", { status: "BERJALAN" });
 
     assert.deepEqual(calls, [
-      "GET /projects/archive",
-      "POST /projects/proj-2026/complete",
-      "POST /projects/proj-2026/archive",
-      "POST /projects/proj-2026/restore",
+      "GET /office/projects/archive",
+      "POST /office/projects/proj-2026/complete",
+      "POST /office/projects/proj-2026/archive",
+      "POST /office/projects/proj-2026/restore",
     ]);
   });
 });

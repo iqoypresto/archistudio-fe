@@ -116,14 +116,14 @@ describe("TASK-19 Frontend Drawing & Dokumen Keluar — Validation, RBAC & API (
     await projectDocumentApi.deleteDocument("doc-1");
 
     assert.deepEqual(calls, [
-      "GET /projects/p-1/drawings",
-      "POST /uploads/sign",
-      "POST /projects/p-1/drawings",
-      "POST /drawings/drw-1/archive",
-      "GET /projects/p-1/documents",
-      "POST /uploads/sign",
-      "POST /projects/p-1/documents",
-      "DELETE /documents/doc-1",
+      "GET /office/projects/p-1/drawings",
+      "POST /office/uploads/sign",
+      "POST /office/projects/p-1/drawings",
+      "POST /office/drawings/drw-1/archive",
+      "GET /office/projects/p-1/documents",
+      "POST /office/uploads/sign",
+      "POST /office/projects/p-1/documents",
+      "DELETE /office/documents/doc-1",
     ]);
   });
 });

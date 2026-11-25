@@ -68,7 +68,7 @@ describe("TASK-20 Frontend Comms Project — Validation, RBAC & API (US-20, BR-3
     assert.equal(canEditCommsEntry({ id: "u-sup", role: "SUPERVISOR" }, entryBySm), false);
   });
 
-  it("[API Client / US-20] commsApi memanggil endpoint /comms & /uploads/sign purpose comms-attachment", async () => {
+  it("[API Client / US-20] commsApi memanggil endpoint Office /comms & /uploads/sign purpose comms-attachment", async () => {
     const calls: string[] = [];
 
     api.defaults.adapter = async (config) => {
@@ -99,10 +99,10 @@ describe("TASK-20 Frontend Comms Project — Validation, RBAC & API (US-20, BR-3
     await commsApi.updateEntry("c-1", { direction: "OUTBOUND" });
 
     assert.deepEqual(calls, [
-      "GET /projects/p-1/comms",
-      "POST /uploads/sign",
-      "POST /projects/p-1/comms",
-      "PATCH /comms/c-1",
+      "GET /office/projects/p-1/comms",
+      "POST /office/uploads/sign",
+      "POST /office/projects/p-1/comms",
+      "PATCH /office/comms/c-1",
     ]);
   });
 });

@@ -65,7 +65,7 @@ describe("TASK-16 Frontend Pembayaran Freelance/Agent — Validation, Guard & AP
       const url = config.url ?? "";
       calls.push(`${method} ${url}`);
 
-      if (url === "/uploads/sign") {
+      if (url === "/office/uploads/sign") {
         return {
           data: {
             success: true,
@@ -110,12 +110,12 @@ describe("TASK-16 Frontend Pembayaran Freelance/Agent — Validation, Guard & AP
 
     assert.equal(signed.purpose, "payment-proof");
     assert.deepEqual(calls, [
-      "GET /payments/people",
-      "POST /payments/people",
-      "GET /payments/people/p-1/records",
-      "POST /payments/people/p-1/records",
-      "PATCH /payments/records/rec-1",
-      "POST /uploads/sign",
+      "GET /office/payments/people",
+      "POST /office/payments/people",
+      "GET /office/payments/people/p-1/records",
+      "POST /office/payments/people/p-1/records",
+      "PATCH /office/payments/records/rec-1",
+      "POST /office/uploads/sign",
     ]);
   });
 });

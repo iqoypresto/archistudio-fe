@@ -18,7 +18,7 @@ describe("TASK-18 Frontend PDF periodik", () => {
     };
     try {
       await assert.rejects(pdfExportApi.downloadMonthlyReportPdf({ projectId, month: "2026-11" }), /Bulan tidak valid/);
-      assert.equal(requestUrl, "/exports/monthly-report-pdf");
+      assert.equal(requestUrl, "/office/exports/monthly-report-pdf");
       assert.deepEqual(requestParams, { projectId, month: "2026-11" });
     } finally {
       api.defaults.adapter = previous;
@@ -38,7 +38,7 @@ describe("TASK-18 Frontend PDF periodik", () => {
     try {
       await assert.rejects(pdfExportApi.downloadDailyReportRangePdf({ projectId, fromDate: "2026-11-01", toDate: "2026-11-08" }),
         (error: unknown) => error instanceof Error && "code" in error && error.code === "DATE_RANGE_TOO_LONG");
-      assert.equal(requestUrl, "/exports/daily-report-range-pdf");
+      assert.equal(requestUrl, "/office/exports/daily-report-range-pdf");
       assert.deepEqual(requestParams, { projectId, fromDate: "2026-11-01", toDate: "2026-11-08" });
     } finally {
       api.defaults.adapter = previous;

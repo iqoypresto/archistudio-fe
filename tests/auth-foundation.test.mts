@@ -67,8 +67,8 @@ describe("TASK-02 Frontend Auth Foundation", () => {
     assert.equal(useAuthStore.getState().user?.username, "andi.pengawas");
     assert.equal(getDefaultRouteForRole("SUPERVISOR"), "/field/home");
     assert.equal(getDefaultRouteForRole("SITE_MANAGER"), "/field/home");
-    assert.equal(getDefaultRouteForRole("OWNER"), "/dashboard");
-    assert.equal(getDefaultRouteForRole("ADMIN"), "/dashboard");
+    assert.equal(getDefaultRouteForRole("OWNER"), "/office/dashboard");
+    assert.equal(getDefaultRouteForRole("ADMIN"), "/office/dashboard");
   });
 
   it("[AC-01.2 / BR-05] menerjemahkan error API menjadi ApiError dan mengirim Bearer header", async () => {

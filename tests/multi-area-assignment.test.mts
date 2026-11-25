@@ -107,7 +107,7 @@ describe("TASK-11 Frontend Penugasan Multi-Area & Role Read-Only (US-24, BR-09)"
         };
       }
 
-      if (method === "get" && url === "/areas/area-a/assignments") {
+      if (method === "get" && url === "/office/areas/area-a/assignments") {
         return {
           data: {
             success: true,
@@ -138,9 +138,9 @@ describe("TASK-11 Frontend Penugasan Multi-Area & Role Read-Only (US-24, BR-09)"
     assert.equal(second.supervisorId, "sup-2");
     assert.deepEqual(history, []);
     assert.deepEqual(calledUrls, [
-      "POST /areas/area-a/assignments",
-      "POST /areas/area-b/assignments",
-      "GET /areas/area-a/assignments",
+      "POST /office/areas/area-a/assignments",
+      "POST /office/areas/area-b/assignments",
+      "GET /office/areas/area-a/assignments",
     ]);
   });
 });
