@@ -32,11 +32,22 @@ Navigasi bawah menampilkan Home, Laporan, Riwayat, dan Project. Pada route detai
 
 ### Home
 
-- Hero mengacu pada referensi: latar navy, foto arsitektur dengan overlay untuk keterbacaan, identitas aplikasi, sapaan, dan aksi Keluar.
-- Ringkasan tugas menampilkan kewajiban tertunggak dan tanggal berikut yang dapat dikerjakan dari `GET /reports/my-areas-status`.
-- Riwayat terbaru mengambil maksimum tiga laporan milik akun aktif dari `GET /reports` dengan urutan `submittedAt` terbaru; tautan Lihat Semua membuka Riwayat.
+- Hero mengikuti referensi Home terbaru: gradient cokelat hangat, sapaan berdasarkan waktu Asia/Jakarta, tanggal lokal, serta ilustrasi gedung monoline di kanan atas. Header Home tidak menampilkan nama aplikasi, logo, atau tombol Keluar; header pada halaman Supervisor lain tetap dipakai (`SupervisorHomeHero.tsx`, `FieldAppShell.tsx`).
+- Kartu tugas hanya membedakan ada atau tidak ada laporan yang perlu diisi. Tidak menampilkan jumlah laporan atau jumlah tunggakan; menggunakan satu respons `GET /reports/my-areas-status` yang sudah dipakai Home.
+- Kartu info memakai ikon tanda seru saat ada laporan yang perlu diisi dan ikon jempol saat tidak ada laporan terbuka. CTA `Isi Laporan Sekarang` hanya tampil bila ada laporan terbuka (`SupervisorHomeTaskCard.tsx`).
+- Aksi cepat `Gambar Kerja` membuka pilihan project lalu menuju Drawing project; daftar project baru dimuat saat aksi dibuka. `Project Saya` menuju `/projects` (`SupervisorHomeQuickActions.tsx`).
+- Bagian `Laporan Terakhir` mengambil maksimum tiga laporan milik akun aktif dari `GET /reports` dengan urutan `submittedAt` terbaru; tampilkan area dan tanggal, tautan Lihat semua riwayat di bawah daftar (`SupervisorHomeReportList.tsx`).
+- Navigasi bawah memakai label `Beranda`, `Laporan`, `Riwayat`, dan `Project`, dengan tab aktif berwarna beige-cokelat pada Home.
 - Tidak memakai nama project, jumlah, ataupun laporan contoh. Bila belum ada data, tampilkan empty state yang menjelaskan kondisi.
-- Foto hero memakai asset project bila tersedia; jangan mengandalkan URL gambar eksternal. Jika asset belum tersedia, gunakan gradient navy.
+- Hero memakai ilustrasi lokal `/brand/supervisor-home-building-monoline.png`; status tugas memakai ikon dari lucide-react.
+
+### Project Saya (`/projects`)
+
+- Header memakai gradient vertikal cokelat-terakota ke peach, tanpa ilustrasi, judul `Project Saya`, dan subtitle `Project yang ditugaskan kepada Anda`. Panel putih berujung atas membulat menumpuk di tepi bawah header. Header shell (nama aplikasi, identitas akun, Keluar) tidak tampil di halaman ini.
+- Daftar Supervisor tidak menampilkan pencarian. Setiap kartu memuat nama dan kode project, lokasi, client, badge status dengan ikon, serta tombol `Masuk ke Project` menuju overview project.
+- Status `PERSIAPAN`, `BERJALAN`, dan `SELESAI` memakai badge netral, hijau, dan biru. Pagination hanya tampil bila daftar memiliki lebih dari satu halaman.
+- State kosong menampilkan ilustrasi folder/blueprint dan teks `Belum ada project yang ditugaskan kepadamu.`; akses data tetap dibatasi backend ke project dengan area tugas aktif.
+- Navigasi Project aktif memakai gaya terakota pada halaman daftar Project.
 
 ### Laporan
 

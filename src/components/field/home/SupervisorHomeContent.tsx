@@ -5,6 +5,7 @@ import { useMyAreasStatusQuery } from "@/hooks/report-lock.hooks";
 import { getRoleLabel } from "@/lib/utils/role";
 import { useAuthStore } from "@/stores/auth.store";
 import { SupervisorHomeHero } from "./SupervisorHomeHero";
+import { SupervisorHomeQuickActions } from "./SupervisorHomeQuickActions";
 import { SupervisorHomeReportList } from "./SupervisorHomeReportList";
 import { SupervisorHomeTaskCard } from "./SupervisorHomeTaskCard";
 
@@ -20,15 +21,16 @@ export function SupervisorHomeContent() {
   });
 
   return (
-    <div className="min-h-full bg-surface">
+    <div className="min-h-full bg-[#faf8f6]">
       <SupervisorHomeHero name={name} />
-      <div className="relative -mt-6 min-h-[81dvh] rounded-t-2xl bg-surface px-5 pb-8 pt-6 shadow-[0_-4px_16px_rgba(5,14,29,0.10)]">
+      <div className="relative z-10 -mt-7 space-y-6 px-3 pb-8 sm:px-4">
         <SupervisorHomeTaskCard
           areas={areasQuery.data}
           loading={areasQuery.isLoading}
           failed={areasQuery.isError}
           retry={() => void areasQuery.refetch()}
         />
+        <SupervisorHomeQuickActions />
         <SupervisorHomeReportList
           reports={reportsQuery.data?.data}
           loading={reportsQuery.isLoading}

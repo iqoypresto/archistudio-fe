@@ -1,41 +1,59 @@
 "use client";
 
 import Image from "next/image";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 
-const HERO_IMAGE = "/brand/supervisor-home-hero.webp";
+const HERO_IMAGE = "/brand/supervisor-home-building-monoline.png";
+
+function getGreeting(date: Date): string {
+  const hour = Number(new Intl.DateTimeFormat("en-GB", {
+    hour: "2-digit",
+    hourCycle: "h23",
+    timeZone: "Asia/Jakarta",
+  }).format(date));
+  if (hour < 11) return "Selamat pagi";
+  if (hour < 15) return "Selamat siang";
+  if (hour < 19) return "Selamat sore";
+  return "Selamat malam";
+}
+
+function formatHomeDate(date: Date): string {
+  return new Intl.DateTimeFormat("id-ID", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "Asia/Jakarta",
+  }).format(date);
+}
 
 export function SupervisorHomeHero({ name }: { name: string }) {
+  const date = new Date();
+
   return (
     <section
       aria-label="Selamat datang"
-      className="relative isolate h-[22dvh] min-h-[calc(env(safe-area-inset-top)+10rem)] max-h-56 overflow-hidden"
+      className="relative isolate h-[34svh] min-h-64 max-h-80 overflow-hidden rounded-b-[2rem] bg-[#644735]"
     >
-      <AspectRatio ratio={16 / 9} className="absolute inset-x-0 top-0">
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 select-none">
-          <Image
-            src={HERO_IMAGE}
-            alt=""
-            fill
-            sizes="(max-width: 448px) 100vw, 448px"
-            quality={80}
-            preload
-            draggable={false}
-            className="object-cover object-center"
-          />
-        </div>
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/25 to-black/70"
+      <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-br from-[#51392f] via-[#805943] to-[#ad8061]" />
+      <div aria-hidden="true" className="pointer-events-none absolute right-0 top-[calc(env(safe-area-inset-top)+1.5rem)] h-[68%] w-[68%] opacity-95">
+        <Image
+          src={HERO_IMAGE}
+          alt=""
+          fill
+          sizes="(max-width: 448px) 72vw, 320px"
+          quality={85}
+          preload
+          draggable={false}
+          className="object-contain object-right"
         />
-      </AspectRatio>
-      <div className="absolute inset-x-6 bottom-8 z-10 text-white">
-        <h1 className="truncate text-[clamp(1.5rem,4dvh,2rem)] font-bold leading-tight tracking-tight">
-          Halo, {name}
+      </div>
+      <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#51392f]/65 via-[#51392f]/20 to-transparent" />
+      <div className="absolute inset-x-5 top-[calc(env(safe-area-inset-top)+1.5rem)] z-10 max-w-[72%] text-white sm:inset-x-6">
+        <h1 className="text-[clamp(1.5rem,4dvh,2rem)] font-bold leading-tight tracking-tight">
+          {getGreeting(date)}, {name}
         </h1>
-        <p className="mt-2 flex items-center gap-2 text-base font-medium text-white/95">
-          <span aria-hidden="true" className="size-2.5 rounded-full bg-emerald-400" />
-          Supervisor Proyek
+        <p className="mt-2 text-base font-medium capitalize text-white/95">
+          {formatHomeDate(date)}
         </p>
       </div>
     </section>

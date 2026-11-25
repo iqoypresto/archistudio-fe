@@ -1,66 +1,31 @@
 import Link from "next/link";
-import { CalendarCheck, ChevronRight, FileText } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { DailyReportListItem } from "@/types/api/report.types";
 
-function dateKey(date: Date): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    year: "numeric", month: "2-digit", day: "2-digit", timeZone: "Asia/Jakarta",
+function formatReportDate(reportDate: string): string {
+  const date = new Date(`${reportDate}T12:00:00+07:00`);
+  if (Number.isNaN(date.getTime())) return reportDate;
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "Asia/Jakarta",
   }).format(date);
 }
 
-function formatSubmittedAt(report: DailyReportListItem): string {
-  const submitted = report.submittedAt
-    ? new Date(report.submittedAt)
-    : new Date(`${report.reportDate}T12:00:00+07:00`);
-  if (Number.isNaN(submitted.getTime())) return report.reportDate;
-
-  if (!report.submittedAt) {
-    return new Intl.DateTimeFormat("id-ID", {
-      day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Jakarta",
-    }).format(submitted);
-  }
-
-  const daysAgo = Math.round(
-    (Date.parse(`${dateKey(new Date())}T00:00:00Z`) - Date.parse(`${dateKey(submitted)}T00:00:00Z`)) / 86_400_000,
-  );
-  if (daysAgo > 1 && daysAgo < 7) return `${daysAgo} hari lalu`;
-
-  const time = new Intl.DateTimeFormat("id-ID", {
-    hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: "Asia/Jakarta",
-  }).format(submitted);
-  if (daysAgo === 0) return `Hari ini, ${time}`;
-  if (daysAgo === 1) return `Kemarin, ${time}`;
-  return new Intl.DateTimeFormat("id-ID", {
-    day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Jakarta",
-  }).format(submitted);
-}
-
-function ReportRow({ report }: { report: DailyReportListItem }) {
-  const Icon = report.reportType === "WORK" ? FileText : CalendarCheck;
-  const iconClass = report.reportType === "WORK"
-    ? "bg-primary-soft text-primary"
-    : "bg-status-success-bg text-status-success-fg";
-
+function ReportRow({ report, isLast }: { report: DailyReportListItem; isLast: boolean }) {
   return (
     <Link
       href={`/field/reports/${report.id}`}
-      className="flex min-h-20 flex-wrap items-center gap-2 rounded-2xl border border-border bg-surface p-4 transition-colors hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      className={`flex min-h-[4.5rem] flex-col justify-center px-2 py-3 focus-visible:outline-2 focus-visible:outline-[#694632] ${isLast ? "" : "border-b border-[#e9e1db]"}`}
     >
-      <span className={`flex size-12 shrink-0 items-center justify-center rounded-xl ${iconClass}`}>
-        <Icon className="size-6" aria-hidden="true" />
+      <span className="line-clamp-2 text-lg font-bold leading-6 text-[#24211f]">
+        Area {report.area.name}
       </span>
-      <span className="min-w-0 flex-1">
-        <span className="line-clamp-2 text-base font-bold leading-5 text-text-primary">
-          Laporan Proyek {report.project.name}
-        </span>
-        <span className="mt-2 block truncate text-sm text-text-secondary">
-          Area {report.area.name} · Terkirim
-        </span>
-      </span>
-      <span className="w-[4.5rem] shrink-0 text-right text-xs leading-4 text-text-secondary max-[359px]:ml-14 max-[359px]:w-auto max-[359px]:shrink max-[359px]:basis-[calc(100%_-_3.5rem)]">
-        {formatSubmittedAt(report)}
+      <span className="mt-1 text-base leading-5 text-[#625c57]">
+        {formatReportDate(report.reportDate)}
       </span>
     </Link>
   );
@@ -73,14 +38,24 @@ type ReportListProps = {
   retry: () => void;
 };
 
+function ReportRows({ reports }: { reports: DailyReportListItem[] }) {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-[#e9e1db] bg-white px-3">
+      {reports.map((report, index) => (
+        <ReportRow key={report.id} report={report} isLast={index === reports.length - 1} />
+      ))}
+      <Link href="/field/history" className="mx-auto flex min-h-12 w-fit items-center gap-1 px-3 font-semibold text-[#386f89] focus-visible:outline-2 focus-visible:outline-[#386f89]">
+        Lihat semua riwayat <ChevronRight className="size-5" />
+      </Link>
+    </div>
+  );
+}
+
 export function SupervisorHomeReportList({ reports, loading, failed, retry }: ReportListProps) {
   return (
-    <section aria-labelledby="home-recent-title" className="mt-8 space-y-2">
-      <div className="flex min-h-12 items-center justify-between gap-2">
-        <h2 id="home-recent-title" className="text-xl font-bold text-text-primary">Riwayat Terbaru</h2>
-        <Link href="/field/history" className="inline-flex min-h-12 shrink-0 items-center gap-1 font-semibold text-primary">
-          Lihat Semua <ChevronRight className="size-5" />
-        </Link>
+    <section aria-labelledby="home-recent-title" className="space-y-3">
+      <div className="flex min-h-12 items-center justify-between">
+        <h2 id="home-recent-title" className="text-2xl font-bold text-[#24211f]">Laporan Terakhir</h2>
       </div>
       {loading ? (
         <div className="space-y-2" aria-busy="true" aria-label="Memuat laporan terbaru">
@@ -88,14 +63,14 @@ export function SupervisorHomeReportList({ reports, loading, failed, retry }: Re
           <Skeleton className="h-20 w-full rounded-2xl" />
         </div>
       ) : failed ? (
-        <div className="rounded-2xl border border-border bg-surface p-5">
-          <p className="text-text-secondary">Laporan terbaru belum dapat dimuat.</p>
-          <Button type="button" variant="outline" onClick={retry} className="mt-2 min-h-12">Coba lagi</Button>
+        <div className="rounded-2xl border border-[#e9e1db] bg-white p-5">
+          <p className="text-base text-[#5d5854]">Laporan terbaru belum dapat dimuat.</p>
+          <Button type="button" variant="outline" onClick={retry} className="mt-3 min-h-12">Coba lagi</Button>
         </div>
       ) : reports?.length ? (
-        <div className="space-y-2">{reports.map((report) => <ReportRow key={report.id} report={report} />)}</div>
+        <ReportRows reports={reports} />
       ) : (
-        <div className="rounded-2xl border border-dashed border-border bg-surface p-5 text-text-secondary">
+        <div className="rounded-2xl border border-dashed border-[#d9cec5] bg-white p-5 text-base text-[#5d5854]">
           Belum ada laporan terkirim. Laporan yang berhasil dikirim akan muncul di sini.
         </div>
       )}
