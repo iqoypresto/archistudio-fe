@@ -66,6 +66,7 @@ describe("TASK-02 Frontend Auth Foundation", () => {
     assert.equal(useAuthStore.getState().accessToken, "token-a");
     assert.equal(useAuthStore.getState().user?.username, "andi.pengawas");
     assert.equal(getDefaultRouteForRole("SUPERVISOR"), "/field/home");
+    assert.equal(getDefaultRouteForRole("SITE_MANAGER"), "/field/home");
     assert.equal(getDefaultRouteForRole("OWNER"), "/dashboard");
     assert.equal(getDefaultRouteForRole("ADMIN"), "/dashboard");
   });

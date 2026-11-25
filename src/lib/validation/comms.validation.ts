@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isCommsAllowedRole } from "@/lib/utils/role";
 import type { UserRole } from "@/types/api/auth.types";
 import type { CommsDirection } from "@/types/api/comms.types";
 import type { ProjectStatus } from "@/types/api/project.types";
@@ -65,16 +66,25 @@ export interface CommsPermissions {
   isProjectReadOnly: boolean;
 }
 
-/** Comms project hanya dapat dilihat & dikelola oleh OWNER (BR-12, BR-35, BR-39). */
+/** Kebijakan akses Comms In/Out untuk 4 role sesuai scope project & status Archive (BR-12, BR-35, BR-39, K-02). */
 export function resolveCommsPermissions(
   role?: UserRole | null,
   project?: { status?: ProjectStatus; archivedAt?: string | null } | null,
 ): CommsPermissions {
-  const isOwner = role === "OWNER";
+  const canView = isCommsAllowedRole(role);
   const isProjectReadOnly = project?.status === "SELESAI" || Boolean(project?.archivedAt);
   return {
-    canView: isOwner,
-    canMutate: isOwner && !isProjectReadOnly,
+    canView,
+    canMutate: canView && !isProjectReadOnly,
     isProjectReadOnly,
   };
+}
+
+/** Edit catatan Comms hanya diizinkan bagi pembuat sendiri atau OWNER (BR-35, D-05). */
+export function canEditCommsEntry(
+  actor: { id: string; role: UserRole } | null | undefined,
+  entry: { createdBy?: { id: string } | null },
+): boolean {
+  if (!actor) return false;
+  return actor.role === "OWNER" || Boolean(entry.createdBy?.id && entry.createdBy.id === actor.id);
 }

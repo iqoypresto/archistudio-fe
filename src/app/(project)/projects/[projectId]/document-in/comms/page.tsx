@@ -1,12 +1,12 @@
-import { CommsContent } from "@/components/project/comms/CommsContent";
+import { redirect } from "next/navigation";
 
 export const instant = false;
 
-export default async function ProjectCommsPage({
+export default async function LegacyProjectCommsPage({
   params,
 }: {
   params: Promise<{ projectId: string }>;
 }) {
   const { projectId } = await params;
-  return <CommsContent projectId={projectId} />;
+  redirect(`/projects/${projectId}/comms/in`);
 }

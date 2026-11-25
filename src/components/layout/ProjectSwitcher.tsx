@@ -42,8 +42,26 @@ export function ProjectSwitcher({
 
   function openProject(project: ProjectListItem | null): void {
     if (!project) return;
+    setSearch("");
     onNavigate?.();
     router.push(`/projects/${project.id}`);
+  }
+
+  function handleInputValueChange(
+    inputValue: string,
+    eventDetails: { reason: string },
+  ): void {
+    if (eventDetails.reason === "input-change") {
+      setSearch(inputValue);
+      return;
+    }
+    if (
+      eventDetails.reason === "input-clear" ||
+      eventDetails.reason === "clear-press" ||
+      eventDetails.reason === "item-press"
+    ) {
+      setSearch("");
+    }
   }
 
   return (
@@ -59,7 +77,7 @@ export function ProjectSwitcher({
         itemToStringValue={(project) => project.id}
         isItemEqualToValue={(item, value) => item.id === value.id}
         onValueChange={openProject}
-        onInputValueChange={setSearch}
+        onInputValueChange={handleInputValueChange}
       >
         <ComboboxInput
           aria-label="Cari dan pilih project"

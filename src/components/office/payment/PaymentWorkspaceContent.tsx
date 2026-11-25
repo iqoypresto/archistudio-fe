@@ -5,29 +5,18 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/PageHeader";
 import {
-  useCreatePayeeMutation,
-  useCreatePaymentRecordMutation,
-  usePayeeRecordsQuery,
-  usePaymentPeopleQuery,
-  useUpdatePaymentRecordMutation,
+  useCreatePayeeMutation, useCreatePaymentRecordMutation, usePayeeRecordsQuery,
+  usePaymentPeopleQuery, useUpdatePaymentRecordMutation,
 } from "@/hooks/payment.hooks";
-import { canAccessPayments, getPayeeTypeLabel } from "@/lib/validation/payment.validation";
+import { canAccessPayments, formatCurrencyIdr, getPayeeTypeLabel } from "@/lib/validation/payment.validation";
 import { useAuthStore } from "@/stores/auth.store";
-import type {
-  PayeeType,
-  PaymentRecordItem,
-  PaymentStatus,
-} from "@/types/api/payment.types";
+import type { PayeeType, PaymentRecordItem, PaymentStatus } from "@/types/api/payment.types";
 import { PaymentPayeeFormModal } from "./PaymentPayeeFormModal";
 import { PaymentPayeeList } from "./PaymentPayeeList";
 import { PaymentRecordFormModal } from "./PaymentRecordFormModal";
 import { PaymentRecordList } from "./PaymentRecordList";
 
-interface PaymentWorkspaceContentProps {
-  payeeType: PayeeType;
-}
-
-export function PaymentWorkspaceContent({ payeeType }: PaymentWorkspaceContentProps) {
+export function PaymentWorkspaceContent({ payeeType }: { payeeType: PayeeType }) {
   const role = useAuthStore((state) => state.user?.role);
   const allowed = canAccessPayments(role);
   const label = getPayeeTypeLabel(payeeType);
@@ -51,6 +40,20 @@ export function PaymentWorkspaceContent({ payeeType }: PaymentWorkspaceContentPr
   );
   const activePersonId = selectedPayee?.id ?? null;
 
+  const globalTotals = useMemo(
+    () =>
+      people.reduce(
+        (acc, person) => ({
+          totalPaid: acc.totalPaid + person.summary.totalPaid,
+          totalUnpaid: acc.totalUnpaid + person.summary.totalUnpaid,
+          paidCount: acc.paidCount + person.summary.paidCount,
+          unpaidCount: acc.unpaidCount + person.summary.unpaidCount,
+        }),
+        { totalPaid: 0, totalUnpaid: 0, paidCount: 0, unpaidCount: 0 },
+      ),
+    [people],
+  );
+
   const recordsQuery = usePayeeRecordsQuery(
     activePersonId,
     statusFilter ? { status: statusFilter } : undefined,
@@ -72,25 +75,55 @@ export function PaymentWorkspaceContent({ payeeType }: PaymentWorkspaceContentPr
   if (!allowed) {
     return (
       <div className="rounded-xl border border-border bg-surface p-6 text-sm text-text-secondary">
-        Modul pembayaran {label} hanya dapat diakses oleh Owner (BR-36).
+        Modul pembayaran {label} hanya dapat diakses oleh Owner.
       </div>
     );
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 tabular-nums">
       <PageHeader
         title={`Pembayaran ${label}`}
-        description={`Pencatatan pembayaran ${label.toLowerCase()} global tanpa relasi project (khusus Owner — BR-36).`}
+        description={`Catat dan pantau pembayaran ${label.toLowerCase()} global di luar proyek beserta bukti transfer.`}
         action={
-          <Button onClick={() => setIsPayeeModalOpen(true)} className="h-9 gap-1.5 text-xs">
-            <Plus className="h-4 w-4" />
+          <Button type="button" onClick={() => setIsPayeeModalOpen(true)} className="h-9 gap-1.5 text-xs">
+            <Plus className="size-3.5" />
             Tambah {label}
           </Button>
         }
       />
 
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
+      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-3">
+        <div className="rounded-xl border border-border bg-surface p-4">
+          <p className="text-xs text-text-secondary">Total {label} Tercatat</p>
+          <p className="mt-2 text-2xl font-semibold tracking-tight text-text-primary">
+            {people.length}
+          </p>
+          <p className="mt-1 text-xs text-text-muted">
+            {globalTotals.paidCount + globalTotals.unpaidCount} catatan pembayaran
+          </p>
+        </div>
+        <div className="rounded-xl border border-border bg-surface p-4">
+          <p className="text-xs text-text-secondary">Total Belum Dibayar</p>
+          <p
+            className={`mt-2 text-2xl font-semibold tracking-tight ${
+              globalTotals.totalUnpaid > 0 ? "text-status-warning-fg" : "text-text-primary"
+            }`}
+          >
+            {formatCurrencyIdr(globalTotals.totalUnpaid)}
+          </p>
+          <p className="mt-1 text-xs text-text-muted">{globalTotals.unpaidCount} tagihan menunggu</p>
+        </div>
+        <div className="rounded-xl border border-border bg-surface p-4">
+          <p className="text-xs text-text-secondary">Total Sudah Dibayar</p>
+          <p className="mt-2 text-2xl font-semibold tracking-tight text-text-primary">
+            {formatCurrencyIdr(globalTotals.totalPaid)}
+          </p>
+          <p className="mt-1 text-xs text-text-muted">{globalTotals.paidCount} pembayaran lunas</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-12 lg:items-start">
         <PaymentPayeeList
           label={label}
           search={search}

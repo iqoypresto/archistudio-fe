@@ -48,7 +48,8 @@ export function resolveDrawingPermissions(
   project?: { status?: ProjectStatus; archivedAt?: string | null } | null,
 ): DrawingPermissions {
   const isProjectReadOnly = project?.status === "SELESAI" || Boolean(project?.archivedAt);
-  const canView = role === "OWNER" || role === "ADMIN" || role === "SUPERVISOR";
+  const canView =
+    role === "OWNER" || role === "ADMIN" || role === "SITE_MANAGER" || role === "SUPERVISOR";
   return {
     canView,
     canManage: role === "OWNER" && !isProjectReadOnly,

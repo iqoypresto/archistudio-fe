@@ -1,93 +1,111 @@
 import Link from "next/link";
-import { Eye } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 import { ServerDataTable, type DataColumn } from "@/components/ui/ServerDataTable";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { cn } from "@/lib/utils";
+import { StatusIndicator } from "@/components/ui/StatusIndicator";
+import { formatIdDate, formatTimeInTimezone } from "@/lib/utils/office-format";
 import type { PaginationMeta } from "@/types/api";
 import type { DailyReportListItem } from "@/types/api/report.types";
 
-const COLUMNS: DataColumn<DailyReportListItem>[] = [
-  {
-    key: "number",
-    header: "Nomor & Tanggal",
-    cell: (row) => (
-      <div className="space-y-0.5">
-        <p className="font-mono text-xs font-semibold text-text-primary">{row.reportNumber}</p>
-        <p className="font-mono text-xs tabular-nums text-text-secondary">{row.reportDate}</p>
-      </div>
-    ),
-  },
-  {
-    key: "area",
-    header: "Project / Area",
-    cell: (row) => (
-      <div>
-        <p className="font-medium text-text-primary">{row.project.name}</p>
-        <p className="text-xs text-text-secondary">
-          {row.area.code} — {row.area.name}
-        </p>
-      </div>
-    ),
-  },
-  {
-    key: "supervisor",
-    header: "Supervisor",
-    cell: (row) => (
-      <div>
-        <p className="font-medium text-text-primary">{row.supervisor.name}</p>
-        <p className="text-xs text-text-secondary">{row.photoCount} foto</p>
-      </div>
-    ),
-  },
-  {
-    key: "status",
-    header: "Status",
-    cell: (row) => (
-      <div className="flex flex-wrap gap-1.5">
-        <StatusBadge tone={row.isLate ? "warning" : "success"}>
-          {row.isLate ? row.lateLabel ?? "Diunggah terlambat" : "Tepat Waktu"}
-        </StatusBadge>
-        {row.isRevised && <StatusBadge tone="info">Direvisi</StatusBadge>}
-      </div>
-    ),
-  },
-  {
-    key: "action",
-    header: "Aksi",
-    headerClassName: "text-center",
-    cellClassName: "text-right",
-    cell: (row) => (
-      <Link
-        href={`/reports/${row.id}`}
-        className={cn(
-          buttonVariants({ variant: "outline", size: "sm" }),
-          "h-8 gap-1.5 border-border bg-surface-input px-2.5 text-xs text-text-secondary hover:bg-surface-active hover:text-text-primary"
-        )}
-      >
-        <Eye className="size-3.5" />
-        Detail
-      </Link>
-    ),
-  },
-];
+function buildColumns(showArchivedAt: boolean): DataColumn<DailyReportListItem>[] {
+  return [
+    {
+      key: "number",
+      header: "Nomor & Tanggal",
+      cell: (row) => {
+        const sentTime = formatTimeInTimezone(row.submittedAt, row.project.timezone);
+        return (
+          <div className="space-y-0.5">
+            <p className="text-[13px] font-medium text-text-primary">{row.reportNumber}</p>
+            <p className="text-xs text-text-muted">
+              {formatIdDate(row.reportDate)}
+              {sentTime ? ` · ${sentTime}` : ""}
+            </p>
+          </div>
+        );
+      },
+    },
+    {
+      key: "area",
+      header: "Proyek & Area",
+      cell: (row) => (
+        <div className="space-y-0.5">
+          <p className="text-[13px] font-medium text-text-primary">{row.project.name}</p>
+          <p className="text-xs text-text-secondary">
+            {row.area.code} · {row.area.name}
+          </p>
+        </div>
+      ),
+    },
+    {
+      key: "supervisor",
+      header: "Supervisor & Tipe",
+      cell: (row) => (
+        <div className="space-y-0.5">
+          <p className="text-[13px] font-medium text-text-primary">{row.supervisor.name}</p>
+          <p className="text-xs text-text-muted">
+            {row.reportType === "WORK" ? "Ada Pekerjaan" : "Tanpa Pekerjaan"} · {row.photoCount}{" "}
+            foto
+          </p>
+        </div>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      cell: (row) => (
+        <div className="space-y-1">
+          <StatusIndicator tone={row.isLate ? "warning" : "success"}>
+            {row.isLate ? row.lateLabel ?? "Diunggah Terlambat" : "Tepat Waktu"}
+          </StatusIndicator>
+          {row.isRevised && (
+            <p className="text-xs text-text-muted">Direvisi Owner</p>
+          )}
+          {showArchivedAt && row.archivedAt && (
+            <p className="text-xs text-text-muted">Diarsipkan {formatIdDate(row.archivedAt)}</p>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "action",
+      header: "Aksi",
+      headerClassName: "text-right",
+      cellClassName: "text-right",
+      cell: (row) => (
+        <Link
+          href={`/reports/${row.id}`}
+          className="inline-flex h-8 items-center gap-1 rounded-lg border border-border bg-surface-input px-2.5 text-xs font-medium text-text-secondary transition-colors hover:bg-surface-active hover:text-text-primary"
+        >
+          Detail
+          <ArrowRight className="size-3" />
+        </Link>
+      ),
+    },
+  ];
+}
 
 export function OfficeReportTable({
   data,
   meta,
+  bare = false,
+  showArchivedAt = false,
   onPageChange,
 }: {
   data: DailyReportListItem[];
   meta: PaginationMeta;
+  bare?: boolean;
+  showArchivedAt?: boolean;
   onPageChange: (page: number) => void;
 }) {
   return (
     <ServerDataTable
-      columns={COLUMNS}
+      columns={buildColumns(showArchivedAt)}
       data={data}
       getRowKey={(row) => row.id}
       meta={meta}
+      bare={bare}
       onPageChange={onPageChange}
+      className={bare ? "space-y-0 [&>div:last-child]:border-t [&>div:last-child]:border-border [&>div:last-child]:px-4 [&>div:last-child]:py-3" : undefined}
     />
   );
 }

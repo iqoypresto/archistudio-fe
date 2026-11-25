@@ -23,8 +23,10 @@ interface ServerDataTableProps<T> {
   columns: DataColumn<T>[];
   data: T[];
   getRowKey: (row: T) => string;
+  getRowClassName?: (row: T) => string | undefined;
   meta?: PaginationMeta;
   onPageChange?: (page: number) => void;
+  bare?: boolean;
   className?: string;
 }
 
@@ -32,22 +34,29 @@ export function ServerDataTable<T>({
   columns,
   data,
   getRowKey,
+  getRowClassName,
   meta,
   onPageChange,
+  bare = false,
   className,
 }: ServerDataTableProps<T>) {
   return (
     <div className={cn("space-y-4", className)}>
-      <div className="overflow-hidden rounded-xl border border-border bg-surface">
-        <Table>
-          <TableHeader className="bg-surface-input/70">
+      <div
+        className={cn(
+          "overflow-hidden",
+          bare ? "border-t border-border" : "rounded-xl border border-border bg-surface",
+        )}
+      >
+        <Table className="tabular-nums">
+          <TableHeader className="bg-surface-input/50">
             <TableRow className="border-border/80 hover:bg-transparent">
               {columns.map((column) => (
                 <TableHead
                   key={column.key}
                   className={cn(
                     "h-10 px-4 text-[11px] font-medium tracking-wider text-text-muted uppercase",
-                    column.headerClassName
+                    column.headerClassName,
                   )}
                 >
                   {column.header}
@@ -57,11 +66,20 @@ export function ServerDataTable<T>({
           </TableHeader>
           <TableBody>
             {data.map((row) => (
-              <TableRow key={getRowKey(row)} className="border-border/60 hover:bg-surface-input/40">
+              <TableRow
+                key={getRowKey(row)}
+                className={cn(
+                  "border-border/60 transition-colors hover:bg-surface-input/40",
+                  getRowClassName?.(row),
+                )}
+              >
                 {columns.map((column) => (
                   <TableCell
                     key={column.key}
-                    className={cn("px-4 py-3 text-[13px] text-text-primary", column.cellClassName)}
+                    className={cn(
+                      "px-4 py-3 text-[13px] text-text-primary",
+                      column.cellClassName,
+                    )}
                   >
                     {column.cell(row)}
                   </TableCell>

@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { AlertTriangle, ExternalLink, KeyRound } from "lucide-react";
+import { ArrowRight, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { StatusBadge, type StatusTone } from "@/components/ui/StatusBadge";
+import { StatusIndicator } from "@/components/ui/StatusIndicator";
 import {
   Table,
   TableBody,
@@ -10,6 +10,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { formatIdDate, formatTimeInTimezone } from "@/lib/utils/office-format";
+import { resolveAreaStatusBadgeTone } from "@/lib/validation/dashboard.validation";
 import type { AreaDailyStatusType, DashboardAreaStatusItem } from "@/types/api/dashboard.types";
 
 interface DashboardAreaTableProps {
@@ -17,104 +19,144 @@ interface DashboardAreaTableProps {
   onOpenUnlockModal: (area: DashboardAreaStatusItem) => void;
 }
 
-function resolveStatusTone(status: AreaDailyStatusType): { tone: StatusTone; label: string } {
-  if (status === "TERKIRIM") return { tone: "success", label: "Terkirim (Tepat Waktu)" };
-  if (status === "TERLAMBAT") return { tone: "warning", label: "Terkirim (Terlambat)" };
-  if (status === "BELUM_LAPOR") return { tone: "danger", label: "Belum Lapor" };
-  return { tone: "muted", label: "Libur Rutin" };
+const STATUS_LABEL: Record<AreaDailyStatusType, string> = {
+  TERKIRIM: "Tepat Waktu",
+  TERLAMBAT: "Diunggah Terlambat",
+  BELUM_LAPOR: "Belum Lapor",
+  LIBUR_RUTIN: "Libur Rutin",
+};
+
+const STATUS_PRIORITY: Record<AreaDailyStatusType, number> = {
+  BELUM_LAPOR: 1,
+  TERLAMBAT: 2,
+  TERKIRIM: 3,
+  LIBUR_RUTIN: 4,
+};
+
+function sortAreas(items: DashboardAreaStatusItem[]): DashboardAreaStatusItem[] {
+  return [...items].sort((a, b) => {
+    if (a.isOverdueMoreThan3Days !== b.isOverdueMoreThan3Days) {
+      return a.isOverdueMoreThan3Days ? -1 : 1;
+    }
+    const statusDiff = STATUS_PRIORITY[a.status] - STATUS_PRIORITY[b.status];
+    if (statusDiff !== 0) return statusDiff;
+    return b.overdueBusinessDaysCount - a.overdueBusinessDaysCount;
+  });
 }
 
 export function DashboardAreaTable({ areas, onOpenUnlockModal }: DashboardAreaTableProps) {
   if (areas.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-text-secondary">
+      <div className="border-t border-border px-4 py-10 text-center text-sm text-text-secondary">
         Tidak ada area yang cocok dengan filter yang dipilih.
       </div>
     );
   }
 
+  const sortedAreas = sortAreas(areas);
+
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-surface">
-      <Table>
-        <TableHeader className="bg-surface-input/70">
+    <div className="border-t border-border">
+      <Table className="tabular-nums">
+        <TableHeader className="bg-surface-input/50">
           <TableRow className="border-border/80 hover:bg-transparent">
-            <TableHead className="h-10 w-1/4 px-4 text-[11px] font-medium tracking-wider text-text-muted uppercase">Area & Proyek</TableHead>
-            <TableHead className="h-10 w-1/5 px-4 text-[11px] font-medium tracking-wider text-text-muted uppercase">Supervisor Aktif</TableHead>
-            <TableHead className="h-10 w-1/5 px-4 text-[11px] font-medium tracking-wider text-text-muted uppercase">Status Hari Ini</TableHead>
-            <TableHead className="h-10 w-1/5 px-4 text-[11px] font-medium tracking-wider text-text-muted uppercase">Kunci & Tunggakan</TableHead>
-            <TableHead className="h-10 w-1/6 px-4 text-center text-[11px] font-medium tracking-wider text-text-muted uppercase">Aksi</TableHead>
+            <TableHead className="h-10 px-4 text-[11px] font-medium tracking-wider text-text-muted uppercase">
+              Area &amp; Proyek
+            </TableHead>
+            <TableHead className="h-10 px-4 text-[11px] font-medium tracking-wider text-text-muted uppercase">
+              Supervisor Aktif
+            </TableHead>
+            <TableHead className="h-10 px-4 text-[11px] font-medium tracking-wider text-text-muted uppercase">
+              Status Hari Ini
+            </TableHead>
+            <TableHead className="h-10 px-4 text-[11px] font-medium tracking-wider text-text-muted uppercase">
+              Kunci &amp; Tunggakan
+            </TableHead>
+            <TableHead className="h-10 px-4 text-right text-[11px] font-medium tracking-wider text-text-muted uppercase">
+              Aksi
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {areas.map((area) => {
-            const { tone, label } = resolveStatusTone(area.status);
+          {sortedAreas.map((area) => {
+            const tone = resolveAreaStatusBadgeTone(area.status);
+            const sentTime = formatTimeInTimezone(area.submittedAt, area.projectTimezone);
             return (
               <TableRow key={area.areaId} className="border-border/60 hover:bg-surface-input/40">
                 <TableCell className="px-4 py-3">
-                  <p className="font-medium text-text-primary">
-                    [{area.areaCode}] {area.areaName}
+                  <p className="text-[13px] font-medium text-text-primary">
+                    <span className="text-text-muted">{area.areaCode}</span> {area.areaName}
                   </p>
-                  <p className="text-xs text-text-secondary">
-                    [{area.projectCode}] {area.projectName}
+                  <p className="mt-0.5 text-xs text-text-secondary">
+                    {area.projectCode} · {area.projectName}
                   </p>
                 </TableCell>
                 <TableCell className="px-4 py-3">
                   {area.supervisor ? (
-                    <div>
-                      <p className="text-xs font-medium text-text-primary">{area.supervisor.name}</p>
-                      <p className="text-[11px] text-text-muted">{area.supervisor.jobTitle}</p>
-                    </div>
+                    <>
+                      <p className="text-[13px] font-medium text-text-primary">
+                        {area.supervisor.name}
+                      </p>
+                      <p className="mt-0.5 text-xs text-text-muted">{area.supervisor.jobTitle}</p>
+                    </>
                   ) : (
-                    <span className="text-xs italic text-text-muted">Belum ada penugasan</span>
+                    <span className="text-xs text-text-muted">Belum ditugaskan</span>
                   )}
                 </TableCell>
-                <TableCell>
-                  <StatusBadge tone={tone}>{label}</StatusBadge>
-                  {area.reportNumber && (
-                    <p className="mt-1 font-mono text-[10px] text-text-muted">{area.reportNumber}</p>
-                  )}
-                </TableCell>
-                <TableCell>
-                  {area.isOverdueMoreThan3Days ? (
-                    <div className="flex items-center gap-1.5 text-xs font-medium text-status-danger-fg">
-                      <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-                      <span>Tertunggak {area.overdueBusinessDaysCount} Hari</span>
-                    </div>
-                  ) : area.overdueBusinessDaysCount > 0 ? (
-                    <span className="text-xs text-status-warning-fg">
-                      Tertunggak {area.overdueBusinessDaysCount} hari
-                    </span>
-                  ) : (
-                    <span className="text-xs text-status-success-fg">Tidak ada tunggakan</span>
-                  )}
-                  {area.latestUnlock && (
-                    <p className="mt-1 text-[11px] text-text-muted">
-                      Dibuka hingga {area.latestUnlock.unlockedThroughDate}
+                <TableCell className="px-4 py-3">
+                  <StatusIndicator tone={tone}>{STATUS_LABEL[area.status]}</StatusIndicator>
+                  {(sentTime || area.reportNumber) && (
+                    <p className="mt-1 text-xs text-text-muted">
+                      {[sentTime, area.reportNumber].filter(Boolean).join(" · ")}
                     </p>
                   )}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="px-4 py-3">
+                  {area.isOverdueMoreThan3Days ? (
+                    <p className="text-[13px] font-medium text-status-danger-fg">
+                      Terkunci · {area.overdueBusinessDaysCount} hari kerja
+                    </p>
+                  ) : area.overdueBusinessDaysCount > 0 ? (
+                    <p className="text-[13px] text-status-warning-fg">
+                      Tertunggak {area.overdueBusinessDaysCount} hari
+                    </p>
+                  ) : (
+                    <p className="text-[13px] text-text-muted">Normal</p>
+                  )}
+                  {area.oldestOverdueDate && area.overdueBusinessDaysCount > 0 && (
+                    <p className="mt-0.5 text-xs text-text-muted">
+                      Tertua {formatIdDate(area.oldestOverdueDate)}
+                    </p>
+                  )}
+                  {area.latestUnlock && (
+                    <p className="mt-0.5 text-xs text-text-secondary">
+                      Dibuka s.d. {formatIdDate(area.latestUnlock.unlockedThroughDate)}
+                    </p>
+                  )}
+                </TableCell>
+                <TableCell className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-2">
                     {area.isOverdueMoreThan3Days && (
                       <Button
+                        type="button"
                         size="sm"
-                        variant="outline"
+                        variant="destructive"
                         onClick={() => onOpenUnlockModal(area)}
-                        className="h-8 gap-1.5 border-status-danger-fg/30 bg-status-danger-bg/60 px-2.5 text-xs text-status-danger-fg hover:bg-status-danger-bg"
+                        className="h-8 gap-1.5 px-2.5 text-xs"
                       >
-                        <KeyRound className="h-3.5 w-3.5" />
+                        <KeyRound className="size-3.5" />
                         Buka Kunci
                       </Button>
                     )}
-                    {area.reportId ? (
+                    {area.reportId && (
                       <Link
                         href={`/reports/${area.reportId}`}
-                        className="inline-flex h-8 items-center gap-1 rounded-lg border border-border bg-surface-input px-2.5 text-xs font-medium text-text-secondary hover:bg-surface-active hover:text-text-primary"
+                        className="inline-flex h-8 items-center gap-1 rounded-lg border border-border bg-surface-input px-2.5 text-xs font-medium text-text-secondary transition-colors hover:bg-surface-active hover:text-text-primary"
                       >
                         Detail
-                        <ExternalLink className="h-3 w-3" />
+                        <ArrowRight className="size-3" />
                       </Link>
-                    ) : null}
+                    )}
                   </div>
                 </TableCell>
               </TableRow>

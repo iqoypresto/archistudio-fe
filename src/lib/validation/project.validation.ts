@@ -41,6 +41,7 @@ export const projectFormSchema = z
     status: z.enum(["PERSIAPAN", "BERJALAN"]),
     timezone: z.string().min(1, "Pilih zona waktu project."),
     routineHolidays: z.array(z.number().int().min(0).max(6)),
+    siteManagerId: z.string().optional(),
   })
   .refine(
     (data) => !data.endDate || data.endDate.trim() === "" || data.endDate >= data.startDate,

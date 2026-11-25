@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { useLogoutMutation } from "@/hooks/auth.hooks";
 import { cn } from "@/lib/utils";
+import { getRoleLabel } from "@/lib/utils/role";
 import { useAuthStore } from "@/stores/auth.store";
 
 function subscribeOnlineStatus(callback: () => void): () => void {
@@ -73,7 +74,7 @@ export function FieldAppShell({ children }: { children: ReactNode }) {
           <div className="min-w-0">
             <p className="truncate text-base font-bold text-text-primary">ArchiStudio</p>
             <p className="truncate text-sm text-text-secondary">
-              {user?.name ?? "Pengawas Lapangan"} · Supervisor
+              {user?.name ?? "Pengawas Lapangan"} · {getRoleLabel(user?.role)}
             </p>
           </div>
         )}

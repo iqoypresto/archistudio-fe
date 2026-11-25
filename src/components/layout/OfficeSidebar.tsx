@@ -11,6 +11,7 @@ import {
   SidebarHeader,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { getRoleLabel, isFieldRole } from "@/lib/utils/role";
 import type { AuthUserProfile, UserRole } from "@/types/api/auth.types";
 import type { ProjectListItem } from "@/types/api/project.types";
 import { ProjectNavigation } from "./ProjectNavigation";
@@ -44,7 +45,7 @@ export function OfficeSidebar({
       <SidebarHeader>
         <div className="group-data-[collapsible=icon]/sidebar:justify-center flex min-w-0 items-center gap-2">
           <Link
-            href={role === "SUPERVISOR" ? "/field/tasks" : "/dashboard"}
+            href={isFieldRole(role) ? "/field/home" : "/dashboard"}
             aria-label="ArchiStudio beranda"
             className="group-data-[collapsible=icon]/sidebar:size-9 group-data-[collapsible=icon]/sidebar:flex-none group-data-[collapsible=icon]/sidebar:justify-center group-data-[collapsible=icon]/sidebar:border-transparent group-data-[collapsible=icon]/sidebar:bg-transparent group-data-[collapsible=icon]/sidebar:p-0 flex min-w-0 flex-1 items-center gap-2.5 rounded-xl border border-border bg-surface-input/90 px-2.5 py-2 transition-colors hover:bg-surface-active/70"
           >
@@ -61,7 +62,7 @@ export function OfficeSidebar({
         <ProjectNavList
           groups={getGlobalNavGroups(role, false)}
           onNavigate={closeOnNavigate}
-          largeTouchTarget={role === "SUPERVISOR"}
+          largeTouchTarget={isFieldRole(role)}
           layoutGroupId="office-global-navigation"
         />
         <ProjectNavigation
@@ -69,7 +70,7 @@ export function OfficeSidebar({
           activeProject={project}
           role={role}
           onNavigate={closeOnNavigate}
-          largeTouchTarget={role === "SUPERVISOR"}
+          largeTouchTarget={isFieldRole(role)}
           layoutGroupId="office-project-navigation"
         />
       </SidebarContent>
@@ -107,7 +108,7 @@ function AccountFooter({
       ) : (
         <div className="min-w-0">
           <p className="truncate text-xs font-medium text-text-primary">{user.name}</p>
-          <p className="mt-1 truncate text-[11px] text-text-muted">{user.role}</p>
+          <p className="mt-1 truncate text-[11px] text-text-muted">{getRoleLabel(user.role)}</p>
         </div>
       )}
       <Button

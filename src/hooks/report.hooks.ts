@@ -11,9 +11,10 @@ import type {
 
 export const REPORTS_QUERY_KEY = ["reports"] as const;
 
-export function useArchivedReportsQuery(query: ListArchivedReportsQuery) {
+export function useArchivedReportsQuery(query: ListArchivedReportsQuery, enabled = true) {
   return useQuery({
     queryKey: [...REPORTS_QUERY_KEY, "archive", query],
+    enabled,
     queryFn: () => reportApi.listArchive(query),
   });
 }
@@ -26,9 +27,10 @@ export function useReportDetailQuery(reportId?: string | null) {
   });
 }
 
-export function useMyReportHistoryQuery(query: ListReportsQuery) {
+export function useMyReportHistoryQuery(query: ListReportsQuery, enabled = true) {
   return useQuery({
     queryKey: [...REPORTS_QUERY_KEY, "history", query],
+    enabled,
     queryFn: () => reportApi.listReports(query),
   });
 }

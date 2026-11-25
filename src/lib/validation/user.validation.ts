@@ -17,7 +17,7 @@ export const memberFormSchema = z.object({
     .min(8, "Nomor HP minimal 8 karakter.")
     .max(20)
     .regex(phoneRegex, "Nomor HP hanya boleh berisi angka dan tanda plus (+)."),
-  role: z.enum(["ADMIN", "SUPERVISOR"]),
+  role: z.enum(["ADMIN", "SITE_MANAGER", "SUPERVISOR"]),
   jobTitle: z.string().trim().max(50).optional(),
   password: z.string().optional(),
 });

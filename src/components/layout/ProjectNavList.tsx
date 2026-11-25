@@ -56,8 +56,12 @@ export function ProjectNavList({
                     aria-expanded={isOpen}
                     aria-controls={controlId}
                     onClick={() => {
-                      if (isCollapsed) setOpen(true);
-                      else setOpenGroups((current) => ({ ...current, [groupKey]: !isOpen }));
+                      if (isCollapsed) {
+                        setOpen(true);
+                        setOpenGroups((current) => ({ ...current, [groupKey]: true }));
+                        return;
+                      }
+                      setOpenGroups((current) => ({ ...current, [groupKey]: !isOpen }));
                     }}
                     title={isCollapsed ? group.label : undefined}
                     className={cn(

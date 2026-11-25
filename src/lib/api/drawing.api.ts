@@ -2,7 +2,6 @@ import axios from "axios";
 import type { ApiResponse } from "@/types/api";
 import type {
   CreateDrawingPayload,
-  DrawingDirection,
   DrawingFilterParams,
   DrawingItem,
   DrawingMimeType,
@@ -19,12 +18,7 @@ export const drawingApi = {
     const response = await api.get<ApiResponse<DrawingItem[]>>(
       `/projects/${projectId}/drawings`,
       {
-        params: params
-          ? {
-              ...(params.direction && { direction: params.direction }),
-              ...(params.includeArchived && { includeArchived: "true" }),
-            }
-          : undefined,
+        params: params?.includeArchived ? { includeArchived: "true" } : undefined,
       },
     );
     return response.data.data;
@@ -50,10 +44,9 @@ export const drawingApi = {
     return response.data.data;
   },
 
-  /** Meminta presigned PUT URL ke R2 untuk unggah Drawing (purpose "drawing", BR-33). */
+  /** Meminta presigned PUT URL untuk unggah Drawing (purpose "drawing", BR-33). */
   async signDrawingUpload(params: {
     projectId: string;
-    direction: DrawingDirection;
     fileName: string;
     contentType: DrawingMimeType;
     fileSizeBytes: number;
@@ -61,7 +54,6 @@ export const drawingApi = {
     const response = await api.post<ApiResponse<SignedDrawingUploadResponse>>("/uploads/sign", {
       purpose: "drawing",
       projectId: params.projectId,
-      direction: params.direction,
       file: {
         fileName: params.fileName,
         contentType: params.contentType,

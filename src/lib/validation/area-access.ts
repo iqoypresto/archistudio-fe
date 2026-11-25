@@ -1,3 +1,4 @@
+import { isFieldRole } from "@/lib/utils/role";
 import type { UserRole } from "@/types/api/auth.types";
 import type { ProjectStatus } from "@/types/api/project.types";
 
@@ -19,7 +20,7 @@ export function resolveAreaPermissions(
   project?: ProjectReadOnlyState | null,
 ): AreaPermissions {
   const isOfficeManager = role === "OWNER" || role === "ADMIN";
-  const isSupervisorReadOnly = role === "SUPERVISOR";
+  const isSupervisorReadOnly = isFieldRole(role);
   const isProjectReadOnly =
     project?.status === "SELESAI" || Boolean(project?.archivedAt);
 

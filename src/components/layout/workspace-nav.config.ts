@@ -10,6 +10,7 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
+import { isCommsAllowedRole, isFieldRole } from "@/lib/utils/role";
 import type { UserRole } from "@/types/api/auth.types";
 
 export interface WorkspaceNavItem {
@@ -28,11 +29,12 @@ export interface WorkspaceNavGroup {
 }
 
 export function getGlobalNavGroups(role: UserRole, includeProjects = true): WorkspaceNavGroup[] {
-  if (role === "SUPERVISOR") {
+  if (isFieldRole(role)) {
     return [
       { label: "Lapangan", collapsible: false, items: [
-        { href: "/field/tasks", label: "Tugas Lapor", icon: ClipboardList },
-        { href: "/field/history", label: "Riwayat Saya", icon: FileText },
+        { href: "/field/home", label: "Home", icon: LayoutDashboard, exact: true },
+        { href: "/field/reports", label: "Laporan", icon: ClipboardList },
+        { href: "/field/history", label: "Riwayat", icon: FileText },
       ] },
       ...(includeProjects ? [{ label: "Project", collapsible: false, items: [
         { href: "/projects", label: "Semua Project", icon: FolderKanban, exact: true },
@@ -80,30 +82,41 @@ export function getProjectNavGroups(projectId: string, role: UserRole): Workspac
   const groups: WorkspaceNavGroup[] = [
     {
       label: "Project",
-      collapsible: true,
+      collapsible: false,
+      showLabel: false,
       items: [
-        { href: base, label: "Overview & Area", icon: FolderKanban, exact: true },
-        { href: `${base}/drawings`, label: "Drawing In/Out", icon: FileText },
+        { href: base, label: "Overview & Area", exact: true },
+        { href: `${base}/drawings`, label: "Drawing" },
       ],
     },
   ];
+  if (isCommsAllowedRole(role)) {
+    groups.push({
+      label: "Comms",
+      icon: MessageSquareText,
+      collapsible: true,
+      items: [
+        { href: `${base}/comms/in`, label: "Comms In" },
+        { href: `${base}/comms/out`, label: "Comms Out" },
+      ],
+    });
+  }
   if (role === "OWNER") {
     groups.push({
       label: "Document Out",
+      icon: ReceiptText,
       collapsible: true,
-      items: [{ href: `${base}/document-out`, label: "Quotation, BAST, Invoice", icon: ReceiptText, exact: true }],
+      items: [{ href: `${base}/document-out`, label: "Quotation, BAST, Invoice", exact: true }],
     });
   }
-  if (role !== "SUPERVISOR") {
+  if (!isFieldRole(role)) {
     groups.push({
       label: "Document In",
+      icon: ClipboardList,
       collapsible: true,
       items: [
-        { href: `${base}/document-in/reports/daily`, label: "Daily Report", icon: ClipboardList },
-        { href: `${base}/document-in/reports/monthly`, label: "Monthly Report", icon: FileText },
-        ...(role === "OWNER"
-          ? [{ href: `${base}/document-in/comms`, label: "Comms", icon: MessageSquareText }]
-          : []),
+        { href: `${base}/document-in/reports/daily`, label: "Daily Report" },
+        { href: `${base}/document-in/reports/monthly`, label: "Monthly Report" },
       ],
     });
   }

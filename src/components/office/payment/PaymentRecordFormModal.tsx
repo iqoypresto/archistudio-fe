@@ -1,30 +1,26 @@
 "use client";
 
 import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
+import { ModalContextStrip } from "@/components/ui/ModalContextStrip";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { usePaymentProofUpload } from "@/hooks/payment.hooks";
-import {
-  paymentRecordFormSchema,
-  type PaymentRecordFormValues,
-} from "@/lib/validation/payment.validation";
+import { formatCurrencyIdr, paymentRecordFormSchema, type PaymentRecordFormValues } from "@/lib/validation/payment.validation";
 import type {
-  CreatePaymentRecordPayload,
-  PaymentProofMime,
-  PaymentProofPayload,
-  PaymentRecordItem,
-  UpdatePaymentRecordPayload,
+  CreatePaymentRecordPayload, PaymentProofMime, PaymentProofPayload,
+  PaymentRecordItem, PaymentStatus, UpdatePaymentRecordPayload,
 } from "@/types/api/payment.types";
 import { PaymentProofField } from "./PaymentProofField";
+
+const STATUS_OPTIONS: readonly { value: PaymentStatus; label: string }[] = [
+  { value: "UNPAID", label: "Belum Dibayar" },
+  { value: "PAID", label: "Sudah Dibayar" },
+];
 
 interface PaymentRecordFormModalProps {
   isOpen: boolean;
@@ -40,10 +36,8 @@ interface PaymentRecordFormModalProps {
 function toInitialProof(record: PaymentRecordItem | null): PaymentProofPayload | null {
   if (!record?.proofStorageKey || !record.proofFileName || !record.proofMimeType || !record.proofSizeBytes) return null;
   return {
-    storageKey: record.proofStorageKey,
-    fileName: record.proofFileName,
-    mimeType: record.proofMimeType as PaymentProofMime,
-    sizeBytes: record.proofSizeBytes,
+    storageKey: record.proofStorageKey, fileName: record.proofFileName,
+    mimeType: record.proofMimeType as PaymentProofMime, sizeBytes: record.proofSizeBytes,
   };
 }
 
@@ -54,27 +48,19 @@ export function PaymentRecordFormModal({
   const [proof, setProof] = useState<PaymentProofPayload | null>(() => toInitialProof(recordToEdit));
   const { uploadFile, isUploading, errorMessage, clearError } = usePaymentProofUpload(payeeId);
 
-  const {
-    register,
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<PaymentRecordFormValues>({
+  const { register, control, handleSubmit, formState: { errors } } = useForm<PaymentRecordFormValues>({
     resolver: zodResolver(paymentRecordFormSchema),
     defaultValues: recordToEdit
       ? {
-          status: recordToEdit.status,
-          amount: String(recordToEdit.amount),
-          recordDate: recordToEdit.recordDate.slice(0, 10),
-          dueDate: recordToEdit.dueDate?.slice(0, 10) ?? "",
+          status: recordToEdit.status, amount: String(recordToEdit.amount),
+          recordDate: recordToEdit.recordDate.slice(0, 10), dueDate: recordToEdit.dueDate?.slice(0, 10) ?? "",
         }
-      : {
-          status: "UNPAID",
-          amount: "",
-          recordDate: new Date().toISOString().slice(0, 10),
-          dueDate: "",
-        },
+      : { status: "UNPAID", amount: "", recordDate: new Date().toISOString().slice(0, 10), dueDate: "" },
   });
+
+  const amountRaw = useWatch({ control, name: "amount" });
+  const parsedAmount = Number(amountRaw);
+  const hasPreviewAmount = Number.isFinite(parsedAmount) && parsedAmount > 0;
 
   const handleSelectFile = async (file: File) => {
     const uploaded = await uploadFile(file);
@@ -83,105 +69,78 @@ export function PaymentRecordFormModal({
 
   const handleFormSubmit = (data: PaymentRecordFormValues) => {
     const payload: CreatePaymentRecordPayload = {
-      status: data.status,
-      amount: Number(data.amount),
-      recordDate: data.recordDate,
-      dueDate: data.dueDate && data.dueDate.trim() !== "" ? data.dueDate : null,
-      proof,
+      status: data.status, amount: Number(data.amount), recordDate: data.recordDate,
+      dueDate: data.dueDate?.trim() ? data.dueDate : null, proof,
     };
-    if (isEditing && recordToEdit) {
-      onSubmitUpdate(recordToEdit.id, payload);
-    } else {
-      onSubmitCreate(payload);
-    }
+    if (isEditing && recordToEdit) onSubmitUpdate(recordToEdit.id, payload);
+    else onSubmitCreate(payload);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>
-            {isEditing ? "Ubah Catatan Pembayaran" : "Tambah Catatan Pembayaran"}
-          </DialogTitle>
-          <DialogDescription>
-            Catatan pembayaran global untuk <strong>{payeeName}</strong> (BR-36).
+          <DialogTitle>{isEditing ? "Ubah Catatan Pembayaran" : "Tambah Catatan Pembayaran"}</DialogTitle>
+          <DialogDescription className="text-xs">
+            Catat nominal, tanggal, status, dan bukti transfer bila tersedia.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-3.5 py-1">
+        <ModalContextStrip kicker="Penerima Pembayaran" title={payeeName} />
+
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-3.5">
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">Status Pembayaran</Label>
+            <Controller
+              name="status"
+              control={control}
+              render={({ field }) => (
+                <SegmentedControl ariaLabel="Status pembayaran" fullWidth options={STATUS_OPTIONS} value={field.value} onChange={field.onChange} />
+              )}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="payment-amount" className="text-xs font-medium">Nominal (Rp)</Label>
+            <Input id="payment-amount" type="number" inputMode="numeric" min="1" step="any" placeholder="3500000" className="h-9 text-xs tabular-nums" {...register("amount")} />
+            {hasPreviewAmount && (
+              <p className="text-[11px] text-text-secondary tabular-nums">
+                Terbaca: <strong className="text-text-primary">{formatCurrencyIdr(parsedAmount)}</strong>
+              </p>
+            )}
+            {errors.amount && <p className="text-xs text-status-danger-fg">{errors.amount.message}</p>}
+          </div>
+
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="space-y-1">
-              <Label htmlFor="payment-status">Status *</Label>
-              <Controller
-                name="status"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    value={field.value}
-                    onValueChange={(val: string | null) =>
-                      field.onChange(val === "PAID" ? "PAID" : "UNPAID")
-                    }
-                  >
-                    <SelectTrigger id="payment-status" className="h-10">
-                      <SelectValue placeholder="Pilih Status">
-                        {field.value === "PAID" ? "Sudah Dibayar" : "Belum Dibayar"}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="UNPAID">Belum Dibayar</SelectItem>
-                      <SelectItem value="PAID">Sudah Dibayar</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
+            <div className="space-y-1.5">
+              <Label htmlFor="payment-date" className="text-xs font-medium">Tanggal Catatan</Label>
+              <Input id="payment-date" type="date" className="h-9 text-xs tabular-nums" {...register("recordDate")} />
+              {errors.recordDate && <p className="text-xs text-status-danger-fg">{errors.recordDate.message}</p>}
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="payment-amount">Nominal (Rp) *</Label>
-              <Input
-                id="payment-amount"
-                type="number"
-                inputMode="numeric"
-                min="1"
-                step="any"
-                placeholder="1500000"
-                className="h-10"
-                {...register("amount")}
-              />
-              {errors.amount && <p className="text-status-danger-fg text-xs">{errors.amount.message}</p>}
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="payment-date">Tanggal Catatan *</Label>
-              <Input id="payment-date" type="date" className="h-10" {...register("recordDate")} />
-              {errors.recordDate && <p className="text-status-danger-fg text-xs">{errors.recordDate.message}</p>}
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="payment-due-date">Jatuh Tempo (Opsional)</Label>
-              <Input id="payment-due-date" type="date" className="h-10" {...register("dueDate")} />
-              {errors.dueDate && <p className="text-status-danger-fg text-xs">{errors.dueDate.message}</p>}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="payment-due-date" className="text-xs font-medium">Jatuh Tempo</Label>
+                <span className="text-[11px] text-text-muted">Opsional</span>
+              </div>
+              <Input id="payment-due-date" type="date" className="h-9 text-xs tabular-nums" {...register("dueDate")} />
+              {errors.dueDate && <p className="text-xs text-status-danger-fg">{errors.dueDate.message}</p>}
             </div>
           </div>
 
           <PaymentProofField
             proof={proof}
-            existingViewUrl={
-              recordToEdit?.proofStorageKey === proof?.storageKey
-                ? recordToEdit?.proofViewUrl
-                : null
-            }
+            existingViewUrl={recordToEdit?.proofStorageKey === proof?.storageKey ? recordToEdit?.proofViewUrl : null}
             isUploading={isUploading}
             errorMessage={errorMessage}
             onSelectFile={handleSelectFile}
-            onRemoveProof={() => {
-              setProof(null);
-              clearError();
-            }}
+            onRemoveProof={() => { setProof(null); clearError(); }}
           />
 
-          <DialogFooter className="pt-2">
-            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting || isUploading}>
+          <DialogFooter className="gap-2 pt-2">
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting || isUploading} className="h-9">
               Batal
             </Button>
-            <Button type="submit" disabled={isSubmitting || isUploading}>
+            <Button type="submit" disabled={isSubmitting || isUploading} className="h-9">
               {isSubmitting ? "Menyimpan..." : isEditing ? "Simpan Perubahan" : "Simpan Catatan"}
             </Button>
           </DialogFooter>

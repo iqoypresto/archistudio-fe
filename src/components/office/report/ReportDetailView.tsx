@@ -1,135 +1,155 @@
 "use client";
 
-import { Calendar, Edit3, MapPin, ShieldCheck, Users } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { canOwnerReviseReport } from "@/lib/validation/report-revision.validation";
-import type { UserRole } from "@/types/api/auth.types";
-import type { DailyReportDetail } from "@/types/api/report.types";
+import { Calendar, MapPin, ShieldCheck } from "lucide-react";
+import { StatusIndicator } from "@/components/ui/StatusIndicator";
+import {
+  formatIdDate,
+  formatShortTimezone,
+  formatTimeInTimezone,
+} from "@/lib/utils/office-format";
+import type { DailyReportDetail, WeatherType } from "@/types/api/report.types";
 import { ReportPhotoGallery } from "./ReportPhotoGallery";
+import { RevisionHistoryTimeline } from "./RevisionHistoryTimeline";
 
-function formatUtcInTimezone(iso: string | null, timeZone: string): string {
-  if (!iso) return "-";
-  return new Intl.DateTimeFormat("id-ID", {
-    timeZone,
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(iso));
-}
+const WEATHER_LABEL: Record<WeatherType, string> = {
+  CERAH: "Cerah",
+  BERAWAN: "Berawan",
+  HUJAN: "Hujan",
+};
 
-function ReportStatusBadges({ report }: { report: DailyReportDetail }) {
-  return (
-    <div className="flex flex-wrap gap-2">
-      <StatusBadge tone={report.isLate ? "warning" : "success"}>
-        {report.isLate ? report.lateLabel ?? "Diunggah terlambat" : "Tepat Waktu"}
-      </StatusBadge>
-      {report.isRevised && (
-        <StatusBadge tone="info">Direvisi (Owner #{report.revisionNo})</StatusBadge>
-      )}
-      <StatusBadge tone="muted">
-        {report.reportType === "WORK" ? "Ada Pekerjaan" : "Hari Tanpa Pekerjaan"}
-      </StatusBadge>
-    </div>
-  );
-}
-
-export function ReportDetailView({
-  report,
-  userRole,
-  onOpenReviseModal,
-}: {
-  report: DailyReportDetail;
-  userRole?: UserRole | null;
-  onOpenReviseModal?: () => void;
-}) {
-  const canRevise = canOwnerReviseReport(userRole, report.status);
+export function ReportDetailView({ report }: { report: DailyReportDetail }) {
+  const sentTime = formatTimeInTimezone(report.submittedAt, report.project.timezone);
+  const weatherText = report.weather ? WEATHER_LABEL[report.weather] : "-";
 
   return (
-    <div className="space-y-4">
-      <Card className="border border-border bg-surface">
-        <CardHeader className="space-y-2 pb-3">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="space-y-1">
-              <span className="inline-block rounded-md border border-border/80 bg-surface-input px-2 py-0.5 font-mono text-xs font-semibold text-text-primary">
-                {report.reportNumber}
-              </span>
-              <CardTitle className="text-xl font-semibold tracking-tight text-text-primary">
-                {report.project.name} — {report.area.name}
-              </CardTitle>
-              <div className="flex flex-wrap items-center gap-3 text-xs text-text-secondary">
-                <span className="inline-flex items-center gap-1 font-mono tabular-nums">
-                  <Calendar className="size-3.5 text-text-muted" />
-                  {report.reportDate}
-                </span>
-                {report.locationText && (
-                  <span className="inline-flex items-center gap-1">
-                    <MapPin className="size-3.5 text-text-muted" />
-                    {report.locationText}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {canRevise && onOpenReviseModal && (
-              <Button type="button" onClick={onOpenReviseModal} className="h-9 gap-1.5 text-xs">
-                <Edit3 className="size-3.5" />
-                Revisi Laporan (Owner)
-              </Button>
-            )}
-          </div>
-          <ReportStatusBadges report={report} />
-        </CardHeader>
-
-        <CardContent className="space-y-3 text-sm">
-          {report.reportType === "WORK" ? (
-            <div className="space-y-3">
-              <div className="flex flex-wrap gap-4 rounded-xl border border-border/80 bg-surface-input/70 p-3 text-xs text-text-secondary">
-                <span>Cuaca: <strong className="text-text-primary">{report.weather ?? "-"}</strong></span>
-                <span className="inline-flex items-center gap-1">
-                  <Users className="size-3.5 text-text-muted" />
-                  Pekerja Hadir: <strong className="font-mono tabular-nums text-text-primary">{report.workerCount ?? 0}</strong> orang
-                </span>
-              </div>
-              <div className="rounded-xl border border-border/80 bg-surface-input/60 p-3.5">
-                <p className="text-xs font-medium text-text-muted">Progres Pekerjaan</p>
-                <p className="mt-1 whitespace-pre-line text-sm text-text-primary">{report.progressText ?? "-"}</p>
-              </div>
-              <div className="rounded-xl border border-border/80 bg-surface-input/60 p-3.5">
-                <p className="text-xs font-medium text-text-muted">Hambatan / Kendala</p>
-                <p className="mt-1 whitespace-pre-line text-sm text-text-primary">{report.obstaclesText ?? "-"}</p>
-              </div>
-              <div className="rounded-xl border border-border/80 bg-surface-input/60 p-3.5">
-                <p className="text-xs font-medium text-text-muted">Rencana Besok</p>
-                <p className="mt-1 whitespace-pre-line text-sm text-text-primary">{report.tomorrowPlanText ?? "-"}</p>
-              </div>
-            </div>
-          ) : (
-            <div className="rounded-xl border border-border/80 bg-surface-input/60 p-3.5">
-              <p className="text-xs font-medium text-text-muted">Alasan Hari Tanpa Pekerjaan</p>
-              <p className="mt-1 whitespace-pre-line text-sm text-text-primary">{report.noWorkReason ?? "-"}</p>
-            </div>
+    <div className="space-y-5 tabular-nums">
+      <header className="space-y-2 border-b border-border pb-4">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-muted">
+          <span className="font-medium text-text-secondary">{report.reportNumber}</span>
+          <span>·</span>
+          <StatusIndicator tone={report.isLate ? "warning" : "success"} className="text-xs">
+            {report.isLate ? report.lateLabel ?? "Diunggah Terlambat" : "Tepat Waktu"}
+          </StatusIndicator>
+          <span>·</span>
+          <span>{report.reportType === "WORK" ? "Ada Pekerjaan" : "Hari Tanpa Pekerjaan"}</span>
+          {report.isRevised && (
+            <>
+              <span>·</span>
+              <span className="text-text-secondary">Direvisi Owner (#{report.revisionNo})</span>
+            </>
           )}
-        </CardContent>
-      </Card>
+        </div>
 
-      <ReportPhotoGallery photos={report.photos} timeZone={report.project.timezone} />
+        <h1 className="font-heading text-xl font-semibold tracking-tight text-text-primary sm:text-[22px]">
+          {report.project.name} — {report.area.code} {report.area.name}
+        </h1>
 
-      <Card className="border border-border bg-surface">
-        <CardContent className="flex items-start gap-3 py-4">
-          <ShieldCheck className="mt-0.5 size-5 shrink-0 text-status-success-fg" />
-          <div className="space-y-0.5 text-sm">
-            <p className="font-semibold text-text-primary">Paraf Otomatis Supervisor</p>
-            <p className="text-text-secondary">
-              {report.signedByName ?? report.supervisor.name} ({report.signedByTitle ?? report.supervisor.jobTitle})
-            </p>
-            <p className="font-mono text-xs text-text-secondary">
-              Waktu Kirim: {formatUtcInTimezone(report.submittedAt, report.project.timezone)}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-secondary">
+          <span className="inline-flex items-center gap-1.5">
+            <Calendar className="size-3.5 text-text-muted" />
+            {formatIdDate(report.reportDate)}
+            {sentTime ? ` · Dikirim ${sentTime}` : ""}
+          </span>
+          {report.locationText && (
+            <span className="inline-flex items-center gap-1.5">
+              <MapPin className="size-3.5 text-text-muted" />
+              {report.locationText}
+            </span>
+          )}
+        </div>
+      </header>
 
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.85fr)_minmax(0,1fr)] lg:items-start">
+        <div className="space-y-5">
+          <section className="rounded-xl border border-border bg-surface">
+            <div className="border-b border-border px-5 py-3.5">
+              <h2 className="text-sm font-semibold text-text-primary">Ringkasan Pekerjaan</h2>
+            </div>
+
+            {report.reportType === "WORK" ? (
+              <div className="divide-y divide-border/70 px-5">
+                <div className="py-4">
+                  <p className="text-xs font-medium text-text-muted">Progres Pekerjaan</p>
+                  <p className="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-text-primary">
+                    {report.progressText || "-"}
+                  </p>
+                </div>
+                <div className="py-4">
+                  <p className="text-xs font-medium text-text-muted">Hambatan / Kendala</p>
+                  <p className="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-text-primary">
+                    {report.obstaclesText || "Tidak ada hambatan tercatat."}
+                  </p>
+                </div>
+                <div className="py-4">
+                  <p className="text-xs font-medium text-text-muted">Rencana Besok</p>
+                  <p className="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-text-primary">
+                    {report.tomorrowPlanText || "-"}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="px-5 py-4">
+                <p className="text-xs font-medium text-text-muted">Alasan Hari Tanpa Pekerjaan</p>
+                <p className="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-text-primary">
+                  {report.noWorkReason || "-"}
+                </p>
+              </div>
+            )}
+          </section>
+
+          <ReportPhotoGallery photos={report.photos} timeZone={report.project.timezone} />
+        </div>
+
+        <aside className="space-y-5">
+          {report.reportType === "WORK" && (
+            <section className="rounded-xl border border-border bg-surface">
+              <div className="border-b border-border px-4 py-3">
+                <h2 className="text-xs font-semibold tracking-wider text-text-muted uppercase">
+                  Kondisi Lapangan
+                </h2>
+              </div>
+              <div className="grid grid-cols-2 divide-x divide-border">
+                <div className="px-4 py-3.5">
+                  <p className="text-xs text-text-muted">Cuaca</p>
+                  <p className="mt-1 text-sm font-semibold text-text-primary">{weatherText}</p>
+                </div>
+                <div className="px-4 py-3.5">
+                  <p className="text-xs text-text-muted">Pekerja Hadir</p>
+                  <p className="mt-1 text-sm font-semibold text-text-primary">
+                    {report.workerCount ?? 0} orang
+                  </p>
+                </div>
+              </div>
+            </section>
+          )}
+
+          <section className="rounded-xl border border-border bg-surface">
+            <div className="flex items-center justify-between border-b border-border px-4 py-3">
+              <h2 className="text-xs font-semibold tracking-wider text-text-muted uppercase">
+                Paraf Pengirim
+              </h2>
+              <ShieldCheck className="size-4 text-status-success-fg" aria-hidden="true" />
+            </div>
+            <div className="space-y-1 px-4 py-3.5 text-xs">
+              <p className="text-sm font-semibold text-text-primary">
+                {report.signedByName ?? report.supervisor.name}
+              </p>
+              <p className="text-text-secondary">
+                {report.signedByTitle ?? report.supervisor.jobTitle}
+              </p>
+              <p className="pt-1 text-text-muted">
+                Terkirim {formatIdDate(report.reportDate)}
+                {sentTime ? ` · ${sentTime}` : ` (${formatShortTimezone(report.project.timezone)})`}
+              </p>
+            </div>
+          </section>
+
+          <RevisionHistoryTimeline
+            revisions={report.revisions}
+            timeZone={report.project.timezone}
+          />
+        </aside>
+      </div>
     </div>
   );
 }

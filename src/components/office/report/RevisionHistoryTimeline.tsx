@@ -1,48 +1,97 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { StatusBadge } from "@/components/ui/StatusBadge";
 import { parseRevisionSnapshot } from "@/lib/validation/report-revision.validation";
-import type { DailyReportRevisionDto } from "@/types/api/report.types";
+import type { DailyReportRevisionDto, WeatherType } from "@/types/api/report.types";
+
+const WEATHER_TEXT: Record<WeatherType, string> = {
+  CERAH: "Cerah",
+  BERAWAN: "Berawan",
+  HUJAN: "Hujan",
+};
+
+function formatRevTime(iso: string, timeZone: string): string {
+  return new Intl.DateTimeFormat("id-ID", {
+    timeZone,
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  })
+    .format(new Date(iso))
+    .replace(".", ":");
+}
 
 function SnapshotPreviewBody({ raw }: { raw: unknown }) {
   const snapshot = parseRevisionSnapshot(raw);
   if (!snapshot) {
     return (
-      <pre className="max-h-80 overflow-auto rounded-lg bg-secondary p-3 font-mono text-xs">
+      <pre className="max-h-80 overflow-auto rounded-lg bg-secondary p-3 text-xs">
         {JSON.stringify(raw, null, 2)}
       </pre>
     );
   }
   return (
-    <div className="space-y-3 text-sm">
-      <div className="flex flex-wrap gap-2">
-        <StatusBadge tone="muted">
-          Tipe: {snapshot.reportType === "WORK" ? "Ada Pekerjaan" : "Tanpa Pekerjaan"}
-        </StatusBadge>
-        {snapshot.weather && <StatusBadge tone="info">Cuaca: {snapshot.weather}</StatusBadge>}
-        {snapshot.workerCount !== null && (
-          <StatusBadge tone="muted">Pekerja: {snapshot.workerCount}</StatusBadge>
-        )}
+    <div className="space-y-3.5 text-xs tabular-nums">
+      <div className="grid grid-cols-3 divide-x divide-border rounded-lg border border-border bg-canvas/70">
+        <div className="px-3 py-2.5">
+          <p className="text-[11px] text-text-muted">Tipe Laporan</p>
+          <p className="mt-0.5 font-medium text-text-primary">
+            {snapshot.reportType === "WORK" ? "Ada Pekerjaan" : "Tanpa Pekerjaan"}
+          </p>
+        </div>
+        <div className="px-3 py-2.5">
+          <p className="text-[11px] text-text-muted">Cuaca</p>
+          <p className="mt-0.5 font-medium text-text-primary">
+            {snapshot.weather ? WEATHER_TEXT[snapshot.weather] : "-"}
+          </p>
+        </div>
+        <div className="px-3 py-2.5">
+          <p className="text-[11px] text-text-muted">Pekerja Hadir</p>
+          <p className="mt-0.5 font-medium text-text-primary">
+            {snapshot.workerCount !== null ? `${snapshot.workerCount} orang` : "-"}
+          </p>
+        </div>
       </div>
+
       {snapshot.reportType === "WORK" ? (
-        <div className="space-y-2 rounded-lg border border-border bg-canvas p-3">
-          <p><strong>Progres:</strong> {snapshot.progressText ?? "-"}</p>
-          <p><strong>Hambatan:</strong> {snapshot.obstaclesText ?? "-"}</p>
-          <p><strong>Rencana Besok:</strong> {snapshot.tomorrowPlanText ?? "-"}</p>
+        <div className="divide-y divide-border/70 rounded-lg border border-border bg-canvas/50 px-3.5">
+          <div className="py-2.5">
+            <p className="text-[11px] text-text-muted">Progres Pekerjaan</p>
+            <p className="mt-1 whitespace-pre-line text-[13px] text-text-primary">
+              {snapshot.progressText || "-"}
+            </p>
+          </div>
+          <div className="py-2.5">
+            <p className="text-[11px] text-text-muted">Hambatan / Kendala</p>
+            <p className="mt-1 whitespace-pre-line text-[13px] text-text-primary">
+              {snapshot.obstaclesText || "-"}
+            </p>
+          </div>
+          <div className="py-2.5">
+            <p className="text-[11px] text-text-muted">Rencana Besok</p>
+            <p className="mt-1 whitespace-pre-line text-[13px] text-text-primary">
+              {snapshot.tomorrowPlanText || "-"}
+            </p>
+          </div>
         </div>
       ) : (
-        <div className="rounded-lg border border-border bg-canvas p-3">
-          <p><strong>Alasan Tanpa Kerja:</strong> {snapshot.noWorkReason ?? "-"}</p>
+        <div className="rounded-lg border border-border bg-canvas/50 px-3.5 py-2.5">
+          <p className="text-[11px] text-text-muted">Alasan Tanpa Pekerjaan</p>
+          <p className="mt-1 whitespace-pre-line text-[13px] text-text-primary">
+            {snapshot.noWorkReason || "-"}
+          </p>
         </div>
       )}
-      <p className="text-xs text-text-secondary">
-        Jumlah foto pada versi ini: <strong>{snapshot.photos.length}</strong> • Paraf:{" "}
-        {snapshot.signedByName ?? "-"}
+
+      <p className="text-xs text-text-muted">
+        Dokumentasi: <strong className="text-text-secondary">{snapshot.photos.length} foto</strong>{" "}
+        · Paraf:{" "}
+        <strong className="text-text-secondary">{snapshot.signedByName ?? "-"}</strong>
       </p>
     </div>
   );
@@ -60,55 +109,47 @@ export function RevisionHistoryTimeline({
 
   return (
     <>
-      <Card className="border border-border bg-surface">
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-sm font-medium">
-            <History className="size-4 text-text-secondary" />
+      <section className="rounded-xl border border-border bg-surface tabular-nums">
+        <div className="border-b border-border px-4 py-3">
+          <h2 className="text-xs font-semibold tracking-wider text-text-muted uppercase">
             Riwayat Revisi Owner ({revisions.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {revisions.map((rev) => (
-            <div
-              key={rev.id}
-              className="flex flex-col gap-2 rounded-xl border border-border/80 bg-surface-input/70 p-3.5 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div className="space-y-1 text-xs">
-                <div className="flex flex-wrap items-center gap-2">
-                  <StatusBadge tone="info">Revisi #{rev.revisionNo}</StatusBadge>
-                  <span className="font-medium text-text-primary">{rev.revisedByName}</span>
-                  <span className="font-mono text-xs text-text-muted">
-                    {new Intl.DateTimeFormat("id-ID", {
-                      timeZone,
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    }).format(new Date(rev.createdAt))}
-                  </span>
-                </div>
-                <p className="text-text-secondary">{rev.changeSummary}</p>
-              </div>
+          </h2>
+        </div>
 
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setSelectedRev(rev)}
-                className="h-8 shrink-0 gap-1.5 text-xs"
-              >
-                <Eye className="size-3.5" />
-                Lihat Versi Sebelumnya
-              </Button>
-            </div>
+        <ol className="divide-y divide-border/70 px-4">
+          {revisions.map((rev) => (
+            <li key={rev.id} className="relative space-y-1.5 py-3.5 pl-4">
+              <span
+                aria-hidden="true"
+                className="absolute top-5 left-0 size-1.5 rounded-full bg-text-secondary"
+              />
+              <div className="flex items-center justify-between gap-2 text-xs">
+                <span className="font-semibold text-text-primary">
+                  Revisi #{rev.revisionNo} · {rev.revisedByName}
+                </span>
+              </div>
+              <p className="text-[11px] text-text-muted">{formatRevTime(rev.createdAt, timeZone)}</p>
+              <p className="text-xs leading-relaxed text-text-secondary">{rev.changeSummary}</p>
+              <div className="pt-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelectedRev(rev)}
+                  className="h-7 px-2.5 text-[11px] text-text-secondary"
+                >
+                  Lihat Versi Sebelumnya
+                </Button>
+              </div>
+            </li>
           ))}
-        </CardContent>
-      </Card>
+        </ol>
+      </section>
 
       <Dialog open={Boolean(selectedRev)} onOpenChange={(o) => !o && setSelectedRev(null)}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>
-              Snapshot Sebelum Revisi #{selectedRev?.revisionNo}
-            </DialogTitle>
+            <DialogTitle>Snapshot Sebelum Revisi #{selectedRev?.revisionNo}</DialogTitle>
           </DialogHeader>
           {selectedRev && <SnapshotPreviewBody raw={selectedRev.previousSnapshotJson} />}
         </DialogContent>

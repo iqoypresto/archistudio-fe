@@ -1,27 +1,30 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
-} from "@/components/ui/dialog";
+import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { useUsersQuery } from "@/hooks/user.hooks";
-import {
-  areaFormSchema,
-  type AreaFormValues,
-} from "@/lib/validation/area.validation";
-import type {
-  AreaListItem,
-  CreateAreaPayload,
-  UpdateAreaPayload,
-} from "@/types/api/area.types";
+import { isFieldRole } from "@/lib/utils/role";
+import { areaFormSchema, type AreaFormValues } from "@/lib/validation/area.validation";
+import type { AreaListItem, CreateAreaPayload, UpdateAreaPayload } from "@/types/api/area.types";
 
 interface AreaFormModalProps {
   isOpen: boolean;
@@ -41,13 +44,14 @@ export function AreaFormModal({
   isSubmitting,
 }: AreaFormModalProps) {
   const isEditing = Boolean(areaToEdit);
-
   const { data: usersData, isLoading } = useUsersQuery(
-    { role: "SUPERVISOR", isActive: true, pageSize: 100 },
+    { isActive: true, pageSize: 100 },
     { enabled: isOpen && !isEditing },
   );
-
-  const supervisors = useMemo(() => usersData?.data ?? [], [usersData?.data]);
+  const supervisors = useMemo(
+    () => (usersData?.data ?? []).filter((u) => isFieldRole(u.role)),
+    [usersData?.data],
+  );
 
   const {
     register,
@@ -110,38 +114,38 @@ export function AreaFormModal({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{isEditing ? "Ubah Data Area" : "Tambah Area Baru"}</DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs">
             {isEditing
               ? "Perbarui kode atau nama area pada proyek ini."
-              : "Tambahkan area proyek beserta penugasan supervisor aktif awal (BR-08, BR-09)."}
+              : "Tambahkan area proyek beserta penugasan supervisor aktif awal."}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-3.5 py-1">
+        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-3.5">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="space-y-1">
-              <Label htmlFor="code">Kode Area (BR-13)</Label>
-              <Input id="code" placeholder="A atau LT1" {...register("code")} className="uppercase" />
-              {errors.code && <p className="text-status-danger-fg text-xs">{errors.code.message}</p>}
+            <div className="space-y-1.5">
+              <Label htmlFor="code" className="text-xs font-medium">Kode Area</Label>
+              <Input id="code" placeholder="AR-01" className="h-9 text-xs uppercase" {...register("code")} />
+              {errors.code && <p className="text-xs text-status-danger-fg">{errors.code.message}</p>}
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="name">Nama Area</Label>
-              <Input id="name" placeholder="Area Kolam Renang" {...register("name")} />
-              {errors.name && <p className="text-status-danger-fg text-xs">{errors.name.message}</p>}
+            <div className="space-y-1.5">
+              <Label htmlFor="name" className="text-xs font-medium">Nama Area</Label>
+              <Input id="name" placeholder="Area Kolam Renang" className="h-9 text-xs" {...register("name")} />
+              {errors.name && <p className="text-xs text-status-danger-fg">{errors.name.message}</p>}
             </div>
           </div>
 
           {!isEditing && (
             <>
-              <div className="space-y-1">
-                <Label htmlFor="initialSupervisorId">Supervisor Aktif (BR-08 / BR-09)</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="initialSupervisorId" className="text-xs font-medium">Supervisor Aktif</Label>
                 <Controller
                   name="initialSupervisorId"
                   control={control}
                   render={({ field }) => {
                     const selected = supervisors.find((s) => s.id === field.value);
                     const label = selected
-                      ? `${selected.name} (@${selected.username}) — ${selected.jobTitle}`
+                      ? `${selected.name} (@${selected.username}) · ${selected.jobTitle}`
                       : undefined;
                     return (
                       <Select
@@ -149,17 +153,15 @@ export function AreaFormModal({
                         disabled={isLoading}
                         onValueChange={(val: string | null) => field.onChange(val ?? "")}
                       >
-                        <SelectTrigger id="initialSupervisorId" className="h-10">
-                          <SelectValue
-                            placeholder={isLoading ? "Memuat supervisor..." : "-- Pilih Supervisor Lapangan --"}
-                          >
+                        <SelectTrigger id="initialSupervisorId" className="h-9 text-xs">
+                          <SelectValue placeholder={isLoading ? "Memuat supervisor..." : "Pilih supervisor aktif"}>
                             {label}
                           </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                           {supervisors.map((s) => (
                             <SelectItem key={s.id} value={s.id}>
-                              {s.name} (@{s.username}) — {s.jobTitle}
+                              {s.name} (@{s.username}) · {s.jobTitle}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -167,27 +169,27 @@ export function AreaFormModal({
                     );
                   }}
                 />
-                <p className="text-text-secondary text-xs">
-                  Supervisor yang sudah bertugas di area/project lain tetap dapat dipilih (BR-09).
+                <p className="text-[11px] text-text-muted">
+                  Supervisor yang sedang bertugas di area atau proyek lain tetap dapat dipilih.
                 </p>
                 {errors.initialSupervisorId && (
-                  <p className="text-status-danger-fg text-xs">{errors.initialSupervisorId.message}</p>
+                  <p className="text-xs text-status-danger-fg">{errors.initialSupervisorId.message}</p>
                 )}
               </div>
 
-              <div className="space-y-1">
-                <Label htmlFor="startDate">Tanggal Mulai Penugasan</Label>
-                <Input id="startDate" type="date" className="h-10" {...register("startDate")} />
-                {errors.startDate && <p className="text-status-danger-fg text-xs">{errors.startDate.message}</p>}
+              <div className="space-y-1.5">
+                <Label htmlFor="startDate" className="text-xs font-medium">Tanggal Mulai Penugasan</Label>
+                <Input id="startDate" type="date" className="h-9 text-xs tabular-nums" {...register("startDate")} />
+                {errors.startDate && <p className="text-xs text-status-danger-fg">{errors.startDate.message}</p>}
               </div>
             </>
           )}
 
-          <DialogFooter className="pt-2">
-            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+          <DialogFooter className="gap-2 pt-2">
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting} className="h-9">
               Batal
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} className="h-9">
               {isSubmitting ? "Menyimpan..." : isEditing ? "Simpan Perubahan" : "Tambah Area"}
             </Button>
           </DialogFooter>

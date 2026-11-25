@@ -1,10 +1,8 @@
-export type DrawingDirection = "IN" | "OUT";
 export type DrawingMimeType = "image/jpeg" | "image/png" | "image/webp";
 
 export interface DrawingItem {
   id: string;
   projectId: string;
-  direction: DrawingDirection;
   storageKey: string;
   fileName: string;
   mimeType: string;
@@ -15,7 +13,6 @@ export interface DrawingItem {
 }
 
 export interface CreateDrawingPayload {
-  direction: DrawingDirection;
   storageKey: string;
   fileName: string;
   mimeType: DrawingMimeType;
@@ -23,7 +20,6 @@ export interface CreateDrawingPayload {
 }
 
 export interface DrawingFilterParams {
-  direction?: DrawingDirection;
   includeArchived?: boolean;
 }
 

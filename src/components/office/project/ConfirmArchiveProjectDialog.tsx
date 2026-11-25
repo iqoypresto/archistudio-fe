@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { ModalContextStrip, ModalNoteBox } from "@/components/ui/ModalContextStrip";
 import type { ProjectListItem } from "@/types/api/project.types";
 
 interface ConfirmArchiveProjectDialogProps {
@@ -32,30 +33,35 @@ export function ConfirmArchiveProjectDialog({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Arsipkan Project Secara Manual?</DialogTitle>
-          <DialogDescription className="space-y-2 pt-2 text-sm">
-            <span>
-              Project <strong>{targetProject.name}</strong> (
-              <span className="font-mono">{targetProject.code}</span>) akan dipindahkan ke
-              halaman <strong>Archive Project</strong> pada folder tahun ini.
-            </span>
-            <span className="block rounded-lg bg-status-warning-bg p-2.5 text-xs font-medium text-status-warning-fg">
-              Project yang diarsipkan menjadi baca saja dan tidak menerima laporan harian baru
-              hingga dipulihkan kembali oleh Owner (BR-12, BR-39).
-            </span>
+          <DialogTitle>Arsipkan Project Manual?</DialogTitle>
+          <DialogDescription className="text-xs">
+            Pindahkan proyek ke Archive Project tahun ini.
           </DialogDescription>
         </DialogHeader>
 
-        <DialogFooter className="pt-2">
-          <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+        <ModalContextStrip
+          kicker={`${targetProject.code} · ${targetProject.status === "BERJALAN" ? "Berjalan" : "Persiapan"}`}
+          title={targetProject.name}
+          meta={`${targetProject.clientName} · ${targetProject.location}`}
+        />
+
+        <ModalNoteBox>
+          Proyek yang diarsipkan menjadi baca saja dan tidak menerima laporan harian baru. Seluruh
+          riwayat tetap tersimpan dan dapat dipulihkan oleh Owner.
+        </ModalNoteBox>
+
+        <DialogFooter className="gap-2">
+          <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting} className="h-9">
             Batal
           </Button>
           <Button
+            type="button"
             variant="destructive"
             onClick={() => onConfirm(targetProject.id)}
             disabled={isSubmitting}
+            className="h-9"
           >
-            {isSubmitting ? "Mengarsipkan..." : "Ya, Arsipkan Manual"}
+            {isSubmitting ? "Mengarsipkan..." : "Arsipkan Manual"}
           </Button>
         </DialogFooter>
       </DialogContent>

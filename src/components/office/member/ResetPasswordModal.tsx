@@ -1,23 +1,15 @@
 "use client";
 
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import {
-  resetPasswordFormSchema,
-  type ResetPasswordFormValues,
-} from "@/lib/validation/user.validation";
+import { ModalContextStrip, ModalNoteBox } from "@/components/ui/ModalContextStrip";
+import { PasswordInput } from "@/components/ui/PasswordInput";
+import { getRoleLabel } from "@/lib/utils/role";
+import { resetPasswordFormSchema, type ResetPasswordFormValues } from "@/lib/validation/user.validation";
 import type { UserListItem } from "@/types/api/user.types";
 
 interface ResetPasswordModalProps {
@@ -29,23 +21,11 @@ interface ResetPasswordModalProps {
 }
 
 export function ResetPasswordModal({
-  isOpen,
-  onClose,
-  targetUser,
-  onSubmit,
-  isSubmitting,
+  isOpen, onClose, targetUser, onSubmit, isSubmitting,
 }: ResetPasswordModalProps) {
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<ResetPasswordFormValues>({
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<ResetPasswordFormValues>({
     resolver: zodResolver(resetPasswordFormSchema),
-    defaultValues: {
-      newPassword: "",
-      confirmPassword: "",
-    },
+    defaultValues: { newPassword: "", confirmPassword: "" },
   });
 
   useEffect(() => {
@@ -62,47 +42,54 @@ export function ResetPasswordModal({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Reset Kata Sandi</DialogTitle>
-          <DialogDescription>
-            Atur kata sandi baru untuk <strong>{targetUser?.name}</strong> (@{targetUser?.username}).
-            Seluruh sesi lama pengguna ini akan otomatis dicabut.
+          <DialogDescription className="text-xs">
+            Tetapkan kata sandi baru secara manual untuk akun berikut.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4 py-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="newPassword">Kata Sandi Baru</Label>
-            <Input
-              id="newPassword"
-              type="password"
-              placeholder="Minimal 6 karakter"
-              {...register("newPassword")}
-            />
-            {errors.newPassword && (
-              <p className="text-status-danger-fg text-xs">{errors.newPassword.message}</p>
-            )}
+        {targetUser && (
+          <ModalContextStrip
+            kicker={`${getRoleLabel(targetUser.role)} · ${targetUser.jobTitle || "-"}`}
+            title={targetUser.name}
+            meta={`@${targetUser.username} · ${targetUser.phone || "-"}`}
+          />
+        )}
+
+        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="newPassword" className="text-xs font-medium">Kata Sandi Baru</Label>
+              <PasswordInput
+                id="newPassword"
+                toggleLabel="sandi baru"
+                placeholder="Min. 6 karakter"
+                className="h-9 text-xs"
+                {...register("newPassword")}
+              />
+              {errors.newPassword && <p className="text-xs text-status-danger-fg">{errors.newPassword.message}</p>}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="confirmPassword" className="text-xs font-medium">Konfirmasi Sandi</Label>
+              <PasswordInput
+                id="confirmPassword"
+                toggleLabel="konfirmasi sandi"
+                placeholder="Ulangi sandi"
+                className="h-9 text-xs"
+                {...register("confirmPassword")}
+              />
+              {errors.confirmPassword && <p className="text-xs text-status-danger-fg">{errors.confirmPassword.message}</p>}
+            </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="confirmPassword">Konfirmasi Kata Sandi</Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              placeholder="Ulangi kata sandi baru"
-              {...register("confirmPassword")}
-            />
-            {errors.confirmPassword && (
-              <p className="text-status-danger-fg text-xs">
-                {errors.confirmPassword.message}
-              </p>
-            )}
-          </div>
+          <ModalNoteBox>
+            Seluruh sesi login lama pengguna ini akan otomatis dicabut setelah kata sandi disimpan.
+          </ModalNoteBox>
 
-          <DialogFooter className="pt-2">
-            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
-              Batal
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Mereset..." : "Simpan Kata Sandi"}
+          <DialogFooter className="gap-2">
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting} className="h-9">Batal</Button>
+            <Button type="submit" disabled={isSubmitting} className="h-9">
+              {isSubmitting ? "Menyimpan..." : "Simpan Kata Sandi"}
             </Button>
           </DialogFooter>
         </form>

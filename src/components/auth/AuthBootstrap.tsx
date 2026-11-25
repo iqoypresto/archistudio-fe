@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useMeQuery } from "@/hooks/auth.hooks";
 import { ApiError } from "@/lib/api/api-error";
+import { isFieldRole } from "@/lib/utils/role";
 import { getDefaultRouteForRole, useAuthStore } from "@/stores/auth.store";
 import type { UserRole } from "@/types/api/auth.types";
 
@@ -22,10 +23,10 @@ function computeRedirectPath(
   if (scope === "guest" || scope === "root") {
     return getDefaultRouteForRole(role);
   }
-  if (scope === "office" && role === "SUPERVISOR") {
+  if (scope === "office" && isFieldRole(role)) {
     return "/field/home";
   }
-  if (scope === "field" && role !== "SUPERVISOR") {
+  if (scope === "field" && !isFieldRole(role)) {
     return "/dashboard";
   }
   return null;

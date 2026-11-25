@@ -9,9 +9,12 @@ import { OfficeReportTable } from "./OfficeReportTable";
 export function ArchivedReportList() {
   const { filters, patch, reset, setPage } = useArchiveFilters();
   const reports = useArchivedReportsQuery(filters);
+
   return (
-    <div className="space-y-4">
-      <ArchivedReportFilters filters={filters} onChange={patch} onReset={reset} />
+    <div>
+      <div className="p-4 sm:px-5">
+        <ArchivedReportFilters filters={filters} onChange={patch} onReset={reset} />
+      </div>
       <AsyncStateView
         isLoading={reports.isLoading}
         isError={reports.isError}
@@ -22,7 +25,15 @@ export function ArchivedReportList() {
         emptyTitle="Belum ada laporan harian dalam arsip."
         emptyDescription="Laporan terkirim masuk arsip setelah tanggal laporan lewat. Coba periksa filter yang dipilih."
       >
-        {(response) => <OfficeReportTable data={response.data} meta={response.meta} onPageChange={setPage} />}
+        {(response) => (
+          <OfficeReportTable
+            data={response.data}
+            meta={response.meta}
+            bare
+            showArchivedAt
+            onPageChange={setPage}
+          />
+        )}
       </AsyncStateView>
     </div>
   );

@@ -1,12 +1,11 @@
 "use client";
 
-import { KeyRound, Pencil, Power } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ServerDataTable, type DataColumn } from "@/components/ui/ServerDataTable";
-import { StatusBadge, type StatusTone } from "@/components/ui/StatusBadge";
+import { StatusIndicator } from "@/components/ui/StatusIndicator";
+import { getRoleLabel } from "@/lib/utils/role";
 import { useAuthStore } from "@/stores/auth.store";
 import type { PaginationMeta } from "@/types/api";
-import type { UserRole } from "@/types/api/auth.types";
 import type { UserListItem } from "@/types/api/user.types";
 
 interface MemberTableProps {
@@ -16,17 +15,6 @@ interface MemberTableProps {
   onEdit: (user: UserListItem) => void;
   onResetPassword: (user: UserListItem) => void;
   onToggleStatus: (user: UserListItem) => void;
-}
-
-function resolveRoleTone(role: UserRole): StatusTone {
-  switch (role) {
-    case "OWNER":
-      return "info";
-    case "ADMIN":
-      return "warning";
-    case "SUPERVISOR":
-      return "muted";
-  }
 }
 
 export function MemberTable({
@@ -43,100 +31,88 @@ export function MemberTable({
   const columns: DataColumn<UserListItem>[] = [
     {
       key: "name",
-      header: "Nama & Username",
-      cell: (row) => (
-        <div className="flex flex-col">
-          <span className="text-text-primary font-medium">{row.name}</span>
-          <span className="text-text-secondary text-xs">@{row.username}</span>
-        </div>
-      ),
+      header: "Anggota",
+      cell: (row) => {
+        const isSelf = row.id === currentActor?.id;
+        return (
+          <div className="space-y-0.5">
+            <p className="text-[13px] font-medium text-text-primary">
+              {row.name}
+              {isSelf && <span className="ml-1.5 text-xs font-normal text-text-muted">(Anda)</span>}
+            </p>
+            <p className="text-xs text-text-muted">@{row.username}</p>
+          </div>
+        );
+      },
     },
     {
       key: "role",
-      header: "Peran",
+      header: "Peran & Jabatan",
       cell: (row) => (
-        <StatusBadge tone={resolveRoleTone(row.role)}>
-          {row.role === "SUPERVISOR"
-            ? "Supervisor"
-            : row.role === "ADMIN"
-              ? "Admin"
-              : "Owner"}
-        </StatusBadge>
+        <div className="space-y-0.5">
+          <p className="text-[13px] font-medium text-text-primary">{getRoleLabel(row.role)}</p>
+          <p className="text-xs text-text-muted">{row.jobTitle || "-"}</p>
+        </div>
       ),
     },
     {
-      key: "contact",
-      header: "Kontak & Jabatan",
-      cell: (row) => (
-        <div className="flex flex-col">
-          <span className="text-text-primary text-sm">{row.phone}</span>
-          <span className="text-text-secondary text-xs">{row.jobTitle}</span>
-        </div>
-      ),
+      key: "phone",
+      header: "Nomor HP",
+      cell: (row) => <span className="text-[13px] text-text-secondary">{row.phone || "-"}</span>,
     },
     {
       key: "status",
       header: "Status",
       cell: (row) => (
-        <StatusBadge tone={row.isActive ? "success" : "danger"}>
+        <StatusIndicator tone={row.isActive ? "success" : "muted"}>
           {row.isActive ? "Aktif" : "Nonaktif"}
-        </StatusBadge>
+        </StatusIndicator>
       ),
     },
     {
       key: "actions",
       header: "Aksi",
+      headerClassName: "text-right",
       cellClassName: "text-right",
-      headerClassName: "text-center",
       cell: (row) => {
         const isSelf = row.id === currentActor?.id;
-        const isProtectedFromAdmin =
-          isAdminActor && (row.role === "OWNER" || row.role === "ADMIN");
+        const isProtectedFromAdmin = isAdminActor && row.role !== "SUPERVISOR";
 
         if (isProtectedFromAdmin) {
-          return (
-            <span className="text-text-secondary text-xs italic">
-              Dikelola Owner
-            </span>
-          );
+          return <span className="text-xs text-text-muted">Dikelola Owner</span>;
         }
 
         return (
-          <div className="flex items-center justify-end gap-1">
+          <div className="flex items-center justify-end gap-1.5">
             <Button
-              variant="ghost"
-              size="icon"
-              className="size-8 text-text-secondary hover:text-text-primary"
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 px-2.5 text-xs text-text-secondary hover:text-text-primary"
               onClick={() => onEdit(row)}
-              title="Ubah Anggota"
             >
-              <Pencil className="size-3.5" />
+              Ubah
             </Button>
             <Button
-              variant="ghost"
-              size="icon"
-              className="size-8 text-text-secondary hover:text-text-primary"
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 px-2.5 text-xs text-text-secondary hover:text-text-primary"
               onClick={() => onResetPassword(row)}
-              title="Reset Sandi"
             >
-              <KeyRound className="size-3.5" />
+              Reset Sandi
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8 text-status-danger-fg hover:bg-status-danger-bg/50 disabled:opacity-40"
-              onClick={() => onToggleStatus(row)}
-              disabled={isSelf}
-              title={
-                isSelf
-                  ? "Tidak dapat menonaktifkan akun sendiri"
-                  : row.isActive
-                    ? "Nonaktifkan Akun"
-                    : "Aktifkan Akun"
-              }
-            >
-              <Power className="size-3.5" />
-            </Button>
+            {!isSelf && (
+              <Button
+                type="button"
+                variant={row.isActive ? "destructive" : "outline"}
+                size="sm"
+                className="h-8 px-2.5 text-xs"
+                onClick={() => onToggleStatus(row)}
+              >
+                {row.isActive ? "Nonaktifkan" : "Aktifkan"}
+              </Button>
+            )}
           </div>
         );
       },
@@ -148,8 +124,11 @@ export function MemberTable({
       columns={columns}
       data={users}
       getRowKey={(row) => row.id}
+      getRowClassName={(row) => (!row.isActive ? "opacity-60" : undefined)}
       meta={meta}
+      bare
       onPageChange={onPageChange}
+      className="space-y-0 [&>div:last-child]:border-t [&>div:last-child]:border-border [&>div:last-child]:px-4 [&>div:last-child]:py-3"
     />
   );
 }

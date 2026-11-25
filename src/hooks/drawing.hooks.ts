@@ -8,7 +8,6 @@ import {
   validateDrawingFileType,
 } from "@/lib/validation/drawing.validation";
 import type {
-  DrawingDirection,
   DrawingFilterParams,
   DrawingMimeType,
 } from "@/types/api/drawing.types";
@@ -45,7 +44,7 @@ export function useDrawingUpload(projectId: string) {
   const queryClient = useQueryClient();
   const [isUploading, setIsUploading] = useState(false);
 
-  const uploadDrawing = async (file: File, direction: DrawingDirection): Promise<boolean> => {
+  const uploadDrawing = async (file: File): Promise<boolean> => {
     const typeCheck = validateDrawingFileType(file);
     if (!typeCheck.valid) {
       toast.error(typeCheck.message);
@@ -70,7 +69,6 @@ export function useDrawingUpload(projectId: string) {
       const mimeType = (compressed.type || typeCheck.mimeType) as DrawingMimeType;
       const signed = await drawingApi.signDrawingUpload({
         projectId,
-        direction,
         fileName: file.name,
         contentType: mimeType,
         fileSizeBytes: compressed.size,
@@ -81,14 +79,13 @@ export function useDrawingUpload(projectId: string) {
         contentType: mimeType,
       });
       await drawingApi.createDrawing(projectId, {
-        direction,
         storageKey: signed.storageKey,
         fileName: file.name,
         mimeType,
         sizeBytes: compressed.size,
       });
 
-      toast.success(`Drawing ${direction} berhasil diunggah.`);
+      toast.success("Drawing berhasil diunggah.");
       queryClient.invalidateQueries({ queryKey: [...DRAWINGS_QUERY_KEY, projectId] });
       return true;
     } catch (error) {
