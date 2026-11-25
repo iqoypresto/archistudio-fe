@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown, type LucideIcon } from "lucide-react";
-import { LayoutGroup, MotionConfig, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, LayoutGroup, MotionConfig, motion, useReducedMotion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import {
   SidebarGroup,
@@ -43,9 +43,41 @@ export function ProjectNavList({
           {groups.map((group, groupIndex) => {
             const groupKey = `${resetKey ?? "global"}:${group.label}:${groupIndex}`;
             const activeItem = group.items.find((item) => isItemActive(pathname, item.href, item.exact));
-            const isOpen = openGroups[groupKey] ?? Boolean(activeItem);
+            const groupOpen = openGroups[groupKey] ?? Boolean(activeItem);
+            const isOpen = group.collapsible ? !isCollapsed && groupOpen : true;
             const GroupIcon = getGroupIcon(group);
             const controlId = `${layoutGroupId}-group-${groupIndex}`;
+
+            const menuContent = (
+              <SidebarMenu>
+                {group.items.map((item) => {
+                  const isActive = isItemActive(pathname, item.href, item.exact);
+                  const Icon = item.icon;
+                  return (
+                    <SidebarMenuItem key={item.href}>
+                      {isActive && isOpen && (
+                        <motion.span
+                          layoutId={`active-nav-${layoutGroupId}`}
+                          transition={{ type: "spring", bounce: 0.18, duration: reduceMotion ? 0 : 0.3 }}
+                          className="absolute inset-0 rounded-lg bg-primary-soft"
+                          aria-hidden="true"
+                        />
+                      )}
+                      <SidebarMenuButton
+                        nativeButton={false}
+                        render={<Link href={item.href} prefetch={false} onClick={onNavigate} aria-current={isActive ? "page" : undefined} />}
+                        isActive={isActive}
+                        title={isCollapsed ? item.label : undefined}
+                        className={cn(largeTouchTarget && "min-h-12", group.collapsible && "pl-4")}
+                      >
+                        {Icon && <Icon className="size-5 shrink-0" aria-hidden="true" />}
+                        {!isCollapsed && <span className="truncate">{item.label}</span>}
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            );
 
             return (
               <SidebarGroup key={groupKey}>
@@ -54,7 +86,7 @@ export function ProjectNavList({
                     type="button"
                     variant="ghost"
                     aria-expanded={isOpen}
-                    aria-controls={controlId}
+                    aria-controls={isOpen ? controlId : undefined}
                     onClick={() => {
                       if (isCollapsed) {
                         setOpen(true);
@@ -68,6 +100,7 @@ export function ProjectNavList({
                       "flex min-h-11 w-full items-center justify-start gap-3 rounded-lg px-3 text-left text-xs font-semibold uppercase tracking-wide text-text-muted hover:bg-surface-active hover:text-text-primary",
                       largeTouchTarget && "min-h-12",
                       isCollapsed && "justify-center px-0",
+                      isCollapsed && Boolean(activeItem) && "bg-primary-soft text-text-primary",
                     )}
                   >
                     {GroupIcon && <GroupIcon className="size-5 shrink-0" aria-hidden="true" />}
@@ -82,45 +115,26 @@ export function ProjectNavList({
                     {group.label}
                   </SidebarGroupLabel>
                 ) : null}
-                <motion.div
-                  id={controlId}
-                  aria-hidden={group.collapsible ? !isOpen : undefined}
-                  inert={group.collapsible ? !isOpen : undefined}
-                  initial={false}
-                  animate={!group.collapsible || isOpen ? "open" : "closed"}
-                  variants={{ open: { height: "auto", opacity: 1 }, closed: { height: 0, opacity: 0 } }}
-                  transition={{ duration: reduceMotion ? 0 : 0.18, ease: "easeInOut" }}
-                  className={cn("overflow-hidden", group.collapsible && "mt-1")}
-                >
-                  <SidebarMenu>
-                    {group.items.map((item) => {
-                      const isActive = isItemActive(pathname, item.href, item.exact);
-                      const Icon = item.icon;
-                      return (
-                        <SidebarMenuItem key={item.href}>
-                          {isActive && (
-                            <motion.span
-                              layoutId={`active-nav-${layoutGroupId}`}
-                              transition={{ type: "spring", bounce: 0.18, duration: reduceMotion ? 0 : 0.3 }}
-                              className="absolute inset-0 rounded-lg bg-primary-soft"
-                              aria-hidden="true"
-                            />
-                          )}
-                          <SidebarMenuButton
-                            nativeButton={false}
-                            render={<Link href={item.href} prefetch={false} onClick={onNavigate} aria-current={isActive ? "page" : undefined} />}
-                            isActive={isActive}
-                            title={isCollapsed ? item.label : undefined}
-                            className={cn(largeTouchTarget && "min-h-12", group.collapsible && "pl-4")}
-                          >
-                            {Icon && <Icon className="size-5 shrink-0" aria-hidden="true" />}
-                            {!isCollapsed && <span className="truncate">{item.label}</span>}
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      );
-                    })}
-                  </SidebarMenu>
-                </motion.div>
+                {group.collapsible ? (
+                  !isCollapsed ? (
+                    <AnimatePresence initial={false}>
+                      {isOpen && (
+                        <motion.div
+                          id={controlId}
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: reduceMotion ? 0 : 0.18, ease: "easeInOut" }}
+                          className="mt-1 overflow-hidden"
+                        >
+                          {menuContent}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  ) : null
+                ) : (
+                  menuContent
+                )}
               </SidebarGroup>
             );
           })}
