@@ -9,6 +9,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ModalContextStrip, ModalNoteBox } from "@/components/ui/ModalContextStrip";
+import { formatIdDate } from "@/lib/utils/office-format";
+import { getDocumentTypeLabel } from "@/lib/validation/project-document.validation";
 import type { ProjectDocumentItem } from "@/types/api/project-document.types";
 
 interface ConfirmDeleteDocumentDialogProps {
@@ -31,27 +34,33 @@ export function ConfirmDeleteDocumentDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Hapus Permanen Dokumen?</DialogTitle>
-          <DialogDescription className="space-y-2 pt-2 text-sm">
-            <span>
-              File <strong>{targetDocument.fileName}</strong> akan dihapus secara permanen dari
-              daftar dokumen keluar dan penyimpanan storage (BR-34).
-            </span>
-            <span className="block rounded-lg bg-status-danger-bg/60 p-2.5 text-xs font-medium text-status-danger-fg">
-              Tindakan ini tidak dapat dibatalkan karena dokumen keluar tidak memiliki fitur arsip.
-            </span>
+          <DialogDescription className="text-xs">
+            Dokumen ini akan dihapus permanen dari daftar proyek dan penyimpanan.
           </DialogDescription>
         </DialogHeader>
 
-        <DialogFooter className="pt-2">
-          <Button type="button" variant="outline" onClick={onClose} disabled={isDeleting}>
+        <ModalContextStrip
+          kicker={getDocumentTypeLabel(targetDocument.type)}
+          title={targetDocument.fileName}
+          meta={`Diunggah ${formatIdDate(targetDocument.uploadedAt)} · ${Math.max(1, Math.round(targetDocument.sizeBytes / 1024))} KB`}
+        />
+
+        <ModalNoteBox>
+          Tindakan ini tidak dapat dibatalkan karena dokumen keluar tidak memiliki fitur arsip.
+        </ModalNoteBox>
+
+        <DialogFooter className="gap-2">
+          <Button type="button" variant="outline" onClick={onClose} disabled={isDeleting} className="h-9">
             Batal
           </Button>
           <Button
+            type="button"
             variant="destructive"
             onClick={() => onConfirm(targetDocument.id)}
             disabled={isDeleting}
+            className="h-9"
           >
-            {isDeleting ? "Menghapus..." : "Ya, Hapus Permanen"}
+            {isDeleting ? "Menghapus..." : "Hapus Permanen"}
           </Button>
         </DialogFooter>
       </DialogContent>

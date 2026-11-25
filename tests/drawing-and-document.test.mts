@@ -34,6 +34,11 @@ describe("TASK-19 Frontend Drawing & Dokumen Keluar — Validation, RBAC & API (
       canManage: true,
       isProjectReadOnly: false,
     });
+    assert.deepEqual(resolveDrawingPermissions("SITE_MANAGER", { status: "BERJALAN", archivedAt: null }), {
+      canView: true,
+      canManage: false,
+      isProjectReadOnly: false,
+    });
     assert.deepEqual(resolveDrawingPermissions("SUPERVISOR", { status: "BERJALAN", archivedAt: null }), {
       canView: true,
       canManage: false,
@@ -78,17 +83,15 @@ describe("TASK-19 Frontend Drawing & Dokumen Keluar — Validation, RBAC & API (
       };
     };
 
-    await drawingApi.getDrawings("p-1", { direction: "IN" });
+    await drawingApi.getDrawings("p-1");
     await drawingApi.signDrawingUpload({
       projectId: "p-1",
-      direction: "IN",
       fileName: "denah.webp",
       contentType: "image/webp",
       fileSizeBytes: 1024,
     });
     await drawingApi.createDrawing("p-1", {
-      direction: "IN",
-      storageKey: "projects/p-1/drawings/IN/1.webp",
+      storageKey: "projects/p-1/drawings/1.webp",
       fileName: "denah.webp",
       mimeType: "image/webp",
       sizeBytes: 1024,

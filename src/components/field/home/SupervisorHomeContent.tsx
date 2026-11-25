@@ -2,13 +2,15 @@
 
 import { useMyReportHistoryQuery } from "@/hooks/report.hooks";
 import { useMyAreasStatusQuery } from "@/hooks/report-lock.hooks";
+import { getRoleLabel } from "@/lib/utils/role";
 import { useAuthStore } from "@/stores/auth.store";
 import { SupervisorHomeHero } from "./SupervisorHomeHero";
 import { SupervisorHomeReportList } from "./SupervisorHomeReportList";
 import { SupervisorHomeTaskCard } from "./SupervisorHomeTaskCard";
 
 export function SupervisorHomeContent() {
-  const name = useAuthStore((state) => state.user?.name?.trim() || "Supervisor");
+  const user = useAuthStore((state) => state.user);
+  const name = user?.name?.trim() || getRoleLabel(user?.role);
   const areasQuery = useMyAreasStatusQuery();
   const reportsQuery = useMyReportHistoryQuery({
     page: 1,

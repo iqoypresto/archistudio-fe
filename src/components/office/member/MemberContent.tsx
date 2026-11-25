@@ -5,6 +5,7 @@ import { UserPlus } from "lucide-react";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { UnderlineTabsBar } from "@/components/ui/UnderlineTabsNav";
 import {
   useCreateUserMutation,
   useResetPasswordMutation,
@@ -12,6 +13,7 @@ import {
   useUpdateUserMutation,
   useUsersQuery,
 } from "@/hooks/user.hooks";
+import type { UserRole } from "@/types/api/auth.types";
 import type { UserFilterParams, UserListItem } from "@/types/api/user.types";
 import { ConfirmToggleStatusDialog } from "./ConfirmToggleStatusDialog";
 import { MemberFilters } from "./MemberFilters";
@@ -19,43 +21,49 @@ import { MemberFormModal } from "./MemberFormModal";
 import { MemberTable } from "./MemberTable";
 import { ResetPasswordModal } from "./ResetPasswordModal";
 
+type RoleTab = "ALL" | UserRole;
+
+const ROLE_TABS: readonly { value: RoleTab; label: string }[] = [
+  { value: "ALL", label: "Semua" },
+  { value: "OWNER", label: "Owner" },
+  { value: "ADMIN", label: "Admin" },
+  { value: "SITE_MANAGER", label: "Site Manager" },
+  { value: "SUPERVISOR", label: "Supervisor" },
+];
+
 export function MemberContent() {
   const [filters, setFilters] = useState<UserFilterParams>({
     page: 1,
     pageSize: 10,
+    sortBy: "name",
+    sortOrder: "asc",
   });
-
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [userToEdit, setUserToEdit] = useState<UserListItem | null>(null);
   const [userToResetPassword, setUserToResetPassword] = useState<UserListItem | null>(null);
   const [userToToggleStatus, setUserToToggleStatus] = useState<UserListItem | null>(null);
 
   const usersQuery = useUsersQuery(filters);
+  const activeCount = usersQuery.data?.data.filter((u) => u.isActive).length ?? 0;
+  const inactiveCount = usersQuery.data?.data.filter((u) => !u.isActive).length ?? 0;
 
   const createMutation = useCreateUserMutation(() => setIsFormModalOpen(false));
   const updateMutation = useUpdateUserMutation(() => {
     setIsFormModalOpen(false);
     setUserToEdit(null);
   });
-  const resetPasswordMutation = useResetPasswordMutation(() =>
-    setUserToResetPassword(null),
-  );
-  const toggleStatusMutation = useToggleUserStatusMutation(() =>
-    setUserToToggleStatus(null),
-  );
+  const resetPasswordMutation = useResetPasswordMutation(() => setUserToResetPassword(null));
+  const toggleStatusMutation = useToggleUserStatusMutation(() => setUserToToggleStatus(null));
 
   const handleFilterChange = (updates: Partial<UserFilterParams>) => {
     setFilters((prev) => ({ ...prev, ...updates }));
   };
 
   const handleResetFilters = () => {
-    setFilters({ page: 1, pageSize: 10 });
+    setFilters({ page: 1, pageSize: 10, sortBy: "name", sortOrder: "asc" });
   };
 
-  const handleOpenEdit = (user: UserListItem) => {
-    setUserToEdit(user);
-    setIsFormModalOpen(true);
-  };
+  const activeRoleTab: RoleTab = filters.role ?? "ALL";
 
   return (
     <div className="space-y-5">
@@ -64,34 +72,54 @@ export function MemberContent() {
         description="Kelola akun internal, peran pengguna, pengaturan kata sandi, dan status aktif operasional."
         action={
           <Button
+            type="button"
             onClick={() => {
               setUserToEdit(null);
               setIsFormModalOpen(true);
             }}
             className="h-9 gap-1.5 text-xs"
           >
-            <UserPlus className="size-4" />
+            <UserPlus className="size-3.5" />
             Tambah Anggota
           </Button>
         }
       />
 
-      <section className="space-y-4 rounded-xl border border-border bg-surface p-4 sm:p-5">
-        <MemberFilters
-          filters={filters}
-          onFilterChange={handleFilterChange}
-          onReset={handleResetFilters}
-          onOpenCreateModal={() => {
-            setUserToEdit(null);
-            setIsFormModalOpen(true);
-          }}
+      <section className="overflow-hidden rounded-xl border border-border bg-surface">
+        <UnderlineTabsBar
+          ariaLabel="Filter peran anggota"
+          activeValue={activeRoleTab}
+          onChange={(tab) =>
+            handleFilterChange({
+              role: tab === "ALL" ? undefined : tab,
+              page: 1,
+            })
+          }
+          items={ROLE_TABS.map((t) => ({
+            ...t,
+            count: t.value === activeRoleTab ? usersQuery.data?.meta.totalItems : undefined,
+          }))}
+          rightSlot={
+            usersQuery.data
+              ? `${activeCount} aktif · ${inactiveCount} nonaktif (halaman ini)`
+              : undefined
+          }
         />
+
+        <div className="p-4 sm:px-5">
+          <MemberFilters
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            onReset={handleResetFilters}
+          />
+        </div>
 
         <AsyncStateView
           isLoading={usersQuery.isLoading}
           isError={usersQuery.isError}
           error={usersQuery.error}
           data={usersQuery.data}
+          isEmpty={(res) => res.data.length === 0}
           onRetry={() => usersQuery.refetch()}
           emptyTitle="Belum ada anggota"
           emptyDescription="Tidak ada data anggota tim yang sesuai dengan kriteria filter."
@@ -101,7 +129,10 @@ export function MemberContent() {
               users={result.data}
               meta={result.meta}
               onPageChange={(page) => handleFilterChange({ page })}
-              onEdit={handleOpenEdit}
+              onEdit={(user) => {
+                setUserToEdit(user);
+                setIsFormModalOpen(true);
+              }}
               onResetPassword={(user) => setUserToResetPassword(user)}
               onToggleStatus={(user) => setUserToToggleStatus(user)}
             />

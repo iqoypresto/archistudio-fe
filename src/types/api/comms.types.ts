@@ -1,4 +1,12 @@
+import type { UserRole } from "./auth.types";
+
 export type CommsDirection = "INBOUND" | "OUTBOUND";
+
+export interface CommsActorSummary {
+  id: string;
+  name: string;
+  role: UserRole;
+}
 
 export interface CommsAttachmentPayload {
   storageKey: string;
@@ -19,6 +27,8 @@ export interface CommsEntryItem {
   attachmentMime: string | null;
   attachmentBytes: number | null;
   attachmentViewUrl: string | null;
+  createdBy: CommsActorSummary;
+  updatedBy: CommsActorSummary | null;
   createdAt: string;
   updatedAt: string;
 }

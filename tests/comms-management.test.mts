@@ -3,6 +3,7 @@ import { afterEach, describe, it } from "node:test";
 import { api } from "@/lib/api/axios";
 import { commsApi } from "@/lib/api/comms.api";
 import {
+  canEditCommsEntry,
   commsFormSchema,
   MAX_COMMS_ATTACHMENT_BYTES,
   resolveCommsPermissions,
@@ -46,19 +47,25 @@ describe("TASK-20 Frontend Comms Project — Validation, RBAC & API (US-20, BR-3
     );
   });
 
-  it("[AC-20.1 / BR-35, BR-12] resolveCommsPermissions mengizinkan akses hanya OWNER & baca-saja pada project arsip", () => {
-    assert.deepEqual(resolveCommsPermissions("OWNER", { status: "BERJALAN", archivedAt: null }), {
-      canView: true,
-      canMutate: true,
-      isProjectReadOnly: false,
-    });
-    assert.deepEqual(resolveCommsPermissions("OWNER", { status: "SELESAI", archivedAt: null }), {
-      canView: true,
-      canMutate: false,
-      isProjectReadOnly: true,
-    });
-    assert.equal(resolveCommsPermissions("ADMIN", { status: "BERJALAN" }).canView, false);
-    assert.equal(resolveCommsPermissions("SUPERVISOR", { status: "BERJALAN" }).canView, false);
+  it("[AC-20.1 / BR-35, D-05, K-02] resolveCommsPermissions mengizinkan 4 role (baca-saja di arsip) & Edit hanya pembuat atau OWNER", () => {
+    for (const role of ["OWNER", "ADMIN", "SITE_MANAGER", "SUPERVISOR"] as const) {
+      assert.deepEqual(resolveCommsPermissions(role, { status: "BERJALAN", archivedAt: null }), {
+        canView: true,
+        canMutate: true,
+        isProjectReadOnly: false,
+      });
+      assert.deepEqual(resolveCommsPermissions(role, { status: "SELESAI", archivedAt: null }), {
+        canView: true,
+        canMutate: false,
+        isProjectReadOnly: true,
+      });
+    }
+
+    const entryBySm = { createdBy: { id: "u-sm" } };
+    assert.equal(canEditCommsEntry({ id: "u-sm", role: "SITE_MANAGER" }, entryBySm), true);
+    assert.equal(canEditCommsEntry({ id: "u-owner", role: "OWNER" }, entryBySm), true);
+    assert.equal(canEditCommsEntry({ id: "u-admin", role: "ADMIN" }, entryBySm), false);
+    assert.equal(canEditCommsEntry({ id: "u-sup", role: "SUPERVISOR" }, entryBySm), false);
   });
 
   it("[API Client / US-20] commsApi memanggil endpoint /comms & /uploads/sign purpose comms-attachment", async () => {

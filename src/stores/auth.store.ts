@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { isFieldRole } from "@/lib/utils/role";
 import type { AuthUserProfile, UserRole } from "@/types/api/auth.types";
 
 export const ARCHISTUDIO_AUTH_STORAGE_KEY = "archistudio.auth.v1";
@@ -65,7 +66,7 @@ function readStorage(): StoredAuthPayload | null {
 }
 
 export function getDefaultRouteForRole(role: UserRole): string {
-  return role === "SUPERVISOR" ? "/field/home" : "/dashboard";
+  return isFieldRole(role) ? "/field/home" : "/dashboard";
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({

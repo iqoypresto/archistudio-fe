@@ -1,5 +1,6 @@
-import { FileDown } from "lucide-react";
+import { Calendar, FileDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -8,90 +9,75 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useProjectsQuery } from "@/hooks/project.hooks";
-import type { DashboardStatusFilter } from "@/types/api/dashboard.types";
 import type { ProjectListItem } from "@/types/api/project.types";
 
 interface DashboardFilterBarProps {
   projectId: string;
   onProjectChange: (id: string) => void;
-  statusFilter: DashboardStatusFilter;
-  onStatusFilterChange: (status: DashboardStatusFilter) => void;
+  targetDate: string;
+  onTargetDateChange: (date: string) => void;
   onOpenExportDialog: () => void;
 }
-
-const STATUS_OPTIONS: { value: DashboardStatusFilter; label: string }[] = [
-  { value: "ALL", label: "Semua Status" },
-  { value: "UNREPORTED", label: "Belum Lapor" },
-  { value: "LATE", label: "Terlambat" },
-  { value: "OVERDUE_GT_3_DAYS", label: "Tertunggak > 3 Hari" },
-];
 
 export function DashboardFilterBar({
   projectId,
   onProjectChange,
-  statusFilter,
-  onStatusFilterChange,
+  targetDate,
+  onTargetDateChange,
   onOpenExportDialog,
 }: DashboardFilterBarProps) {
   const { data: projectsRes } = useProjectsQuery({ page: 1, pageSize: 100 });
   const projects: ProjectListItem[] = projectsRes?.data ?? [];
   const selectedProject = projects.find((p) => p.id === projectId);
   const selectedProjectLabel = selectedProject
-    ? `[${selectedProject.code}] ${selectedProject.name}`
-    : "Semua project";
+    ? `${selectedProject.code} · ${selectedProject.name}`
+    : "Semua Proyek";
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface-input/60 p-3 lg:flex-row lg:items-center lg:justify-between">
-      <div className="flex flex-wrap items-center gap-2.5">
-        <div className="w-56">
-          <Select
-            value={projectId || "ALL"}
-            onValueChange={(val: string | null) =>
-              onProjectChange(!val || val === "ALL" ? "" : val)
-            }
-          >
-            <SelectTrigger className="h-8 text-xs">
-              <SelectValue placeholder="Pilih Proyek">{selectedProjectLabel}</SelectValue>
-            </SelectTrigger>
-            <SelectContent alignItemWithTrigger={false}>
-              <SelectItem value="ALL">Semua project</SelectItem>
-              {projects.map((p: ProjectListItem) => (
-                <SelectItem key={p.id} value={p.id}>
-                  [{p.code}] {p.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+    <div className="flex flex-wrap items-center gap-2">
+      <div className="w-52">
+        <Select
+          value={projectId || "ALL"}
+          onValueChange={(val: string | null) =>
+            onProjectChange(!val || val === "ALL" ? "" : val)
+          }
+        >
+          <SelectTrigger className="h-9 bg-surface text-xs" aria-label="Filter proyek">
+            <SelectValue placeholder="Semua Proyek">{selectedProjectLabel}</SelectValue>
+          </SelectTrigger>
+          <SelectContent alignItemWithTrigger={false}>
+            <SelectItem value="ALL">Semua Proyek</SelectItem>
+            {projects.map((p: ProjectListItem) => (
+              <SelectItem key={p.id} value={p.id}>
+                {p.code} · {p.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
-        <div className="flex flex-wrap items-center gap-1 rounded-lg border border-border/80 bg-surface p-1">
-          {STATUS_OPTIONS.map((opt) => (
-            <Button
-              key={opt.value}
-              type="button"
-              variant="ghost"
-              aria-pressed={statusFilter === opt.value}
-              onClick={() => onStatusFilterChange(opt.value)}
-              className={`h-auto min-h-9 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                statusFilter === opt.value
-                  ? "bg-surface-active text-text-primary shadow-2xs ring-1 ring-white/[0.06]"
-                  : "text-text-secondary hover:text-text-primary"
-              }`}
-            >
-              {opt.label}
-            </Button>
-          ))}
-        </div>
+      <div className="relative">
+        <Calendar
+          className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-text-muted"
+          aria-hidden="true"
+        />
+        <Input
+          type="date"
+          aria-label="Tanggal bisnis"
+          value={targetDate}
+          onChange={(e) => onTargetDateChange(e.target.value)}
+          className="h-9 w-40 bg-surface pl-8 text-xs tabular-nums"
+        />
       </div>
 
       <Button
-        variant="outline"
+        type="button"
         size="sm"
         onClick={onOpenExportDialog}
-        className="h-8 gap-1.5 border-border bg-surface px-3 text-xs text-text-primary hover:bg-surface-active"
+        className="h-9 gap-1.5 px-3 text-xs"
       >
         <FileDown className="size-3.5" />
-        Export PDF Opsi A
+        Export PDF Harian
       </Button>
     </div>
   );

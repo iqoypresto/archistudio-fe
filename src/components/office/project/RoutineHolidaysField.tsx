@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { DAY_OF_WEEK_OPTIONS } from "@/lib/validation/project.validation";
+import { cn } from "@/lib/utils";
 
 interface RoutineHolidaysFieldProps {
   value: number[];
@@ -11,33 +11,31 @@ interface RoutineHolidaysFieldProps {
 
 export function RoutineHolidaysField({ value, onChange }: RoutineHolidaysFieldProps) {
   const toggleDay = (day: number) => {
-    const next = value.includes(day)
-      ? value.filter((v) => v !== day)
-      : [...value, day];
+    const next = value.includes(day) ? value.filter((v) => v !== day) : [...value, day];
     onChange(next);
   };
 
   return (
     <div className="space-y-1.5">
-      <Label>Hari Libur Rutin Mingguan (BR-11)</Label>
-      <div className="flex flex-wrap gap-1.5 pt-0.5">
+      <Label className="text-xs font-medium">Hari Libur Rutin Mingguan</Label>
+      <div className="grid grid-cols-7 gap-1.5">
         {DAY_OF_WEEK_OPTIONS.map((day) => {
           const isSelected = value?.includes(day.value);
           return (
-            <Button
+            <button
               key={day.value}
               type="button"
-              variant="outline"
               aria-pressed={isSelected}
               onClick={() => toggleDay(day.value)}
-              className={`h-8 rounded-lg px-2.5 text-xs font-medium transition-colors ${
+              className={cn(
+                "h-8 rounded-lg border text-xs font-medium transition-colors",
                 isSelected
-                  ? "border-white/20 bg-surface-active text-text-primary shadow-2xs"
-                  : "border-border bg-surface-input text-text-secondary hover:bg-surface-active/60 hover:text-text-primary"
-              }`}
+                  ? "border-white/20 bg-primary text-text-primary"
+                  : "border-border bg-surface-input text-text-secondary hover:text-text-primary",
+              )}
             >
               {day.label}
-            </Button>
+            </button>
           );
         })}
       </div>

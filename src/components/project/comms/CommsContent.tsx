@@ -1,50 +1,42 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowDownLeft, ArrowUpRight, Calendar, ExternalLink, Pencil, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import {
-  useCreateCommsMutation,
-  useProjectCommsQuery,
-  useUpdateCommsMutation,
-} from "@/hooks/comms.hooks";
+import { useCreateCommsMutation, useProjectCommsQuery, useUpdateCommsMutation } from "@/hooks/comms.hooks";
 import { useProjectDetailQuery } from "@/hooks/project.hooks";
-import {
-  getCommsDirectionLabel,
-  resolveCommsPermissions,
-} from "@/lib/validation/comms.validation";
+import { isFieldRole } from "@/lib/utils/role";
+import { canEditCommsEntry, resolveCommsPermissions } from "@/lib/validation/comms.validation";
 import { useAuthStore } from "@/stores/auth.store";
 import type { CommsDirection, CommsEntryItem } from "@/types/api/comms.types";
+import { CommsEntryRow } from "./CommsEntryRow";
 import { CommsFiltersBar } from "./CommsFiltersBar";
 import { CommsFormModal } from "./CommsFormModal";
 
-interface CommsContentProps {
-  projectId: string;
-}
-
-export function CommsContent({ projectId }: CommsContentProps) {
-  const role = useAuthStore((state) => state.user?.role);
+export function CommsContent({ projectId, fixedDirection }: { projectId: string; fixedDirection?: CommsDirection }) {
+  const user = useAuthStore((state) => state.user);
+  const role = user?.role;
+  const [search, setSearch] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [direction, setDirection] = useState<CommsDirection | "">("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [entryToEdit, setEntryToEdit] = useState<CommsEntryItem | null>(null);
 
-  const projectQuery = useProjectDetailQuery(projectId);
-  const { canView, canMutate, isProjectReadOnly } = resolveCommsPermissions(
-    role,
-    projectQuery.data,
-  );
+  const project = useProjectDetailQuery(projectId).data;
+  const { canView, canMutate, isProjectReadOnly } = resolveCommsPermissions(role, project);
+  const effectiveDirection = fixedDirection ?? direction;
+  const fieldTouch = isFieldRole(role);
 
   const commsQuery = useProjectCommsQuery(
     projectId,
     {
+      ...(search.trim() && { search: search.trim() }),
       ...(dateFrom && { dateFrom }),
       ...(dateTo && { dateTo }),
-      ...(direction && { direction }),
+      ...(effectiveDirection && { direction: effectiveDirection }),
     },
     { enabled: canView },
   );
@@ -57,10 +49,19 @@ export function CommsContent({ projectId }: CommsContentProps) {
   if (!canView) {
     return (
       <div className="rounded-xl border border-border bg-surface p-6 text-sm text-text-secondary">
-        Modul Comms project hanya dapat diakses oleh Owner (BR-35).
+        Anda tidak memiliki akses ke modul komunikasi proyek ini.
       </div>
     );
   }
+
+  const pageTitle = fixedDirection === "INBOUND" ? "Comms In" : fixedDirection === "OUTBOUND" ? "Comms Out" : "Comms Project";
+  const pageDescription = isProjectReadOnly
+    ? "Proyek berada di Archive sehingga catatan komunikasi bersifat baca saja."
+    : fixedDirection === "INBOUND"
+      ? "Catatan komunikasi masuk proyek beserta lampiran file pendukung."
+      : fixedDirection === "OUTBOUND"
+        ? "Catatan komunikasi keluar proyek beserta lampiran file pendukung."
+        : "Catatan komunikasi masuk dan keluar proyek beserta lampiran pendukung.";
 
   const openCreateModal = () => {
     setEntryToEdit(null);
@@ -70,36 +71,43 @@ export function CommsContent({ projectId }: CommsContentProps) {
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Comms Project"
-        description={
-          isProjectReadOnly
-            ? "Project berada di Archive sehingga catatan Comms bersifat baca saja (BR-12, BR-39)."
-            : "Riwayat komunikasi masuk dan keluar project beserta lampiran opsional (khusus Owner — BR-35)."
-        }
+        kicker={project ? `${project.code} · ${project.name}` : undefined}
+        title={pageTitle}
+        description={pageDescription}
         action={
           canMutate ? (
-            <Button onClick={openCreateModal} className="h-9 gap-1.5 text-xs">
-              <Plus className="h-4 w-4" />
+            <Button
+              type="button"
+              onClick={openCreateModal}
+              className={fieldTouch ? "min-h-12 gap-1.5 px-4 text-sm" : "h-9 gap-1.5 text-xs"}
+            >
+              <Plus className="size-3.5" />
               Tambah Catatan
             </Button>
           ) : undefined
         }
       />
 
-      <section className="space-y-4 rounded-xl border border-border bg-surface p-4 sm:p-5">
-        <CommsFiltersBar
-          dateFrom={dateFrom}
-          dateTo={dateTo}
-          direction={direction}
-          onDateFromChange={setDateFrom}
-          onDateToChange={setDateTo}
-          onDirectionChange={setDirection}
-          onReset={() => {
-            setDateFrom("");
-            setDateTo("");
-            setDirection("");
-          }}
-        />
+      <section className="overflow-hidden rounded-xl border border-border bg-surface tabular-nums">
+        <div className="border-b border-border p-4 sm:px-5">
+          <CommsFiltersBar
+            search={search}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            direction={effectiveDirection}
+            hideDirectionFilter={Boolean(fixedDirection)}
+            onSearchChange={setSearch}
+            onDateFromChange={setDateFrom}
+            onDateToChange={setDateTo}
+            onDirectionChange={setDirection}
+            onReset={() => {
+              setSearch("");
+              setDateFrom("");
+              setDateTo("");
+              setDirection("");
+            }}
+          />
+        </div>
 
         <AsyncStateView
           isLoading={commsQuery.isLoading}
@@ -108,70 +116,31 @@ export function CommsContent({ projectId }: CommsContentProps) {
           data={commsQuery.data}
           isEmpty={(items) => items.length === 0}
           onRetry={() => commsQuery.refetch()}
-          emptyTitle="Belum ada catatan Comms"
-          emptyDescription="Catat komunikasi masuk atau keluar project agar riwayat tersimpan rapi."
+          emptyTitle={`Belum ada catatan ${pageTitle}`}
+          emptyDescription="Catat komunikasi proyek agar riwayat tersimpan rapi."
           emptyAction={
             canMutate ? (
-              <Button onClick={openCreateModal} className="h-9 gap-1.5 text-xs">
-                <Plus className="h-4 w-4" />
+              <Button type="button" onClick={openCreateModal} className="h-9 gap-1.5 text-xs">
+                <Plus className="size-3.5" />
                 Tambah Catatan
               </Button>
             ) : undefined
           }
         >
           {(items) => (
-            <div className="space-y-2.5">
-              {items.map((entry) => {
-                const isInbound = entry.direction === "INBOUND";
-                return (
-                  <article
-                    key={entry.id}
-                    className="flex flex-col gap-3 rounded-xl border border-border/80 bg-surface-input/70 p-4 sm:flex-row sm:items-start sm:justify-between"
-                  >
-                    <div className="space-y-1.5">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <StatusBadge tone={isInbound ? "info" : "success"}>
-                          <span className="inline-flex items-center gap-1">
-                            {isInbound ? <ArrowDownLeft className="h-3 w-3" /> : <ArrowUpRight className="h-3 w-3" />}
-                            {getCommsDirectionLabel(entry.direction)}
-                          </span>
-                        </StatusBadge>
-                        <span className="inline-flex items-center gap-1 font-mono text-xs text-text-muted">
-                          <Calendar className="h-3.5 w-3.5" /> {entry.entryDate}
-                        </span>
-                      </div>
-                      <h3 className="text-sm font-medium text-text-primary">{entry.subject}</h3>
-                      {entry.note && <p className="whitespace-pre-line text-xs leading-relaxed text-text-secondary">{entry.note}</p>}
-                      {entry.attachmentViewUrl && (
-                        <a
-                          href={entry.attachmentViewUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1.5 pt-1 text-xs font-medium text-text-primary underline-offset-4 hover:underline"
-                        >
-                          <ExternalLink className="h-3.5 w-3.5 text-text-secondary" /> Lampiran: {entry.attachmentName ?? "File"}
-                        </a>
-                      )}
-                    </div>
-
-                    {canMutate && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="h-8 gap-1.5 self-start text-xs"
-                        onClick={() => {
-                          setEntryToEdit(entry);
-                          setIsModalOpen(true);
-                        }}
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                        Ubah
-                      </Button>
-                    )}
-                  </article>
-                );
-              })}
+            <div className="divide-y divide-border/80">
+              {items.map((entry) => (
+                <CommsEntryRow
+                  key={entry.id}
+                  entry={entry}
+                  showDirection={!fixedDirection}
+                  canEdit={canMutate && canEditCommsEntry(user, entry)}
+                  onEdit={(target) => {
+                    setEntryToEdit(target);
+                    setIsModalOpen(true);
+                  }}
+                />
+              ))}
             </div>
           )}
         </AsyncStateView>
@@ -179,13 +148,14 @@ export function CommsContent({ projectId }: CommsContentProps) {
 
       {canMutate && isModalOpen && (
         <CommsFormModal
-          key={`${projectId}-${entryToEdit?.id ?? "new"}`}
+          key={`${projectId}-${fixedDirection ?? "all"}-${entryToEdit?.id ?? "new"}`}
           isOpen={isModalOpen}
           onClose={() => {
             setIsModalOpen(false);
             setEntryToEdit(null);
           }}
           projectId={projectId}
+          fixedDirection={fixedDirection}
           entryToEdit={entryToEdit}
           onSubmitCreate={(payload) => createMutation.mutate(payload)}
           onSubmitUpdate={(commsId, payload) => updateMutation.mutate({ commsId, payload })}

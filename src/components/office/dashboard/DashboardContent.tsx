@@ -6,66 +6,99 @@ import { DashboardAreaTable } from "@/components/office/dashboard/DashboardAreaT
 import { DashboardFilterBar } from "@/components/office/dashboard/DashboardFilterBar";
 import { DashboardInfoDialog } from "@/components/office/dashboard/DashboardInfoDialog";
 import { DashboardKpiCards } from "@/components/office/dashboard/DashboardKpiCards";
+import {
+  DashboardAreaToolbar, DashboardSupervisorToolbar, type DisciplineTier,
+} from "@/components/office/dashboard/DashboardPanelToolbars";
 import { PdfExportDialog } from "@/components/office/dashboard/PdfExportDialog";
 import { SupervisorLatenessTable } from "@/components/office/dashboard/SupervisorLatenessTable";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { UnderlineTabsBar } from "@/components/ui/UnderlineTabsNav";
 import { useDashboardSummary, useSupervisorLateness } from "@/hooks/dashboard.hooks";
-import type { DashboardAreaStatusItem, DashboardStatusFilter } from "@/types/api/dashboard.types";
+import { getTodayInJakarta } from "@/lib/utils/office-format";
+import type { DashboardAreaStatusItem, DashboardStatusFilter, SupervisorLatenessItem } from "@/types/api/dashboard.types";
 
-function getTodayInJakarta(): string {
-  const parts = new Intl.DateTimeFormat("en", {
-    timeZone: "Asia/Jakarta",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(new Date());
-  const value = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
-  return `${value("year")}-${value("month")}-${value("day")}`;
+type DashboardTab = "areas" | "supervisors";
+
+function filterAreas(
+  areas: DashboardAreaStatusItem[],
+  statusFilter: DashboardStatusFilter,
+  query: string,
+): DashboardAreaStatusItem[] {
+  const q = query.trim().toLowerCase();
+  return areas.filter((area) => {
+    if (statusFilter === "UNREPORTED" && area.status !== "BELUM_LAPOR") return false;
+    if (statusFilter === "LATE" && area.status !== "TERLAMBAT") return false;
+    if (statusFilter === "OVERDUE_GT_3_DAYS" && !area.isOverdueMoreThan3Days) return false;
+    if (!q) return true;
+    const text = `${area.areaCode} ${area.areaName} ${area.projectCode} ${area.projectName} ${area.supervisor?.name ?? ""}`.toLowerCase();
+    return text.includes(q);
+  });
 }
 
-function filterAreasByStatus(areas: DashboardAreaStatusItem[], filter: DashboardStatusFilter) {
-  if (filter === "UNREPORTED") return areas.filter((area) => area.status === "BELUM_LAPOR");
-  if (filter === "LATE") return areas.filter((area) => area.status === "TERLAMBAT");
-  if (filter === "OVERDUE_GT_3_DAYS") return areas.filter((area) => area.isOverdueMoreThan3Days);
-  return areas;
+function filterSupervisors(
+  items: SupervisorLatenessItem[],
+  tier: DisciplineTier,
+): SupervisorLatenessItem[] {
+  if (tier === "GOOD") return items.filter((i) => i.onTimePercentage >= 80);
+  if (tier === "LOW") return items.filter((i) => i.onTimePercentage < 60);
+  return items;
 }
 
 export function DashboardContent() {
-  const [projectId, setProjectId] = useState<string>("");
+  const [projectId, setProjectId] = useState("");
+  const [targetDate, setTargetDate] = useState(getTodayInJakarta);
   const [statusFilter, setStatusFilter] = useState<DashboardStatusFilter>("ALL");
-  const [activeTab, setActiveTab] = useState("areas");
+  const [areaSearch, setAreaSearch] = useState("");
+  const [activeTab, setActiveTab] = useState<DashboardTab>("areas");
+  const [tierFilter, setTierFilter] = useState<DisciplineTier>("ALL");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [selectedUnlockArea, setSelectedUnlockArea] = useState<DashboardAreaStatusItem | null>(null);
   const [isPdfExportOpen, setIsPdfExportOpen] = useState(false);
 
   const summaryQuery = useDashboardSummary({
     projectId: projectId || undefined,
+    date: targetDate || undefined,
   });
-
-  const latenessQuery = useSupervisorLateness({
-    projectId: projectId || undefined,
-  }, { enabled: activeTab === "supervisors" });
-
-  const defaultMetrics = useMemo(
-    () => ({
-      totalProjects: 0,
-      activeAreas: 0,
-      reportsSubmittedToday: 0,
-      areasOverdueMoreThan3Days: 0,
-    }),
-    [],
+  const latenessQuery = useSupervisorLateness(
+    {
+      projectId: projectId || undefined,
+      dateFrom: dateFrom || undefined,
+      dateTo: dateTo || undefined,
+    },
+    { enabled: activeTab === "supervisors" },
   );
+
   const filteredAreas = useMemo(
-    () => filterAreasByStatus(summaryQuery.data?.areas ?? [], statusFilter),
-    [summaryQuery.data?.areas, statusFilter],
+    () => filterAreas(summaryQuery.data?.areas ?? [], statusFilter, areaSearch),
+    [summaryQuery.data?.areas, statusFilter, areaSearch],
   );
+  const filteredSupervisors = useMemo(
+    () => filterSupervisors(latenessQuery.data ?? [], tierFilter),
+    [latenessQuery.data, tierFilter],
+  );
+
+  const handleClickOverdue = () => {
+    setActiveTab("areas");
+    setStatusFilter("OVERDUE_GT_3_DAYS");
+  };
 
   return (
     <div className="space-y-5">
       <PageHeader
         title="Dashboard Monitoring"
-        action={<DashboardInfoDialog />}
+        description="Pantau kelengkapan laporan harian per area, status kunci tunggakan, dan kedisiplinan supervisor."
+        titleSuffix={<DashboardInfoDialog />}
+        action={
+          <DashboardFilterBar
+            projectId={projectId}
+            onProjectChange={setProjectId}
+            targetDate={targetDate}
+            onTargetDateChange={setTargetDate}
+            onOpenExportDialog={() => setIsPdfExportOpen(true)}
+          />
+        }
       />
 
       <AsyncStateView
@@ -80,41 +113,55 @@ export function DashboardContent() {
             {(summaryQuery.isFetching || summaryQuery.isError) && (
               <p role="status" aria-live="polite" className="text-xs text-text-muted">
                 {summaryQuery.isFetching
-                  ? summaryQuery.isPlaceholderData
-                    ? "Memuat ringkasan project terpilih..."
-                    : "Memperbarui ringkasan hari ini..."
+                  ? "Memperbarui ringkasan pemantauan..."
                   : "Ringkasan belum berhasil diperbarui. Data sebelumnya tetap ditampilkan."}
               </p>
             )}
-            <DashboardKpiCards metrics={summary.metrics ?? defaultMetrics} />
 
-            <section className="space-y-4 rounded-xl border border-border bg-surface p-4 sm:p-5">
-              <DashboardFilterBar
-                projectId={projectId}
-                onProjectChange={setProjectId}
-                statusFilter={statusFilter}
-                onStatusFilterChange={setStatusFilter}
-                onOpenExportDialog={() => setIsPdfExportOpen(true)}
+            <DashboardKpiCards
+              metrics={summary.metrics}
+              areas={summary.areas}
+              onClickOverdue={handleClickOverdue}
+            />
+
+            <section className="overflow-hidden rounded-xl border border-border bg-surface">
+              <UnderlineTabsBar
+                ariaLabel="Tab pemantauan"
+                activeValue={activeTab}
+                onChange={setActiveTab}
+                items={[
+                  { value: "areas", label: "Status Area & Pelaporan", count: summary.areas.length },
+                  {
+                    value: "supervisors",
+                    label: "Kedisiplinan Supervisor",
+                    count: latenessQuery.data?.length,
+                  },
+                ]}
               />
 
-              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(String(value))} className="w-full">
-                <TabsList className="mb-3 bg-surface-input">
-                  <TabsTrigger value="areas" className="text-xs">
-                    Status Area &amp; Pelaporan
-                  </TabsTrigger>
-                  <TabsTrigger value="supervisors" className="text-xs">
-                    Kedisiplinan Supervisor
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="areas" className="space-y-4">
+              {activeTab === "areas" ? (
+                <div>
+                  <DashboardAreaToolbar
+                    search={areaSearch}
+                    onSearchChange={setAreaSearch}
+                    statusFilter={statusFilter}
+                    onStatusFilterChange={setStatusFilter}
+                  />
                   <DashboardAreaTable
                     areas={filteredAreas}
                     onOpenUnlockModal={(area) => setSelectedUnlockArea(area)}
                   />
-                </TabsContent>
-
-                <TabsContent value="supervisors" className="space-y-4">
+                </div>
+              ) : (
+                <div>
+                  <DashboardSupervisorToolbar
+                    dateFrom={dateFrom}
+                    dateTo={dateTo}
+                    onDateFromChange={setDateFrom}
+                    onDateToChange={setDateTo}
+                    tierFilter={tierFilter}
+                    onTierFilterChange={setTierFilter}
+                  />
                   <AsyncStateView
                     data={latenessQuery.data}
                     isLoading={latenessQuery.isLoading}
@@ -122,10 +169,10 @@ export function DashboardContent() {
                     error={latenessQuery.error as Error | null}
                     onRetry={() => latenessQuery.refetch()}
                   >
-                    {(latenessItems) => <SupervisorLatenessTable items={latenessItems} />}
+                    {() => <SupervisorLatenessTable items={filteredSupervisors} />}
                   </AsyncStateView>
-                </TabsContent>
-              </Tabs>
+                </div>
+              )}
             </section>
           </div>
         )}
@@ -141,7 +188,7 @@ export function DashboardContent() {
         <PdfExportDialog
           isOpen
           defaultProjectId={projectId}
-          defaultDate={summaryQuery.data?.targetDate ?? getTodayInJakarta()}
+          defaultDate={targetDate || summaryQuery.data?.targetDate || getTodayInJakarta()}
           onClose={() => setIsPdfExportOpen(false)}
         />
       )}

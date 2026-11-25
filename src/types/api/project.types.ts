@@ -2,6 +2,12 @@ export type ActiveProjectStatus = "PERSIAPAN" | "BERJALAN";
 export type ProjectStatus = ActiveProjectStatus | "SELESAI";
 export type ArchiveType = "COMPLETED" | "MANUAL";
 
+export interface ProjectSiteManagerSummary {
+  id: string;
+  name: string;
+  phone: string;
+}
+
 export interface ProjectListItem {
   id: string;
   code: string;
@@ -13,6 +19,8 @@ export interface ProjectListItem {
   status: ProjectStatus;
   timezone: string;
   routineHolidays: number[];
+  siteManagerId?: string | null;
+  siteManager?: ProjectSiteManagerSummary | null;
   completedAt?: string | null;
   archivedAt?: string | null;
   createdAt: string;
@@ -48,6 +56,7 @@ export interface CreateProjectPayload {
   status?: ActiveProjectStatus;
   timezone: string;
   routineHolidays: number[];
+  siteManagerId?: string | null;
 }
 
 export interface UpdateProjectPayload {
@@ -60,6 +69,7 @@ export interface UpdateProjectPayload {
   status?: ActiveProjectStatus;
   timezone?: string;
   routineHolidays?: number[];
+  siteManagerId?: string | null;
 }
 
 export interface RestoreProjectPayload {

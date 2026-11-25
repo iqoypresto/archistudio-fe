@@ -7,6 +7,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { useLogoutMutation } from "@/hooks/auth.hooks";
 import { useProjectDetailQuery } from "@/hooks/project.hooks";
 import { useAuthStore } from "@/stores/auth.store";
+import { useSidebarNavStore } from "@/stores/sidebar-nav.store";
 import { OfficeSidebar } from "./OfficeSidebar";
 
 export function OfficeAppShell({ children, projectId: propProjectId }: { children: ReactNode; projectId?: string }) {
@@ -22,6 +23,7 @@ export function OfficeAppShell({ children, projectId: propProjectId }: { childre
 
   async function handleLogout(): Promise<void> {
     await logoutMutation.mutateAsync();
+    useSidebarNavStore.getState().reset();
     router.replace("/login");
   }
 

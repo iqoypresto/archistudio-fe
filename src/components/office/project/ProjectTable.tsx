@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Archive, ChevronRight, Pencil } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ServerDataTable, type DataColumn } from "@/components/ui/ServerDataTable";
-import { StatusBadge, type StatusTone } from "@/components/ui/StatusBadge";
+import { StatusIndicator } from "@/components/ui/StatusIndicator";
+import { formatIdDate, formatShortTimezone } from "@/lib/utils/office-format";
 import type { PaginationMeta } from "@/types/api";
 import type { ProjectListItem, ProjectStatus } from "@/types/api/project.types";
 
@@ -20,27 +21,10 @@ interface ProjectTableProps {
 
 const DAY_NAMES = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 
-function resolveStatusTone(status: ProjectStatus): StatusTone {
-  switch (status) {
-    case "PERSIAPAN":
-      return "muted";
-    case "BERJALAN":
-      return "info";
-    case "SELESAI":
-      return "success";
-  }
-}
-
-function resolveTzShort(tz: string): string {
-  if (tz === "Asia/Jakarta") return "WIB";
-  if (tz === "Asia/Makassar") return "WITA";
-  if (tz === "Asia/Jayapura") return "WIT";
-  return tz;
-}
-
-function formatDate(dateStr?: string | null): string {
-  if (!dateStr) return "Fleksibel";
-  return dateStr.slice(0, 10);
+function resolveStatusInfo(status: ProjectStatus): { tone: "success" | "muted"; label: string } {
+  if (status === "BERJALAN") return { tone: "success", label: "Berjalan" };
+  if (status === "SELESAI") return { tone: "success", label: "Selesai" };
+  return { tone: "muted", label: "Persiapan" };
 }
 
 export function ProjectTable({
@@ -54,97 +38,93 @@ export function ProjectTable({
 }: ProjectTableProps) {
   const columns: DataColumn<ProjectListItem>[] = [
     {
-      key: "code",
-      header: "Kode & Status",
+      key: "project",
+      header: "Proyek & Klien",
       cell: (row) => (
-        <div className="flex flex-col gap-1">
-          <span className="font-mono text-xs font-bold tracking-wider text-text-primary">
-            {row.code}
-          </span>
-          <StatusBadge tone={resolveStatusTone(row.status)} className="w-fit">
-            {row.status === "PERSIAPAN"
-              ? "Persiapan"
-              : row.status === "BERJALAN"
-                ? "Berjalan"
-                : "Selesai"}
-          </StatusBadge>
+        <div className="space-y-0.5">
+          <p className="text-[13px] font-medium text-text-primary">
+            <span className="text-text-muted">{row.code}</span> {row.name}
+          </p>
+          <p className="text-xs text-text-secondary">
+            {row.clientName} · {row.location}
+          </p>
         </div>
       ),
     },
     {
-      key: "name",
-      header: "Nama Project & Client",
+      key: "team",
+      header: "Tim & Area",
       cell: (row) => (
-        <div className="flex flex-col">
-          <span className="font-medium text-text-primary">{row.name}</span>
-          <span className="text-xs text-text-secondary">
-            Client: {row.clientName} • Lokasi: {row.location}
-          </span>
+        <div className="space-y-0.5">
+          <p className="text-[13px] font-medium text-text-primary">
+            {row.siteManager?.name ?? "Belum ditetapkan"}
+          </p>
+          <p className="text-xs text-text-muted">
+            {row._count?.areas ?? 0} area terdaftar
+          </p>
         </div>
       ),
     },
     {
       key: "schedule",
-      header: "Jadwal Pelaksanaan",
-      cell: (row) => (
-        <div className="flex flex-col text-xs">
-          <span className="text-text-primary">Mulai: {formatDate(row.startDate)}</span>
-          <span className="text-text-secondary">
-            Selesai: {row.endDate ? formatDate(row.endDate) : "Fleksibel (BR-07)"}
-          </span>
-        </div>
-      ),
-    },
-    {
-      key: "timezone",
-      header: "Zona & Hari Libur",
+      header: "Jadwal & Zona",
       cell: (row) => {
         const holidays = row.routineHolidays?.map((d) => DAY_NAMES[d] ?? d).join(", ") || "-";
         return (
-          <div className="flex flex-col text-xs">
-            <span className="font-medium text-text-primary">
-              {resolveTzShort(row.timezone)} ({row.timezone})
-            </span>
-            <span className="text-text-secondary">Libur Rutin: {holidays}</span>
+          <div className="space-y-0.5">
+            <p className="text-[13px] text-text-primary">
+              {formatIdDate(row.startDate)} — {row.endDate ? formatIdDate(row.endDate) : "Fleksibel"}
+            </p>
+            <p className="text-xs text-text-muted">
+              {formatShortTimezone(row.timezone)} · Libur: {holidays}
+            </p>
           </div>
         );
       },
     },
     {
+      key: "status",
+      header: "Status",
+      cell: (row) => {
+        const info = resolveStatusInfo(row.status);
+        return <StatusIndicator tone={info.tone}>{info.label}</StatusIndicator>;
+      },
+    },
+    {
       key: "actions",
       header: "Aksi",
+      headerClassName: "text-right",
       cellClassName: "text-right",
-      headerClassName: "text-center",
       cell: (row) => (
-        <div className="flex items-center justify-end gap-1">
+        <div className="flex items-center justify-end gap-1.5">
           {canManage && (
             <Button
-              variant="ghost"
-              size="icon"
-              className="size-8 text-text-secondary hover:text-text-primary"
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 px-2.5 text-xs text-text-secondary hover:text-text-primary"
               onClick={() => onEdit(row)}
-              title="Ubah Data Project"
             >
-              <Pencil className="size-3.5" />
+              Ubah
             </Button>
           )}
           {canArchive && (
             <Button
-              variant="ghost"
-              size="icon"
-              className="size-8 text-status-danger-fg hover:bg-status-danger-bg/50"
+              type="button"
+              variant="destructive"
+              size="sm"
+              className="h-8 px-2.5 text-xs"
               onClick={() => onArchive(row)}
-              title="Arsipkan Project (Owner)"
             >
-              <Archive className="size-3.5" />
+              Arsipkan
             </Button>
           )}
           <Link
             href={`/projects/${row.id}`}
-            className="inline-flex size-8 items-center justify-center rounded-lg text-text-secondary transition-colors hover:bg-surface-active hover:text-text-primary"
-            title="Lihat Detail Area"
+            className="inline-flex h-8 items-center gap-1 rounded-lg border border-border bg-surface-input px-2.5 text-xs font-medium text-text-secondary transition-colors hover:bg-surface-active hover:text-text-primary"
           >
-            <ChevronRight className="size-4" />
+            Detail
+            <ArrowRight className="size-3" />
           </Link>
         </div>
       ),
@@ -157,7 +137,9 @@ export function ProjectTable({
       data={projects}
       getRowKey={(row) => row.id}
       meta={meta}
+      bare
       onPageChange={onPageChange}
+      className="space-y-0 [&>div:last-child]:border-t [&>div:last-child]:border-border [&>div:last-child]:px-4 [&>div:last-child]:py-3"
     />
   );
 }

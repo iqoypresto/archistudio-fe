@@ -1,5 +1,6 @@
 "use client";
 
+import { RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -28,115 +29,125 @@ export function ArchivedReportFilters({
   const selectedArea = areas.data?.find((a) => a.id === filters.areaId);
 
   return (
-    <div className="space-y-3 rounded-xl border border-border bg-surface-input/60 p-3.5">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="space-y-1 text-xs text-text-secondary">
-          <span>Project</span>
-          <Select
-            value={filters.projectId ?? "ALL"}
-            disabled={projects.isLoading}
-            onValueChange={(val: string | null) =>
-              onChange({ projectId: !val || val === "ALL" ? undefined : val })
-            }
-          >
-            <SelectTrigger aria-label="Project" className="h-9 text-xs">
-              <SelectValue placeholder="Semua project">
-                {projects.isLoading
-                  ? "Memuat project…"
-                  : selectedProject?.name ?? "Semua project"}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">Semua project</SelectItem>
-              {projects.data?.map((project) => (
-                <SelectItem key={project.id} value={project.id}>
-                  {project.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-2.5">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="w-52">
+            <Select
+              value={filters.projectId ?? "ALL"}
+              disabled={projects.isLoading}
+              onValueChange={(val: string | null) =>
+                onChange({
+                  projectId: !val || val === "ALL" ? undefined : val,
+                  areaId: undefined,
+                })
+              }
+            >
+              <SelectTrigger aria-label="Filter proyek arsip" className="h-9 text-xs">
+                <SelectValue placeholder="Semua Proyek">
+                  {projects.isLoading
+                    ? "Memuat proyek..."
+                    : selectedProject?.name ?? "Semua Proyek"}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent alignItemWithTrigger={false}>
+                <SelectItem value="ALL">Semua Proyek</SelectItem>
+                {projects.data?.map((project) => (
+                  <SelectItem key={project.id} value={project.id}>
+                    {project.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="w-48">
+            <Select
+              value={filters.areaId ?? "ALL"}
+              disabled={!filters.projectId || areas.isLoading}
+              onValueChange={(val: string | null) =>
+                onChange({ areaId: !val || val === "ALL" ? undefined : val })
+              }
+            >
+              <SelectTrigger aria-label="Filter area arsip" className="h-9 text-xs">
+                <SelectValue placeholder="Semua Area">
+                  {areas.isLoading
+                    ? "Memuat area..."
+                    : selectedArea
+                      ? `${selectedArea.code} · ${selectedArea.name}`
+                      : "Semua Area"}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent alignItemWithTrigger={false}>
+                <SelectItem value="ALL">Semua Area</SelectItem>
+                {areas.data?.map((area) => (
+                  <SelectItem key={area.id} value={area.id}>
+                    {area.code} · {area.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 text-xs text-text-secondary">
+            <span>Periode:</span>
+            <Input
+              type="date"
+              aria-label="Dari tanggal"
+              value={filters.dateFrom ?? ""}
+              max={filters.dateTo}
+              onChange={(event) => onChange({ dateFrom: event.target.value || undefined })}
+              className="h-9 w-38 text-xs tabular-nums"
+            />
+            <span className="text-text-muted">—</span>
+            <Input
+              type="date"
+              aria-label="Sampai tanggal"
+              value={filters.dateTo ?? ""}
+              min={filters.dateFrom}
+              onChange={(event) => onChange({ dateTo: event.target.value || undefined })}
+              className="h-9 w-38 text-xs tabular-nums"
+            />
+          </div>
         </div>
 
-        <div className="space-y-1 text-xs text-text-secondary">
-          <span>Area</span>
-          <Select
-            value={filters.areaId ?? "ALL"}
-            disabled={!filters.projectId || areas.isLoading}
-            onValueChange={(val: string | null) =>
-              onChange({ areaId: !val || val === "ALL" ? undefined : val })
-            }
+        <div className="flex items-center gap-2">
+          <div className="w-40">
+            <Select
+              value={filters.sortOrder ?? "desc"}
+              onValueChange={(val: string | null) =>
+                onChange({ sortOrder: val === "asc" ? "asc" : "desc" })
+              }
+            >
+              <SelectTrigger aria-label="Urutan tanggal arsip" className="h-9 text-xs">
+                <SelectValue>
+                  {filters.sortOrder === "asc" ? "Terlama dahulu" : "Terbaru dahulu"}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent alignItemWithTrigger={false}>
+                <SelectItem value="desc">Terbaru dahulu</SelectItem>
+                <SelectItem value="asc">Terlama dahulu</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onReset}
+            className="h-9 gap-1.5 px-3 text-xs text-text-secondary"
           >
-            <SelectTrigger aria-label="Area" className="h-9 text-xs">
-              <SelectValue placeholder="Semua area">
-                {areas.isLoading
-                  ? "Memuat area…"
-                  : selectedArea
-                    ? `${selectedArea.code} — ${selectedArea.name}`
-                    : "Semua area"}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">Semua area</SelectItem>
-              {areas.data?.map((area) => (
-                <SelectItem key={area.id} value={area.id}>
-                  {area.code} — {area.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            <RotateCcw className="size-3.5" />
+            Reset
+          </Button>
         </div>
-
-        <div className="space-y-1 text-xs text-text-secondary">
-          <span>Urutan tanggal laporan</span>
-          <Select
-            value={filters.sortOrder}
-            onValueChange={(val: string | null) =>
-              onChange({ sortOrder: val === "asc" ? "asc" : "desc" })
-            }
-          >
-            <SelectTrigger aria-label="Urutan tanggal laporan" className="h-9 text-xs">
-              <SelectValue>
-                {filters.sortOrder === "asc" ? "Terlama dahulu" : "Terbaru dahulu"}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="desc">Terbaru dahulu</SelectItem>
-              <SelectItem value="asc">Terlama dahulu</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <label className="space-y-1 text-xs text-text-secondary">
-          Dari tanggal
-          <Input
-            type="date"
-            value={filters.dateFrom ?? ""}
-            className="h-9 font-mono text-xs"
-            max={filters.dateTo}
-            onChange={(event) => onChange({ dateFrom: event.target.value || undefined })}
-          />
-        </label>
-
-        <label className="space-y-1 text-xs text-text-secondary">
-          Sampai tanggal
-          <Input
-            type="date"
-            value={filters.dateTo ?? ""}
-            className="h-9 font-mono text-xs"
-            min={filters.dateFrom}
-            onChange={(event) => onChange({ dateTo: event.target.value || undefined })}
-          />
-        </label>
-
-        <Button variant="outline" onClick={onReset} className="h-9 self-end text-xs">
-          Reset filter
-        </Button>
       </div>
 
       {(projects.isError || areas.isError) && (
-        <div role="alert" className="text-xs text-destructive">
+        <div role="alert" className="text-xs text-status-danger-fg">
           Pilihan filter gagal dimuat.{" "}
           <Button
+            type="button"
             variant="outline"
             size="sm"
             onClick={() => {

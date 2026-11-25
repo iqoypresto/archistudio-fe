@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { DailyReportPhotoDto } from "@/types/api/report.types";
 
@@ -11,9 +9,15 @@ function formatPhotoTime(value: string | null, fallback: string, timeZone: strin
   if (!value) return fallback;
   return new Intl.DateTimeFormat("id-ID", {
     timeZone,
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  })
+    .format(new Date(value))
+    .replace(".", ":");
 }
 
 export function ReportPhotoGallery({
@@ -27,67 +31,95 @@ export function ReportPhotoGallery({
 
   return (
     <>
-      <Card className="border border-border bg-surface">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold">
+      <section className="rounded-xl border border-border bg-surface tabular-nums">
+        <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
+          <h2 className="text-sm font-semibold text-text-primary">
             Dokumentasi Foto ({photos.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          </h2>
+          <span className="text-xs text-text-muted">Klik foto untuk memperbesar</span>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2">
           {photos.map((photo, index) => (
-            <Button
+            <button
               key={photo.id}
               type="button"
-              variant="ghost"
               aria-label={`Buka foto ${photo.caption ?? index + 1}`}
               onClick={() => setZoomPhoto(photo)}
-              className="group h-auto w-full flex-col items-stretch overflow-hidden rounded-xl border border-border/80 bg-surface-input/70 p-0 text-left transition-colors hover:border-white/[0.14] hover:bg-surface-input/70"
+              className="group flex flex-col overflow-hidden rounded-xl border border-border bg-surface-input/50 text-left transition-colors hover:border-white/18"
             >
-              <Image
-                src={photo.signedViewUrl || "/file.svg"}
-                alt={photo.caption ?? `Foto ${index + 1}`}
-                width={320}
-                height={240}
-                unoptimized
-                className="aspect-4/3 w-full object-cover transition-transform group-hover:scale-105"
-              />
-              <p className="truncate px-3 pt-2.5 pb-1 text-xs font-medium text-text-primary">
-                {photo.caption || `Foto #${index + 1}`}
-              </p>
-              <div className="space-y-0.5 px-3 pb-2.5 text-[11px] text-text-muted">
-                <p>
-                  Diambil: {formatPhotoTime(
-                    photo.takenAt,
-                    "Waktu pengambilan tidak tersedia",
-                    timeZone,
-                  )}
-                </p>
-                <p>
-                  Diunggah: {formatPhotoTime(
-                    photo.uploadedAt,
-                    "Waktu unggah tidak tercatat",
-                    timeZone,
-                  )}
-                </p>
+              <div className="overflow-hidden bg-canvas">
+                <Image
+                  src={photo.signedViewUrl || "/file.svg"}
+                  alt={photo.caption ?? `Foto ${index + 1}`}
+                  width={480}
+                  height={360}
+                  unoptimized
+                  className="aspect-4/3 w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
+                />
               </div>
-            </Button>
+              <div className="space-y-1.5 p-3">
+                <p className="truncate text-xs font-medium text-text-primary">
+                  {photo.caption || `Foto #${index + 1}`}
+                </p>
+                <div className="space-y-0.5 text-[11px] text-text-muted">
+                  <p>
+                    Diambil:{" "}
+                    <span className="text-text-secondary">
+                      {formatPhotoTime(
+                        photo.takenAt,
+                        "Waktu pengambilan tidak tersedia",
+                        timeZone,
+                      )}
+                    </span>
+                  </p>
+                  <p>
+                    Diunggah:{" "}
+                    <span className="text-text-secondary">
+                      {formatPhotoTime(photo.uploadedAt, "Tidak tercatat", timeZone)}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </button>
           ))}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
+
       <Dialog open={Boolean(zoomPhoto)} onOpenChange={(open) => !open && setZoomPhoto(null)}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>{zoomPhoto?.caption || "Pratinjau Foto Laporan"}</DialogTitle>
           </DialogHeader>
           {zoomPhoto && (
-            <Image
-              src={zoomPhoto.signedViewUrl || "/file.svg"}
-              alt={zoomPhoto.caption ?? "Foto"}
-              width={900}
-              height={675}
-              unoptimized
-              className="max-h-[70vh] w-full rounded-lg object-contain"
-            />
+            <div className="space-y-3">
+              <Image
+                src={zoomPhoto.signedViewUrl || "/file.svg"}
+                alt={zoomPhoto.caption ?? "Foto"}
+                width={900}
+                height={675}
+                unoptimized
+                className="max-h-[65vh] w-full rounded-lg bg-canvas object-contain"
+              />
+              <div className="grid grid-cols-1 gap-2 rounded-lg border border-border bg-canvas/60 px-3.5 py-2.5 text-xs tabular-nums sm:grid-cols-2">
+                <div>
+                  <span className="text-text-muted">Diambil: </span>
+                  <span className="text-text-primary">
+                    {formatPhotoTime(
+                      zoomPhoto.takenAt,
+                      "Waktu pengambilan tidak tersedia",
+                      timeZone,
+                    )}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-text-muted">Diunggah: </span>
+                  <span className="text-text-primary">
+                    {formatPhotoTime(zoomPhoto.uploadedAt, "Tidak tercatat", timeZone)}
+                  </span>
+                </div>
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>

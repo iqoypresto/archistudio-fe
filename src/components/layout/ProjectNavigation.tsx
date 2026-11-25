@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown, FolderKanban } from "lucide-react";
@@ -15,6 +15,11 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import {
+  isProjectRoutePath,
+  resolveProjectSectionOpen,
+  useSidebarNavStore,
+} from "@/stores/sidebar-nav.store";
 import type { UserRole } from "@/types/api/auth.types";
 import type { ProjectListItem } from "@/types/api/project.types";
 import { ProjectNavList } from "./ProjectNavList";
@@ -43,14 +48,31 @@ export function ProjectNavigation({
   const isCurrentProject = Boolean(projectId && pathname.startsWith(`/projects/${projectId}`));
   const isProjectList = pathname === "/projects";
   const isActive = isCurrentProject || isProjectList;
-  const [sectionState, setSectionState] = useState<{ key: string; open: boolean } | null>(null);
-  const sectionOpen = sectionState?.key === (projectId ?? "project-list") ? sectionState.open : false;
+  const isProjectRoute = isProjectRoutePath(pathname);
+  const projectSectionPreference = useSidebarNavStore((state) => state.projectSectionPreference);
+  const lastRouteWasProject = useSidebarNavStore((state) => state.lastRouteWasProject);
+  const setProjectSectionOpen = useSidebarNavStore((state) => state.setProjectSectionOpen);
+  const syncProjectRoute = useSidebarNavStore((state) => state.syncProjectRoute);
+
+  useEffect(() => {
+    syncProjectRoute(isProjectRoute);
+  }, [isProjectRoute, syncProjectRoute]);
+
+  const sectionOpen = resolveProjectSectionOpen(
+    projectSectionPreference,
+    isProjectRoute,
+    lastRouteWasProject,
+  );
   const isOpen = !isCollapsed && sectionOpen;
   const projectGroups = projectId ? getProjectNavGroups(projectId, role) : [];
 
   function toggleSection(): void {
-    if (isCollapsed) setOpen(true);
-    else setSectionState({ key: projectId ?? "project-list", open: !isOpen });
+    if (isCollapsed) {
+      setOpen(true);
+      setProjectSectionOpen(true);
+      return;
+    }
+    setProjectSectionOpen(!isOpen);
   }
 
   return (
@@ -87,33 +109,35 @@ export function ProjectNavigation({
           transition={{ duration: reduceMotion ? 0 : 0.2, ease: "easeInOut" }}
           className="ml-3 mt-1 overflow-hidden border-l border-border pl-3"
         >
-          {isOpen && <ProjectSwitcher activeProject={activeProject} onNavigate={onNavigate} compact />}
-          <SidebarMenu className="mt-1">
+          <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton
                 nativeButton={false}
                 render={<Link href="/projects" prefetch={false} onClick={onNavigate} aria-current={isProjectList ? "page" : undefined} />}
                 isActive={isProjectList}
                 title={isCollapsed ? "Semua Project" : undefined}
+                className={cn(largeTouchTarget && "min-h-12", isProjectList && "bg-primary-soft")}
               >
-                <FolderKanban className="size-5 shrink-0" aria-hidden="true" />
                 {!isCollapsed && <span className="truncate">Semua Project</span>}
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
-          {projectId && isOpen ? (
-            <div className="ml-3 mt-1 border-l border-border pl-3">
-              <ProjectNavList
-                groups={projectGroups}
-                onNavigate={onNavigate}
-                largeTouchTarget={largeTouchTarget}
-                layoutGroupId={`${layoutGroupId}-details`}
-                resetKey={projectId}
-              />
-            </div>
-          ) : !projectId && isOpen ? (
-            <p className="px-3 py-2 text-xs text-text-muted">Pilih project untuk membuka menunya.</p>
-          ) : null}
+          <div className="mt-2 border-t border-border pt-2">
+            {isOpen && <ProjectSwitcher activeProject={activeProject} onNavigate={onNavigate} compact />}
+            {projectId && isOpen ? (
+              <div className="mt-2">
+                <ProjectNavList
+                  groups={projectGroups}
+                  onNavigate={onNavigate}
+                  largeTouchTarget={largeTouchTarget}
+                  layoutGroupId={`${layoutGroupId}-details`}
+                  resetKey={projectId}
+                />
+              </div>
+            ) : !projectId && isOpen ? (
+              <p className="px-3 py-2 text-xs text-text-muted">Pilih project untuk membuka menunya.</p>
+            ) : null}
+          </div>
         </motion.div>
       </SidebarGroup>
     </MotionConfig>

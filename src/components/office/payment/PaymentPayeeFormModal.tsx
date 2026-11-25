@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -66,45 +66,52 @@ export function PaymentPayeeFormModal({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Tambah {label}</DialogTitle>
-          <DialogDescription>
-            Data {label.toLowerCase()} dicatat secara global tanpa akun login maupun relasi
-            project (BR-06, BR-36).
+          <DialogDescription className="text-xs">
+            Data {label.toLowerCase()} dicatat global untuk keperluan pembayaran tanpa akun login.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 py-1">
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="payee-name">Nama {label} *</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="payee-name" className="text-xs font-medium">
+                Nama {label}
+              </Label>
+              <span className="text-[11px] text-text-muted">Wajib</span>
+            </div>
             <Input
               id="payee-name"
-              placeholder={`Contoh: Budi (${label})`}
-              className="h-11"
+              placeholder="Contoh: Budi Santoso"
+              className="h-9 text-xs"
               {...register("name")}
             />
-            {errors.name && (
-              <p className="text-status-danger-fg text-xs">{errors.name.message}</p>
-            )}
+            {errors.name && <p className="text-xs text-status-danger-fg">{errors.name.message}</p>}
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="payee-phone">Nomor HP (Opsional)</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="payee-phone" className="text-xs font-medium">
+                Nomor HP
+              </Label>
+              <span className="text-[11px] text-text-muted">Opsional</span>
+            </div>
             <Input
               id="payee-phone"
               type="tel"
               placeholder="Contoh: 081234567890"
-              className="h-11"
+              className="h-9 text-xs tabular-nums"
               {...register("phone")}
             />
             {errors.phone && (
-              <p className="text-status-danger-fg text-xs">{errors.phone.message}</p>
+              <p className="text-xs text-status-danger-fg">{errors.phone.message}</p>
             )}
           </div>
 
-          <DialogFooter className="pt-2">
-            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+          <DialogFooter className="gap-2 pt-1">
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting} className="h-9">
               Batal
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} className="h-9">
               {isSubmitting ? "Menyimpan..." : `Simpan ${label}`}
             </Button>
           </DialogFooter>

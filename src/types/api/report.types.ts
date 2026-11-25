@@ -70,6 +70,7 @@ export interface ListReportsQuery {
   projectId?: string;
   areaId?: string;
   supervisorId?: string;
+  scope?: "own" | "team";
   reportDate?: string;
   dateFrom?: string;
   dateTo?: string;

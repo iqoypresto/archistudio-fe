@@ -7,14 +7,19 @@ import { ServerPagination } from "@/components/ui/ServerPagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMyReportHistoryQuery } from "@/hooks/report.hooks";
 import { useMyAreasStatusQuery } from "@/hooks/report-lock.hooks";
+import { useAuthStore } from "@/stores/auth.store";
 import type { ListReportsQuery } from "@/types/api/report.types";
 import { FieldReportCard } from "./FieldReportCard";
 
 type HistoryFilters = Pick<ListReportsQuery, "projectId" | "areaId" | "dateFrom" | "dateTo">;
 
 export function FieldHistoryContent() {
+  const role = useAuthStore((state) => state.user?.role);
+  const isSiteManager = role === "SITE_MANAGER";
+  const [scopeTab, setScopeTab] = useState<"all" | "own" | "team">("all");
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<HistoryFilters>({});
   const areasQuery = useMyAreasStatusQuery();
@@ -29,6 +34,7 @@ export function FieldHistoryContent() {
     .sort((a, b) => a.name.localeCompare(b.name, "id")), [filters.projectId, tasks]);
   const historyQuery = useMyReportHistoryQuery({
     ...filters,
+    ...(isSiteManager && scopeTab !== "all" ? { scope: scopeTab } : {}),
     page,
     pageSize: 10,
     sortBy: "submittedAt",
@@ -53,9 +59,29 @@ export function FieldHistoryContent() {
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Riwayat Saya"
-        description="Temukan laporan yang sudah Anda kirim berdasarkan project, area, atau tanggal."
+        title={isSiteManager ? "Riwayat Laporan" : "Riwayat Saya"}
+        description={
+          isSiteManager
+            ? "Telusuri riwayat laporan harian Anda maupun laporan tim Supervisor pada project yang Anda pimpin."
+            : "Temukan laporan yang sudah Anda kirim berdasarkan project, area, atau tanggal."
+        }
       />
+
+      {isSiteManager && (
+        <Tabs
+          value={scopeTab}
+          onValueChange={(val) => {
+            setScopeTab(val === "own" || val === "team" ? val : "all");
+            setPage(1);
+          }}
+        >
+          <TabsList className="grid w-full grid-cols-3 bg-surface-input">
+            <TabsTrigger value="all" className="min-h-12 text-xs font-semibold">Semua</TabsTrigger>
+            <TabsTrigger value="own" className="min-h-12 text-xs font-semibold">Milik Saya</TabsTrigger>
+            <TabsTrigger value="team" className="min-h-12 text-xs font-semibold">Tim Saya</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      )}
 
       <section aria-label="Filter riwayat laporan" className="space-y-3 rounded-2xl border border-border bg-surface p-4">
         <div className="flex items-center justify-between gap-3">

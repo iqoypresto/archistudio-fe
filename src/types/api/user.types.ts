@@ -17,7 +17,7 @@ export interface CreateUserPayload {
   username: string;
   phone: string;
   password: string;
-  role: "ADMIN" | "SUPERVISOR";
+  role: "ADMIN" | "SITE_MANAGER" | "SUPERVISOR";
   jobTitle?: string;
 }
 
@@ -25,7 +25,7 @@ export interface UpdateUserPayload {
   name?: string;
   username?: string;
   phone?: string;
-  role?: "ADMIN" | "SUPERVISOR";
+  role?: "ADMIN" | "SITE_MANAGER" | "SUPERVISOR";
   jobTitle?: string;
 }
 

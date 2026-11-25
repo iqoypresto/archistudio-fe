@@ -1,4 +1,4 @@
-export type UserRole = "OWNER" | "ADMIN" | "SUPERVISOR";
+export type UserRole = "OWNER" | "ADMIN" | "SITE_MANAGER" | "SUPERVISOR";
 
 export interface AuthUserProfile {
   id: string;

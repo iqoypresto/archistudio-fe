@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { ModalContextStrip, ModalNoteBox } from "@/components/ui/ModalContextStrip";
+import { getRoleLabel } from "@/lib/utils/role";
 import type { UserListItem } from "@/types/api/user.types";
 
 interface ConfirmToggleStatusDialogProps {
@@ -38,38 +40,41 @@ export function ConfirmToggleStatusDialog({
           <DialogTitle>
             {isCurrentlyActive ? "Nonaktifkan Akun Pengguna?" : "Aktifkan Kembali Akun?"}
           </DialogTitle>
-          <DialogDescription className="space-y-2 pt-2 text-sm">
-            <span>
-              Anda akan {isCurrentlyActive ? "menonaktifkan" : "mengaktifkan"} akun{" "}
-              <strong>{targetUser.name}</strong> (@{targetUser.username}).
-            </span>
-            {isCurrentlyActive ? (
-              <span className="bg-status-warning-bg text-status-warning-fg block rounded-lg p-2.5 text-xs font-medium">
-                Akun yang dinonaktifkan tidak dapat login ke sistem. Seluruh riwayat laporan
-                harian dan catatan tugas lapangan tetap aman dan tidak terhapus (BR-05).
-              </span>
-            ) : (
-              <span className="bg-status-success-bg text-status-success-fg block rounded-lg p-2.5 text-xs font-medium">
-                Pengguna akan dapat segera login kembali menggunakan kredensial akun yang sudah ada.
-              </span>
-            )}
+          <DialogDescription className="text-xs">
+            {isCurrentlyActive
+              ? "Akses masuk pengguna ini akan dihentikan sementara."
+              : "Pengguna ini akan dapat masuk kembali ke sistem."}
           </DialogDescription>
         </DialogHeader>
 
-        <DialogFooter className="pt-2">
-          <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+        <ModalContextStrip
+          kicker={`${getRoleLabel(targetUser.role)} · ${targetUser.jobTitle || "-"}`}
+          title={targetUser.name}
+          meta={`@${targetUser.username} · ${targetUser.phone || "-"}`}
+        />
+
+        <ModalNoteBox>
+          {isCurrentlyActive
+            ? "Akun yang dinonaktifkan tidak dapat login ke sistem. Seluruh riwayat laporan harian dan catatan tugas lapangan tetap aman dan tidak terhapus."
+            : "Pengguna dapat segera login kembali menggunakan username dan kata sandi yang sudah terdaftar."}
+        </ModalNoteBox>
+
+        <DialogFooter className="gap-2">
+          <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting} className="h-9">
             Batal
           </Button>
           <Button
+            type="button"
             variant={isCurrentlyActive ? "destructive" : "default"}
             onClick={() => onConfirm(targetUser.id, targetNextState)}
             disabled={isSubmitting}
+            className="h-9"
           >
             {isSubmitting
               ? "Memproses..."
               : isCurrentlyActive
-                ? "Ya, Nonaktifkan"
-                : "Ya, Aktifkan"}
+                ? "Nonaktifkan Akun"
+                : "Aktifkan Akun"}
           </Button>
         </DialogFooter>
       </DialogContent>

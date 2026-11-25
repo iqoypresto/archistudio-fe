@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,18 +13,22 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { ModalContextStrip, ModalNoteBox } from "@/components/ui/ModalContextStrip";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import {
   restoreProjectSchema,
   type RestoreProjectFormValues,
 } from "@/lib/validation/project.validation";
-import type { ProjectListItem, RestoreProjectPayload } from "@/types/api/project.types";
+import type {
+  ActiveProjectStatus,
+  ProjectListItem,
+  RestoreProjectPayload,
+} from "@/types/api/project.types";
+
+const RESTORE_STATUS_OPTIONS: readonly { value: ActiveProjectStatus; label: string }[] = [
+  { value: "BERJALAN", label: "Berjalan" },
+  { value: "PERSIAPAN", label: "Persiapan" },
+];
 
 interface RestoreProjectDialogProps {
   isOpen: boolean;
@@ -59,57 +63,51 @@ export function RestoreProjectDialog({
 
   if (!targetProject) return null;
 
-  const onFormSubmit = (data: RestoreProjectFormValues) => {
-    onConfirm(targetProject.id, data);
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Pulihkan Project dari Archive</DialogTitle>
-          <DialogDescription>
-            Pilih status aktif tujuan untuk memulihkan <strong>{targetProject.name}</strong> (
-            <span className="font-mono">{targetProject.code}</span>) kembali ke daftar project
-            aktif (BR-39).
+          <DialogTitle>Pulihkan Project</DialogTitle>
+          <DialogDescription className="text-xs">
+            Kembalikan proyek ke daftar proyek aktif.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4 py-1">
+        <ModalContextStrip
+          kicker={`${targetProject.code} · ${targetProject.status === "SELESAI" ? "Selesai" : "Arsip Manual"}`}
+          title={targetProject.name}
+          meta={`${targetProject.clientName} · ${targetProject.location}`}
+        />
+
+        <form onSubmit={handleSubmit((data) => onConfirm(targetProject.id, data))} className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="restore-status">Status Setelah Dipulihkan</Label>
+            <Label className="text-xs font-medium">Status Setelah Dipulihkan</Label>
             <Controller
               name="status"
               control={control}
               render={({ field }) => (
-                <Select
+                <SegmentedControl
+                  ariaLabel="Status setelah dipulihkan"
+                  fullWidth
+                  options={RESTORE_STATUS_OPTIONS}
                   value={field.value}
-                  onValueChange={(val: string | null) =>
-                    field.onChange(val === "PERSIAPAN" ? "PERSIAPAN" : "BERJALAN")
-                  }
-                >
-                  <SelectTrigger id="restore-status" className="h-10">
-                    <SelectValue placeholder="Pilih Status">
-                      {field.value === "PERSIAPAN" ? "Persiapan" : "Berjalan"}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="PERSIAPAN">Persiapan</SelectItem>
-                    <SelectItem value="BERJALAN">Berjalan</SelectItem>
-                  </SelectContent>
-                </Select>
+                  onChange={field.onChange}
+                />
               )}
             />
-            {errors.status && (
-              <p className="text-status-danger-fg text-xs">{errors.status.message}</p>
-            )}
+            {errors.status && <p className="text-xs text-status-danger-fg">{errors.status.message}</p>}
           </div>
 
-          <DialogFooter className="pt-2">
-            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+          <ModalNoteBox>
+            Proyek akan kembali aktif dan pengawas area dapat melanjutkan pelaporan harian sesuai
+            jadwal.
+          </ModalNoteBox>
+
+          <DialogFooter className="gap-2">
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting} className="h-9">
               Batal
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} className="h-9">
               {isSubmitting ? "Memulihkan..." : "Pulihkan Project"}
             </Button>
           </DialogFooter>

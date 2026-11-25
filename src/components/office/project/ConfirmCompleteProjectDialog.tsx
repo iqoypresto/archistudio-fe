@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { ModalContextStrip, ModalNoteBox } from "@/components/ui/ModalContextStrip";
 import type { ProjectListItem } from "@/types/api/project.types";
 
 interface ConfirmCompleteProjectDialogProps {
@@ -33,26 +34,33 @@ export function ConfirmCompleteProjectDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Tandai Project Selesai?</DialogTitle>
-          <DialogDescription className="space-y-2 pt-2 text-sm">
-            <span>
-              Project <strong>{targetProject.name}</strong> (
-              <span className="font-mono">{targetProject.code}</span>) akan berstatus{" "}
-              <strong>SELESAI</strong> dan otomatis masuk ke folder <strong>Archive Project</strong>{" "}
-              tahun ini.
-            </span>
-            <span className="block rounded-lg bg-status-info-bg p-2.5 text-xs font-medium text-status-info-fg">
-              Setelah selesai, project bersifat baca saja dan tidak menerima laporan harian baru
-              kecuali dipulihkan oleh Owner (BR-12, BR-39).
-            </span>
+          <DialogDescription className="text-xs">
+            Proyek akan otomatis masuk ke Archive Project tahun ini.
           </DialogDescription>
         </DialogHeader>
 
-        <DialogFooter className="pt-2">
-          <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+        <ModalContextStrip
+          kicker={`${targetProject.code} · ${targetProject.status === "BERJALAN" ? "Berjalan" : "Persiapan"}`}
+          title={targetProject.name}
+          meta={`${targetProject.clientName} · ${targetProject.location}`}
+        />
+
+        <ModalNoteBox>
+          Setelah berstatus Selesai, seluruh data proyek menjadi baca saja dan tidak menerima
+          laporan harian baru kecuali dipulihkan kembali oleh Owner.
+        </ModalNoteBox>
+
+        <DialogFooter className="gap-2">
+          <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting} className="h-9">
             Batal
           </Button>
-          <Button onClick={() => onConfirm(targetProject.id)} disabled={isSubmitting}>
-            {isSubmitting ? "Memproses..." : "Ya, Tandai Selesai"}
+          <Button
+            type="button"
+            onClick={() => onConfirm(targetProject.id)}
+            disabled={isSubmitting}
+            className="h-9"
+          >
+            {isSubmitting ? "Memproses..." : "Tandai Selesai"}
           </Button>
         </DialogFooter>
       </DialogContent>

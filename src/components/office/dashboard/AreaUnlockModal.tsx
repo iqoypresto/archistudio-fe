@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { AlertTriangle, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,8 +10,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  ModalContextStrip,
+  ModalMetricStrip,
+  ModalNoteBox,
+} from "@/components/ui/ModalContextStrip";
 import { Textarea } from "@/components/ui/textarea";
 import { useUnlockAreaMutation } from "@/hooks/dashboard.hooks";
+import { formatIdDate } from "@/lib/utils/office-format";
 import type { DashboardAreaStatusItem } from "@/types/api/dashboard.types";
 
 interface AreaUnlockModalProps {
@@ -57,31 +62,35 @@ export function AreaUnlockModal({ isOpen, area, onClose }: AreaUnlockModalProps)
       <DialogContent className="sm:max-w-md">
         <form onSubmit={handleSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-status-danger-fg">
-              <KeyRound className="h-5 w-5" />
-              Buka Kunci Manual Laporan Area
-            </DialogTitle>
+            <DialogTitle>Buka Kunci Manual Laporan Area</DialogTitle>
             <DialogDescription className="text-xs">
-              Area ini terkunci karena tertunggak lebih dari 3 hari kerja (BR-22).
+              Area ini terkunci otomatis karena melewati batas tunggakan 3 hari kerja.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="rounded-lg border border-status-danger-fg/20 bg-status-danger-bg/70 p-3 text-xs text-status-danger-fg">
-            <div className="flex items-center gap-1.5 font-semibold">
-              <AlertTriangle className="h-4 w-4" />
-              <span>
-                [{area.areaCode}] {area.areaName} — {area.projectName}
-              </span>
-            </div>
-            <p className="mt-1">
-              Jumlah hari tertunggak: <strong>{area.overdueBusinessDaysCount} hari</strong>. Tanggal
-              tertunggak terlama: <strong>{area.oldestOverdueDate ?? "-"}</strong>.
-            </p>
-          </div>
+          <ModalContextStrip
+            kicker={`${area.projectCode} · ${area.projectName}`}
+            title={`${area.areaCode} · ${area.areaName}`}
+            meta={area.supervisor ? `Supervisor: ${area.supervisor.name}` : "Belum ada supervisor aktif"}
+          />
 
-          <div className="space-y-2">
-            <Label htmlFor="unlockedThroughDate" className="text-xs font-semibold">
-              Buka Kunci Hingga Tanggal (YYYY-MM-DD)
+          <ModalMetricStrip
+            items={[
+              {
+                label: "Total Tunggakan",
+                value: `${area.overdueBusinessDaysCount} hari kerja`,
+                accent: "danger",
+              },
+              {
+                label: "Tunggakan Tertua",
+                value: formatIdDate(area.oldestOverdueDate),
+              },
+            ]}
+          />
+
+          <div className="space-y-1.5">
+            <Label htmlFor="unlockedThroughDate" className="text-xs font-medium">
+              Buka Kunci Hingga Tanggal
             </Label>
             <Input
               id="unlockedThroughDate"
@@ -89,35 +98,42 @@ export function AreaUnlockModal({ isOpen, area, onClose }: AreaUnlockModalProps)
               required
               value={selectedUnlockDate}
               onChange={(e) => setDateSelection({ areaId: area.areaId, value: e.target.value })}
+              className="h-9 text-xs tabular-nums"
             />
-            <p className="text-[11px] text-text-muted">
-              Tanggal awal tunggakan terisi otomatis. Supervisor tetap mengisi tanggal tertua lebih dahulu.
-            </p>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="reason" className="text-xs font-semibold">
-              Alasan (Opsional)
-            </Label>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="reason" className="text-xs font-medium">
+                Catatan Audit / Alasan
+              </Label>
+              <span className="text-[11px] text-text-muted">Opsional</span>
+            </div>
             <Textarea
               id="reason"
               rows={3}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="Contoh: Kendala cuaca ekstrem dan pemadaman listrik di lokasi proyek..."
-              className="min-h-24 w-full rounded-md border-border bg-surface-primary p-2 text-xs focus-visible:ring-brand-primary/20"
+              placeholder="Contoh: Kendala cuaca ekstrem atau gangguan jaringan di lokasi proyek..."
+              className="min-h-20 w-full rounded-lg border-border bg-surface-input p-2.5 text-xs"
             />
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button type="button" variant="outline" size="sm" onClick={onClose}>
+          <ModalNoteBox>
+            Supervisor tetap diwajibkan mengirim laporan secara berurutan mulai dari tanggal
+            tunggakan tertua terlebih dahulu.
+          </ModalNoteBox>
+
+          <DialogFooter className="gap-2">
+            <Button type="button" variant="outline" size="sm" onClick={onClose} className="h-9">
               Batal
             </Button>
             <Button
               type="submit"
+              variant="destructive"
               size="sm"
               disabled={unlockMutation.isPending || !selectedUnlockDate}
-              className="bg-rose-600 text-white hover:bg-rose-700"
+              className="h-9"
             >
               {unlockMutation.isPending ? "Membuka..." : "Buka Kunci Area"}
             </Button>
