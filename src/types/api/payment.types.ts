@@ -3,7 +3,7 @@ export type PaymentStatus = "PAID" | "UNPAID";
 export type PaymentProofMime = "image/jpeg" | "image/png";
 
 export interface PaymentProofPayload {
-  storageKey: string;
+  storedFileId: string;
   fileName: string;
   mimeType: PaymentProofMime;
   sizeBytes: number;
@@ -37,11 +37,11 @@ export interface PaymentRecordItem {
   amount: number;
   recordDate: string;
   dueDate: string | null;
-  proofStorageKey: string | null;
+  proofStoredFileId: string | null;
   proofFileName: string | null;
   proofMimeType: string | null;
   proofSizeBytes: number | null;
-  proofViewUrl: string | null;
+  proofContentPath: string | null;
   createdById: string;
   createdAt: string;
   updatedAt: string;
@@ -76,14 +76,4 @@ export interface PaymentPeopleFilterParams {
 
 export interface PaymentRecordsFilterParams {
   status?: PaymentStatus;
-}
-
-export interface SignedPaymentProofResponse {
-  uploadUrl: string;
-  storageKey: string;
-  expiresInSeconds: number;
-  purpose: "payment-proof";
-  fileName: string;
-  contentType: string;
-  fileSizeBytes: number;
 }

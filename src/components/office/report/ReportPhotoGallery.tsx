@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { StoredFileImage } from "@/components/ui/StoredFileImage";
 import type { DailyReportPhotoDto } from "@/types/api/report.types";
 
 function formatPhotoTime(value: string | null, fallback: string, timeZone: string): string {
@@ -49,13 +49,11 @@ export function ReportPhotoGallery({
               className="group flex flex-col overflow-hidden rounded-xl border border-border bg-surface-input/50 text-left transition-colors hover:border-white/18"
             >
               <div className="overflow-hidden bg-canvas">
-                <Image
-                  src={photo.signedViewUrl || "/file.svg"}
+                <StoredFileImage
+                  contentPath={photo.contentPath}
                   alt={photo.caption ?? `Foto ${index + 1}`}
-                  width={480}
-                  height={360}
-                  unoptimized
                   className="aspect-4/3 w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
+                  fallbackClassName="aspect-4/3 w-full"
                 />
               </div>
               <div className="space-y-1.5 p-3">
@@ -93,13 +91,11 @@ export function ReportPhotoGallery({
           </DialogHeader>
           {zoomPhoto && (
             <div className="space-y-3">
-              <Image
-                src={zoomPhoto.signedViewUrl || "/file.svg"}
+              <StoredFileImage
+                contentPath={zoomPhoto.contentPath}
                 alt={zoomPhoto.caption ?? "Foto"}
-                width={900}
-                height={675}
-                unoptimized
                 className="max-h-[65vh] w-full rounded-lg bg-canvas object-contain"
+                fallbackClassName="min-h-64 w-full"
               />
               <div className="grid grid-cols-1 gap-2 rounded-lg border border-border bg-canvas/60 px-3.5 py-2.5 text-xs tabular-nums sm:grid-cols-2">
                 <div>

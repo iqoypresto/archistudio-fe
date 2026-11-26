@@ -9,6 +9,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { formatIdDate } from "@/lib/utils/office-format";
+import { StoredFileImage } from "@/components/ui/StoredFileImage";
+import { fileApi } from "@/lib/api/file.api";
 import type { DrawingItem } from "@/types/api/drawing.types";
 
 interface DrawingPreviewModalProps {
@@ -32,24 +34,23 @@ export function DrawingPreviewModal({ drawing, onClose }: DrawingPreviewModalPro
 
         <div className="space-y-3">
           <div className="overflow-hidden rounded-lg border border-border bg-canvas">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={drawing.viewUrl}
+            <StoredFileImage
+              contentPath={drawing.contentPath}
               alt={drawing.fileName}
               className="max-h-[65vh] w-full object-contain"
+              fallbackClassName="min-h-64 w-full"
             />
           </div>
 
           <div className="flex justify-end">
-            <a
-              href={drawing.viewUrl}
-              target="_blank"
-              rel="noreferrer"
+            <button
+              type="button"
+              onClick={() => void fileApi.openContent(drawing.contentPath)}
               className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-surface-input px-3 text-xs font-medium text-text-primary transition-colors hover:bg-surface-active"
             >
               <ExternalLink className="size-3.5" />
               Buka Gambar di Tab Baru
-            </a>
+            </button>
           </div>
         </div>
       </DialogContent>

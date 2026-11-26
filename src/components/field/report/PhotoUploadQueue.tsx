@@ -2,219 +2,55 @@
 
 import { useRef } from "react";
 import Image from "next/image";
-import { Camera, CheckCircle2, Image as ImageIcon, Loader2, RefreshCw, Trash2, XCircle } from "lucide-react";
+import { Camera, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { StatusBadge, type StatusTone } from "@/components/ui/StatusBadge";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { MAX_REPORT_PHOTOS } from "@/lib/validation/upload.validation";
-import type { PhotoQueueItem, UploadQueueStatus } from "@/types/api/upload.types";
+import type { PhotoQueueItem } from "@/types/api/upload.types";
 
-const STATUS_BADGE_MAP: Record<UploadQueueStatus, { label: string; tone: StatusTone }> = {
-  idle: { label: "Menunggu", tone: "muted" },
-  local: { label: "Siap diunggah", tone: "info" },
-  compressing: { label: "Mengompres...", tone: "info" },
-  signing: { label: "Menyiapkan...", tone: "info" },
-  uploading: { label: "Mengunggah", tone: "info" },
-  uploaded: { label: "Terunggah", tone: "success" },
-  failed: { label: "Gagal", tone: "danger" },
-};
-
-function PhotoQueueItemCard({
-  item,
-  index,
-  disabled,
-  onRetry,
-  onCaptionChange,
-  onRemove,
-}: {
-  item: PhotoQueueItem;
-  index: number;
-  disabled?: boolean;
-  onRetry: (id: string) => void;
-  onCaptionChange: (id: string, caption: string) => void;
-  onRemove: (id: string) => void;
-}) {
-  const badge = STATUS_BADGE_MAP[item.status];
-  const inProgress =
-    item.status === "compressing" || item.status === "signing" || item.status === "uploading";
-  const captionId = `report-photo-caption-${item.id}`;
-
-  return (
-    <div className="space-y-3 rounded-xl border border-border bg-surface p-3.5">
-      <div className="flex items-start gap-3">
-        {item.previewUrl ? (
-          <Image
-            src={item.previewUrl}
-            alt={`Foto laporan ${index + 1}`}
-            width={80}
-            height={80}
-            unoptimized
-            className="size-20 shrink-0 rounded-lg border border-border object-cover"
-          />
-        ) : (
-          <div role="img" aria-label={`Pratinjau foto ${index + 1} tidak tersedia; nama file ${item.fileName}`} className="flex size-20 shrink-0 items-center justify-center rounded-lg border border-border bg-secondary text-text-secondary">
-            <ImageIcon aria-hidden="true" className="size-6" />
-          </div>
-        )}
-
-        <div className="min-w-0 flex-1 space-y-2">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="truncate text-sm font-semibold text-text-primary">
-              Foto #{index + 1}
-            </span>
-            <StatusBadge tone={badge.tone}>
-              {inProgress && <Loader2 className="size-3.5 animate-spin" />}
-              {item.status === "uploaded" && <CheckCircle2 className="size-3.5" />}
-              {item.status === "failed" && <XCircle className="size-3.5" />}
-              <span>
-                {item.status === "uploading" ? `${badge.label} ${item.progress}%` : badge.label}
-              </span>
-            </StatusBadge>
-          </div>
-
-          <div
-            role="progressbar"
-            aria-label={`Progres unggah foto ${index + 1}`}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={item.progress}
-            aria-valuetext={item.status === "failed" ? "Unggahan gagal" : `${badge.label} ${item.progress}%`}
-            className="h-2 w-full overflow-hidden rounded-full bg-secondary"
-          >
-            <div
-              className={`h-full w-full origin-left transition-transform duration-150 ${
-                item.status === "failed"
-                  ? "bg-status-danger-fg"
-                  : item.status === "uploaded"
-                    ? "bg-status-success-fg"
-                    : "bg-primary"
-              }`}
-              style={{ transform: `scaleX(${item.progress / 100})` }}
-            />
-          </div>
-
-          <Label htmlFor={captionId} className="sr-only">Keterangan foto {index + 1}</Label>
-          <Input
-            id={captionId}
-            type="text"
-            value={item.caption}
-            disabled={disabled}
-            onChange={(e) => onCaptionChange(item.id, e.target.value)}
-            placeholder="Keterangan singkat foto (opsional)"
-            className="min-h-12 text-base"
-          />
-        </div>
-      </div>
-
-      {item.status === "failed" && (
-        <div className="space-y-2 rounded-lg bg-status-danger-bg p-3 text-sm text-status-danger-fg">
-          <p>{item.errorMessage ?? "Gagal mengunggah foto ini."}</p>
-          {item.file && (
-            <Button
-              type="button"
-              variant="outline"
-              disabled={disabled}
-              onClick={() => onRetry(item.id)}
-              className="min-h-12 w-full border-status-danger-fg/30 bg-surface text-base font-semibold text-status-danger-fg"
-            >
-              <RefreshCw className="mr-2 size-4" />
-              Ulangi Foto Ini
-            </Button>
-          )}
-        </div>
-      )}
-
-      <Button
-        type="button"
-        variant="ghost"
-        disabled={disabled || inProgress}
-        onClick={() => onRemove(item.id)}
-        className="min-h-12 w-full text-base text-status-danger-fg hover:bg-status-danger-bg"
-      >
-        <Trash2 className="mr-2 size-4" />
-        Hapus Foto #{index + 1}
-      </Button>
-    </div>
-  );
-}
-
-export function PhotoUploadQueue({
-  items,
-  disabled,
-  onAddFiles,
-  onRetry,
-  onCaptionChange,
-  onRemove,
-}: {
+export function PhotoUploadQueue({ items, disabled, onAddFiles, onRetry, onCaptionChange, onRemove }: {
   items: PhotoQueueItem[];
   disabled?: boolean;
-  onAddFiles: (files: FileList) => void | Promise<void>;
+  onAddFiles: (files: FileList) => void | Promise<unknown>;
   onRetry: (id: string) => void;
   onCaptionChange: (id: string, caption: string) => void;
   onRemove: (id: string) => void;
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const canAddMore = items.length < MAX_REPORT_PHOTOS;
-  const uploadingCount = items.filter((item) => item.status === "uploading").length;
-  const uploadedCount = items.filter((item) => item.status === "uploaded").length;
-  const failedCount = items.filter((item) => item.status === "failed").length;
-  const queueAnnouncement = uploadingCount
-    ? `${uploadingCount} foto sedang diunggah; ${uploadedCount} foto selesai.`
-    : failedCount
-      ? `${failedCount} foto perlu diperbaiki atau dipilih ulang.`
-      : items.length > 0 && uploadedCount === items.length
-        ? `${uploadedCount} foto siap dilampirkan.`
-        : "";
-
-  return (
-    <div className="space-y-3">
-      <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">{queueAnnouncement}</p>
-      <div className="flex items-center justify-between">
-        <p className="text-base font-semibold text-text-primary">
-          Foto Lapangan ({items.length}/{MAX_REPORT_PHOTOS})
-        </p>
-        <span className="text-sm text-text-secondary">Min. 1 foto · unggah di langkah ini</span>
-      </div>
-
-      <Input
-        ref={inputRef}
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        multiple
-        className="hidden"
-        onChange={(e) => {
-          if (e.target.files && e.target.files.length > 0) {
-            void onAddFiles(e.target.files);
-          }
-          e.target.value = "";
-        }}
-      />
-
-      <Button
-        type="button"
-        variant="outline"
-        disabled={disabled || !canAddMore}
-        onClick={() => inputRef.current?.click()}
-        className="min-h-12 w-full border-dashed border-white/20 bg-surface-input text-base font-semibold text-text-primary hover:bg-surface-active"
-      >
-        <Camera className="mr-2 size-5" />
-        {canAddMore ? "Pilih atau Ambil Foto" : "Maksimal 10 Foto Tercapai"}
+  return <div className="space-y-4">
+    <div className="rounded-2xl border border-dashed border-primary/70 bg-surface-input px-4 py-5 text-center">
+      <Camera aria-hidden="true" className="mx-auto size-10 text-primary" />
+      <Button type="button" disabled={disabled || !canAddMore} onClick={() => inputRef.current?.click()} className="mt-3 min-h-11 rounded-xl bg-primary px-5 text-base font-semibold text-primary-foreground">
+        {canAddMore ? "Ambil atau Pilih Foto" : "Maksimal 10 Foto Tercapai"}
       </Button>
-
-      <div className="space-y-3">
-        {items.map((item, idx) => (
-          <PhotoQueueItemCard
-            key={item.id}
-            item={item}
-            index={idx}
-            disabled={disabled}
-            onRetry={onRetry}
-            onCaptionChange={onCaptionChange}
-            onRemove={onRemove}
-          />
-        ))}
-      </div>
+      <p className="mt-2 text-sm text-text-secondary">Minimal 1, maksimal 10 foto</p>
+      <Input ref={inputRef} type="file" accept="image/*" multiple className="hidden" onChange={(event) => {
+        if (event.target.files?.length) void onAddFiles(event.target.files);
+        event.target.value = "";
+      }} />
     </div>
-  );
+    <p className="text-sm font-medium text-text-primary">{items.length} dari {MAX_REPORT_PHOTOS} foto</p>
+    <div className="grid grid-cols-2 gap-3">
+      {items.map((item, index) => <article key={item.id} className="min-w-0 space-y-2 rounded-2xl border border-border bg-surface p-2 shadow-xs">
+        <div className="relative aspect-square overflow-hidden rounded-xl bg-secondary">
+          {item.previewUrl && <Image src={item.previewUrl} alt={`Foto laporan ${index + 1}`} fill unoptimized sizes="(max-width: 640px) 45vw, 240px" className="object-cover" />}
+          {!item.previewUrl && <div className="grid h-full place-items-center text-sm text-text-secondary">Pilih ulang foto</div>}
+          <button type="button" aria-label={`Hapus foto ${index + 1}`} disabled={disabled || item.status === "compressing" || item.status === "uploading"} onClick={() => onRemove(item.id)} className="absolute right-2 top-2 grid size-10 place-items-center rounded-full bg-white text-primary shadow">
+            <Trash2 aria-hidden="true" className="size-5" />
+          </button>
+          {item.status === "uploading" && item.progress > 0 && <div role="progressbar" aria-label={`Progres unggah foto ${index + 1}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={item.progress} className="absolute inset-x-2 bottom-2 h-2 overflow-hidden rounded-full bg-white/70"><div className="h-full bg-primary transition-[width]" style={{ width: `${item.progress}%` }} /></div>}
+        </div>
+        <Input aria-label={`Keterangan foto ${index + 1}`} value={item.caption} disabled={disabled} onChange={(event) => onCaptionChange(item.id, event.target.value)} placeholder="Keterangan foto" className="h-10 rounded-xl px-2 text-sm" />
+        <div role="status" className="flex min-h-8 items-center justify-between gap-1 text-xs">
+          <StatusBadge tone={item.status === "failed" ? "danger" : item.status === "uploaded" ? "success" : item.status === "local" ? "muted" : "info"}>
+            {item.status === "compressing" || item.status === "signing" ? <><Loader2 className="mr-1 inline size-3 animate-spin" />Menyiapkan…</> : item.status === "failed" ? "Gagal" : item.status === "uploading" ? (item.progress > 0 ? `Mengunggah ${item.progress}%` : "Mengunggah…") : item.status === "uploaded" ? "Terunggah" : "Siap dikirim"}
+          </StatusBadge>
+          {item.status === "failed" && item.file && <button type="button" className="font-semibold text-status-danger-fg underline" onClick={() => onRetry(item.id)}>Coba lagi</button>}
+        </div>
+      </article>)}
+      {items.length > 0 && canAddMore && <button type="button" disabled={disabled} onClick={() => inputRef.current?.click()} aria-label="Tambah foto" className="grid aspect-square place-items-center rounded-2xl border border-dashed border-primary/70 text-primary"><Camera aria-hidden="true" className="size-9" /></button>}
+    </div>
+  </div>;
 }

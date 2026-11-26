@@ -1,35 +1,24 @@
-export type ProjectDocumentType = "QUOTATION" | "BAST" | "INVOICE";
+import type { ProjectDocumentType } from "./upload.types";
+export type { ProjectDocumentType } from "./upload.types";
+
 
 export interface ProjectDocumentItem {
   id: string;
   projectId: string;
   type: ProjectDocumentType;
-  storageKey: string;
+  storedFileId: string;
   fileName: string;
   mimeType: string;
   sizeBytes: number;
-  uploadedAt: string;
-  viewUrl: string;
+  uploadedAt: string | null;
+  contentPath: string;
 }
 
 export interface CreateProjectDocumentPayload {
   type: ProjectDocumentType;
-  storageKey: string;
-  fileName: string;
-  mimeType: string;
-  sizeBytes: number;
+  storedFileId: string;
 }
 
 export interface ProjectDocumentFilterParams {
   type?: ProjectDocumentType;
-}
-
-export interface SignedProjectDocumentUploadResponse {
-  uploadUrl: string;
-  storageKey: string;
-  expiresInSeconds: number;
-  purpose: "project-document";
-  fileName: string;
-  contentType: string;
-  fileSizeBytes: number;
 }

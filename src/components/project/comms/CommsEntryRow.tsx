@@ -4,6 +4,7 @@ import { formatIdDate } from "@/lib/utils/office-format";
 import { getRoleLabel } from "@/lib/utils/role";
 import { getCommsDirectionLabel } from "@/lib/validation/comms.validation";
 import type { CommsEntryItem } from "@/types/api/comms.types";
+import { fileApi } from "@/lib/api/file.api";
 
 interface CommsEntryRowProps {
   entry: CommsEntryItem;
@@ -39,17 +40,16 @@ export function CommsEntryRow({ entry, showDirection, canEdit, onEdit }: CommsEn
             {entry.note}
           </p>
         )}
-        {entry.attachmentViewUrl && (
+        {entry.attachmentContentPath && (
           <div className="pt-1">
-            <a
-              href={entry.attachmentViewUrl}
-              target="_blank"
-              rel="noreferrer"
+            <button
+              type="button"
+              onClick={() => void fileApi.openContent(entry.attachmentContentPath!)}
               className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface-input px-2.5 py-1 text-xs text-text-secondary transition-colors hover:bg-surface-active hover:text-text-primary"
             >
               <Paperclip className="size-3" />
               <span>{entry.attachmentName ?? "Lampiran"}</span>
-            </a>
+            </button>
           </div>
         )}
       </div>

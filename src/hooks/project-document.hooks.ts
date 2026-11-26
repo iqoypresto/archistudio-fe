@@ -59,24 +59,10 @@ export function useProjectDocumentUpload(projectId: string) {
           toast.error(`${file.name}: ${check.message}`);
           continue;
         }
-        const signed = await projectDocumentApi.signDocumentUpload({
-          projectId,
-          type,
-          fileName: file.name,
-          contentType: file.type,
-          fileSizeBytes: file.size,
-        });
-        await projectDocumentApi.uploadDocumentToSignedUrl({
-          uploadUrl: signed.uploadUrl,
-          file,
-          contentType: file.type,
-        });
+        const completed = await projectDocumentApi.uploadDocument(projectId, type, file);
         await projectDocumentApi.createDocument(projectId, {
           type,
-          storageKey: signed.storageKey,
-          fileName: file.name,
-          mimeType: file.type,
-          sizeBytes: file.size,
+          storedFileId: completed.storedFileId,
         });
         successCount += 1;
       }

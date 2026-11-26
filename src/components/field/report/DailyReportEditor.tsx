@@ -1,213 +1,125 @@
 "use client";
 
-import { useRef, useState } from "react";
-import Link from "next/link";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft } from "lucide-react";
+import { defineStepper } from "@stepperize/react/headless";
 import { useForm, useWatch } from "react-hook-form";
-import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSubmitNewReportMutation } from "@/hooks/report.hooks";
 import { usePhotoUploadQueue, buildReportPhotoInputs } from "@/hooks/upload-queue.hooks";
 import { useSupervisorReportDraft } from "@/hooks/use-supervisor-report-draft.hooks";
+import { useAuthStore } from "@/stores/auth.store";
 import { reportApi } from "@/lib/api/report.api";
+import { ApiError } from "@/lib/api/api-error";
 import { recordRecentSupervisorSubmission } from "@/lib/session/supervisor-report-session";
-import { cn } from "@/lib/utils";
-import { buildDefaultReportValues, buildSubmitReportPayload, reportFormSchema, type ReportFormValues } from "@/lib/validation/report.validation";
+import { buildDefaultReportValues, buildSubmitReportPayload, isPastProjectCutoff1700, reportFormSchema, type ReportFormValues } from "@/lib/validation/report.validation";
 import type { SupervisorAreaTaskStatus } from "@/types/api/report-lock.types";
 import { NoWorkReportFields } from "./NoWorkReportFields";
 import { PhotoUploadQueue } from "./PhotoUploadQueue";
-import { ReportSubmitBar, type ReportSubmitState } from "./ReportSubmitBar";
 import { ReportReview } from "./ReportReview";
+import { ReportContextCard, formatReportDate } from "./NewReportInformation";
 import { ReportStepIndicator } from "./ReportStepIndicator";
 import { ReportSuccessOverlay } from "./ReportSuccessOverlay";
 import { ReportTypeSwitch } from "./ReportTypeSwitch";
 import { WorkReportFields } from "./WorkReportFields";
+import { ContextReviewDrawer, FinalSubmitDialog } from "./ReportConfirmations";
+import { ReportFooter } from "./ReportFooter";
+import { SubmissionScreen, type SubmissionStatus } from "./SubmissionScreen";
 
-export function DailyReportEditor({ areaTask, reportDate }: {
-  areaTask: SupervisorAreaTaskStatus;
-  reportDate: string;
-}) {
+const flow = defineStepper([{ id: "details", title: "Keterangan" }, { id: "photos", title: "Foto" }, { id: "confirmation", title: "Konfirmasi" }]);
+const STEP_IDS = ["details", "photos", "confirmation"] as const;
+const isReadyLocally = (items: Array<{ status: string }>) => items.length > 0 && items.length <= 10 && items.every((item) => item.status === "local" || item.status === "uploaded");
+
+export function DailyReportEditor({ areaTask, reportDate }: { areaTask: SupervisorAreaTaskStatus; reportDate: string }) {
   const router = useRouter();
+  const user = useAuthStore((state) => state.user);
   const form = useForm<ReportFormValues>({ resolver: zodResolver(reportFormSchema), defaultValues: buildDefaultReportValues() });
   const reportType = useWatch({ control: form.control, name: "reportType" }) ?? "WORK";
   const photoQueue = usePhotoUploadQueue({ areaId: areaTask.areaId, reportDate });
-  const draft = useSupervisorReportDraft({
-    areaId: areaTask.areaId,
-    reportDate,
-    form,
-    photos: photoQueue.items,
-    restorePhotos: photoQueue.restoreItems,
-    requireReselection: photoQueue.requireReselection,
-  });
+  const draft = useSupervisorReportDraft({ areaId: areaTask.areaId, reportDate, form, photos: photoQueue.items, restorePhotos: photoQueue.restoreItems, requireReselection: photoQueue.requireReselection });
+  const stepper = flow.useStepper({ step: STEP_IDS[draft.step - 1], linear: true, onStepChange: (id) => draft.setStep((STEP_IDS.indexOf(id as typeof STEP_IDS[number]) + 1) as 1 | 2 | 3) });
   const submitMutation = useSubmitNewReportMutation();
-  const submittingRef = useRef(false);
-  const [preparingSession, setPreparingSession] = useState(false);
-  const [uploadingPhotos, setUploadingPhotos] = useState(false);
+  const sending = useRef(false);
+  const [busy, setBusy] = useState(false);
   const [stepError, setStepError] = useState<string | null>(null);
-  const [submitState, setSubmitState] = useState<ReportSubmitState>("idle");
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [submitted, setSubmitted] = useState<{ id: string; submittedAt: string | null } | null>(null);
+  const [confirmContext, setConfirmContext] = useState(false);
+  const [confirmFinal, setConfirmFinal] = useState(false);
+  const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus | null>(null);
+  const [submissionMessage, setSubmissionMessage] = useState<string | null>(null);
+  const [retryAllowed, setRetryAllowed] = useState(true);
+  const [submitted, setSubmitted] = useState<{ id: string; at: string | null } | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
-  const isBusy = !draft.draftReady || preparingSession || uploadingPhotos || submitState === "submitting" || submitState === "success";
+  const late = useMemo(() => isPastProjectCutoff1700(new Date(), reportDate, areaTask.timezone), [areaTask.timezone, reportDate]);
+  const isBusy = !draft.draftReady || busy || stepper.isPending || submitMutation.isPending;
 
-  async function goToPhotoStep(): Promise<void> {
-    if (!(await form.trigger())) return;
+  async function advance(): Promise<void> {
     setStepError(null);
-    if (draft.uploadSession && Date.parse(draft.uploadSession.expiresAt) > Date.now()) {
-      draft.setStep(2);
+    if (draft.step === 1) {
+      if (!(await form.trigger())) return;
+      await stepper.next({ data: form.getValues(), complete: true });
       return;
     }
-    if (draft.uploadSession) {
-      photoQueue.requireReselection();
-      draft.setDraftNotice("Sesi unggah foto kedaluwarsa. Foto yang sudah ada perlu dipilih ulang sebelum laporan dikirim.");
-      draft.setUploadSession(null);
-    }
-    setPreparingSession(true);
-    try {
-      const session = await reportApi.createUploadSession({ areaId: areaTask.areaId, reportDate });
-      draft.setUploadSession(session);
-      draft.setStep(2);
-    } catch (error) {
-      setStepError(error instanceof Error ? error.message : "Gagal menyiapkan unggahan foto. Coba lagi.");
-    } finally {
-      setPreparingSession(false);
-    }
-  }
-
-  async function addAndUploadFiles(files: FileList): Promise<void> {
-    if (!draft.uploadSession) return;
-    setUploadingPhotos(true);
-    try {
-      const prepared = await photoQueue.addFiles(files);
-      if (prepared.length) draft.setDraftNotice(null);
-      await photoQueue.uploadItems(prepared.filter((photo) => photo.status !== "failed"), draft.uploadSession.sessionId);
-    } finally {
-      setUploadingPhotos(false);
-    }
-  }
-
-  async function retryPhotoUpload(photoId: string): Promise<void> {
-    if (!draft.uploadSession) return;
-    setUploadingPhotos(true);
-    try {
-      await photoQueue.retryPhoto(photoId, draft.uploadSession.sessionId);
-    } finally {
-      setUploadingPhotos(false);
-    }
-  }
-
-  async function handleValidSubmit(values: ReportFormValues): Promise<void> {
-    if (submittingRef.current || submitState === "success") return;
-    if (!draft.uploadSession || !photoQueue.submitReadiness.ready) {
-      setSubmitState("error");
-      setSubmitError(photoQueue.submitReadiness.reason ?? "Sesi unggah foto tidak tersedia. Kembali ke langkah foto dan coba lagi.");
+    if (draft.step === 2) {
+      if (!isReadyLocally(photoQueue.items)) { setStepError(photoQueue.items.some((photo) => photo.status === "failed") ? "Hapus foto yang gagal disiapkan lalu pilih ulang." : "Pilih minimal 1 dan maksimal 10 foto sebelum melanjutkan."); return; }
+      await stepper.next({ data: photoQueue.items.map(({ id, fileName, caption }) => ({ id, fileName, caption })), complete: true });
       return;
     }
-    submittingRef.current = true;
-    setSubmitState("submitting");
-    setSubmitError(null);
+    setConfirmContext(true);
+  }
+
+  async function checkAfterUnknown(): Promise<boolean> {
+    setSubmissionStatus("unknown"); setRetryAllowed(false);
     try {
-      const payload = buildSubmitReportPayload({
-        areaId: areaTask.areaId, reportDate, values, photos: buildReportPhotoInputs(photoQueue.items),
-      });
-      const report = await submitMutation.mutateAsync({ ...payload, sessionId: draft.uploadSession.sessionId });
-      recordRecentSupervisorSubmission(report.id);
-      draft.clearDraft();
-      setSubmitted({ id: report.id, submittedAt: report.submittedAt });
-      setSubmitState("success");
-      setShowSuccess(true);
-    } catch (error) {
-      submittingRef.current = false;
-      setSubmitState("error");
-      setSubmitError(error instanceof Error ? error.message : "Laporan gagal dikirim. Periksa koneksi lalu coba lagi.");
+      const result = await reportApi.listReports({ areaId: areaTask.areaId, reportDate, scope: "own", page: 1, pageSize: 1 }, "field");
+      const report = result.data[0];
+      if (report) { recordRecentSupervisorSubmission(report.id); draft.clearDraft(); setSubmitted({ id: report.id, at: report.submittedAt }); setSubmissionStatus(null); setShowSuccess(true); return true; }
+      setSubmissionStatus("failed"); setSubmissionMessage("Laporan belum ditemukan. Pengiriman dapat dicoba kembali."); setRetryAllowed(true); return false;
+    } catch {
+      setSubmissionStatus("unknown"); setSubmissionMessage("Belum bisa memastikan apakah server menerima laporan. Periksa status lagi sebelum mencoba ulang."); setRetryAllowed(false); return false;
     }
   }
 
-  const canContinueToReview = photoQueue.submitReadiness.ready && !uploadingPhotos;
+  async function sendReport(): Promise<void> {
+    if (sending.current) return;
+    sending.current = true; stepper.setComplete("confirmation"); setBusy(true); setConfirmFinal(false); setSubmissionStatus("uploading"); setSubmissionMessage(null);
+    let reportRequestStarted = false;
+    try {
+      let session = draft.uploadSession;
+      if (!session || Date.parse(session.expiresAt) <= Date.now()) {
+        session = await reportApi.createUploadSession({ areaId: areaTask.areaId, reportDate }); draft.setUploadSession(session);
+      }
+      const uploaded = await photoQueue.uploadItems(photoQueue.items, session.sessionId);
+      if (!uploaded) throw new Error("Sebagian foto gagal diunggah. Periksa foto yang gagal lalu coba lagi.");
+      setSubmissionStatus("saving");
+      const values = form.getValues();
+      const payload = buildSubmitReportPayload({ areaId: areaTask.areaId, reportDate, values, photos: buildReportPhotoInputs(photoQueue.items) });
+      reportRequestStarted = true;
+      const report = await submitMutation.mutateAsync({ ...payload, sessionId: session.sessionId });
+      recordRecentSupervisorSubmission(report.id); draft.clearDraft(); setSubmitted({ id: report.id, at: report.submittedAt }); setSubmissionStatus(null); setShowSuccess(true);
+    } catch (error) {
+      if (reportRequestStarted && error instanceof ApiError && (error.code === "NETWORK_ERROR" || error.statusCode >= 500)) { setSubmissionStatus("unknown"); setRetryAllowed(false); setSubmissionMessage("Respons server belum memastikan apakah laporan sudah diterima. Kami sedang memeriksa status laporan."); await checkAfterUnknown(); }
+      else { setSubmissionStatus("failed"); setSubmissionMessage(error instanceof Error ? error.message : "Laporan belum berhasil dikirim."); setRetryAllowed(true); }
+    } finally { sending.current = false; setBusy(false); }
+  }
 
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <Link href="/field/reports" className={cn(buttonVariants({ variant: "outline" }), "min-h-12 px-3 text-base")}>
-          <ArrowLeft className="mr-1.5 size-4" /> Kembali
-        </Link>
-        <div className="min-w-0">
-          <p className="truncate text-base font-bold text-text-primary">{areaTask.projectName} — {areaTask.areaName}</p>
-          <p className="font-mono text-sm tabular-nums text-text-secondary">Tanggal Lapor: {reportDate}</p>
-        </div>
-      </div>
+  function onContextContinue(): void { setConfirmContext(false); window.setTimeout(() => setConfirmFinal(true), 180); }
+  const transferStarted = photoQueue.items.some((photo) => photo.status === "uploading" && photo.progress > 0);
+  const uploadProgress = transferStarted ? Math.round(photoQueue.items.reduce((sum, photo) => sum + (photo.status === "uploaded" ? 100 : photo.status === "uploading" ? photo.progress : 0), 0) / photoQueue.items.length) : undefined;
 
-      {draft.draftSaved && <p role="status" className="rounded-xl bg-primary-soft px-3 py-2 text-sm text-text-primary">
-        {draft.draftRestored ? "Isian laporan dipulihkan dan disimpan sementara di tab ini." : "Isian laporan disimpan sementara di tab ini."}
-      </p>}
-      {draft.draftNotice && <p role="status" className="rounded-xl bg-status-warning-bg px-3 py-2 text-sm text-status-warning-fg">{draft.draftNotice}</p>}
-      {draft.storageWarning && <p role="alert" className="rounded-xl bg-status-danger-bg px-3 py-2 text-sm text-status-danger-fg">{draft.storageWarning}</p>}
-
-      <ReportStepIndicator step={draft.step} />
-      {stepError && <p role="alert" className="rounded-xl bg-status-danger-bg p-3 text-sm font-medium text-status-danger-fg">{stepError}</p>}
-      {draft.step === 1 && <ReportTypeSwitch value={reportType} disabled={isBusy} onChange={(type) => form.setValue("reportType", type, { shouldValidate: true })} />}
-
-      {draft.step === 1 && <Card className="border border-border bg-surface">
-        <CardContent className="space-y-5 pt-5">
-          {reportType === "WORK" ? <WorkReportFields form={form} disabled={isBusy} /> : <NoWorkReportFields form={form} disabled={isBusy} />}
-        </CardContent>
-      </Card>}
-
-      {draft.step === 2 && <Card className="border border-border bg-surface">
-        <CardContent className="space-y-5 pt-5">
-          <PhotoUploadQueue
-            items={photoQueue.items}
-            disabled={uploadingPhotos || isBusy}
-            onAddFiles={addAndUploadFiles}
-            onRetry={(id) => { void retryPhotoUpload(id); }}
-            onCaptionChange={photoQueue.updateCaption}
-            onRemove={photoQueue.removePhoto}
-          />
-        </CardContent>
-      </Card>}
-
-      {draft.step === 3 && <ReportReview
-        values={form.getValues()}
-        projectName={areaTask.projectName}
-        areaName={areaTask.areaName}
-        reportDate={reportDate}
-        photos={photoQueue.items}
-        onEdit={draft.setStep}
-      />}
-
-      {draft.step === 3 ? (
-        <ReportSubmitBar
-          state={submitState}
-          errorMessage={submitError ?? undefined}
-          message={submitState === "submitting" ? "Menyimpan laporan ke server..." : undefined}
-          canSubmitPhotos={photoQueue.submitReadiness.ready}
-          photoReadinessReason={photoQueue.submitReadiness.reason}
-          onConfirmSubmit={() => form.handleSubmit(handleValidSubmit)()}
-        />
-      ) : (
-        <div className="sticky bottom-20 z-20 space-y-2 rounded-2xl border border-border bg-surface p-3 shadow-lg">
-          {draft.step === 2 && !canContinueToReview && <p role="status" className="px-1 text-sm text-text-secondary">{photoQueue.submitReadiness.reason}</p>}
-          <Button
-            type="button"
-            className="min-h-12 w-full bg-primary text-base font-semibold text-primary-foreground"
-            disabled={isBusy || (draft.step === 2 && !canContinueToReview)}
-            onClick={() => void (draft.step === 1 ? goToPhotoStep() : draft.setStep(3))}
-          >
-            {!draft.draftReady ? "Memulihkan isian..." : preparingSession ? "Menyiapkan unggahan..." : draft.step === 1 ? "Lanjut ke Foto" : "Lanjut ke Konfirmasi"}
-          </Button>
-          {draft.step === 2 && <Button type="button" variant="outline" className="min-h-12 w-full" disabled={isBusy} onClick={() => draft.setStep(1)}>Kembali ke Keterangan</Button>}
-        </div>
-      )}
-
-      <ReportSuccessOverlay
-        isVisible={showSuccess}
-        submittedAt={submitted?.submittedAt ?? null}
-        timeZone={areaTask.timezone}
-        onClose={() => setShowSuccess(false)}
-        onExited={() => { if (submitted) router.replace("/field/reports"); }}
-      />
-    </div>
-  );
+  return <div className="report-form-theme space-y-4">
+    <ReportContextCard projectName={areaTask.projectName} areaName={areaTask.areaName} reportDate={reportDate} />
+    {draft.draftNotice && <p role="status" className="rounded-xl bg-status-warning-bg px-3 py-2 text-sm text-status-warning-fg">{draft.draftNotice}</p>}
+    {draft.storageWarning && <p role="alert" className="rounded-xl bg-status-danger-bg px-3 py-2 text-sm text-status-danger-fg">{draft.storageWarning}</p>}
+    <ReportStepIndicator step={draft.step} />
+    {stepError && <p role="alert" className="rounded-xl bg-status-danger-bg p-3 text-sm font-medium text-status-danger-fg">{stepError}</p>}
+    {draft.step === 1 && <><ReportTypeSwitch value={reportType} disabled={isBusy} onChange={(type) => form.setValue("reportType", type, { shouldValidate: true })} /><Card className="border border-border bg-surface"><CardContent className="space-y-5 pt-5">{reportType === "WORK" ? <WorkReportFields form={form} disabled={isBusy} /> : <NoWorkReportFields form={form} disabled={isBusy} />}</CardContent></Card></>}
+    {draft.step === 2 && <Card className="border border-border bg-surface"><CardContent className="pt-5"><PhotoUploadQueue items={photoQueue.items} disabled={isBusy} onAddFiles={photoQueue.addFiles} onRetry={(id) => { void photoQueue.retryPhoto(id); }} onCaptionChange={photoQueue.updateCaption} onRemove={photoQueue.removePhoto} /></CardContent></Card>}
+    {draft.step === 3 && <ReportReview values={form.getValues()} photos={photoQueue.items} signerName={user?.name ?? "Supervisor"} signerTitle={user?.jobTitle ?? "Supervisor Lapangan"} late={late} onEdit={(step) => { void stepper.goTo(STEP_IDS[step - 1]); }} />}
+    <ReportFooter step={draft.step} disabled={isBusy} onBack={() => { void stepper.prev(); }} onNext={() => void advance()} />
+    <ContextReviewDrawer open={confirmContext} onOpenChange={setConfirmContext} projectName={areaTask.projectName} areaName={areaTask.areaName} reportDate={formatReportDate(reportDate)} values={form.getValues()} photoCount={photoQueue.items.length} late={late} onContinue={onContextContinue} />
+    <FinalSubmitDialog open={confirmFinal} onOpenChange={setConfirmFinal} onConfirm={() => void sendReport()} busy={isBusy} />
+    <SubmissionScreen status={submissionStatus} message={submissionMessage} retryAllowed={retryAllowed} onRetry={() => void sendReport()} onCheck={() => void checkAfterUnknown()} progress={uploadProgress} />
+    <ReportSuccessOverlay isVisible={showSuccess} submittedAt={submitted?.at ?? null} timeZone={areaTask.timezone} onClose={() => setShowSuccess(false)} onExited={() => { if (submitted) router.replace("/field/reports"); }} />
+  </div>;
 }

@@ -7,7 +7,7 @@ export type ReportStatus = "SUBMITTED";
 export type WeatherType = "CERAH" | "BERAWAN" | "HUJAN";
 
 export interface ReportPhotoInput {
-  storageKey: string;
+  storedFileId: string;
   caption?: string | null;
   sortOrder: number;
   takenAt?: string | null;
@@ -15,8 +15,8 @@ export interface ReportPhotoInput {
 
 export interface DailyReportPhotoDto {
   id: string;
-  storageKey: string;
-  signedViewUrl: string;
+  storedFileId: string;
+  contentPath: string;
   caption: string | null;
   sortOrder: number;
   takenAt: string | null;
@@ -105,7 +105,7 @@ export interface ReportRevisionSnapshot {
   signedByTitle: string | null;
   photos: Array<{
     id: string;
-    storageKey: string;
+    storedFileId: string;
     caption: string | null;
     sortOrder: number;
     takenAt: string | null;
