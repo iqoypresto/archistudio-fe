@@ -75,6 +75,7 @@ export function CommsContent({ projectId, fixedDirection, surface = "office" }: 
       <PageHeader
         kicker={project ? `${project.code} · ${project.name}` : undefined}
         title={pageTitle}
+        hideTitle={surface === "field"}
         description={pageDescription}
         action={
           canMutate ? (

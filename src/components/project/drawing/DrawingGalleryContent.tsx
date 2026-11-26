@@ -48,6 +48,7 @@ export function DrawingGalleryContent({ projectId, surface = "office" }: { proje
       <PageHeader
         kicker={project ? `${project.code} · ${project.name}` : undefined}
         title="Drawing"
+        hideTitle={surface === "field"}
         description={
           canManage
             ? "Galeri gambar desain arsitektur proyek. Unggah file JPG, PNG, atau WebP (maks. 4 MB)."

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { FieldMainPageContent } from "./FieldMainPageContent";
-import { FieldMainPageHeader } from "./FieldMainPageHeader";
+import { FieldPageHeader } from "./FieldPageHeader";
 
 export function FieldMainPageLayout({
   headerContent,
@@ -13,7 +13,7 @@ export function FieldMainPageLayout({
 }) {
   return (
     <>
-      <FieldMainPageHeader>{headerContent}</FieldMainPageHeader>
+      <FieldPageHeader>{headerContent}</FieldPageHeader>
       <FieldMainPageContent overlap={overlap}>{children}</FieldMainPageContent>
     </>
   );

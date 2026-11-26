@@ -6,12 +6,18 @@ export function FieldMainPageContent({
   overlap = "standard",
 }: {
   children: ReactNode;
-  overlap?: "standard" | "raised";
+  overlap?: "standard" | "raised" | "extra-raised";
 }) {
+  const overlapClass = overlap === "extra-raised"
+    ? "-mt-[5.25rem]"
+    : overlap === "raised"
+      ? "-mt-20"
+      : "-mt-17";
+
   return (
     <div className={cn(
       "relative z-10 min-h-[70dvh] rounded-t-[2rem] bg-[var(--project-canvas)] px-4 pb-8 pt-6 [&_button]:min-h-12",
-      overlap === "raised" ? "-mt-20" : "-mt-17",
+      overlapClass,
     )}>
       {children}
     </div>

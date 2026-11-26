@@ -31,16 +31,18 @@ export function ReportDetailContent({
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link
-          href={backHref}
-          className={cn(
-            buttonVariants({ variant: "outline", size: "sm" }),
-            "h-9 gap-1.5 border-border bg-surface px-3 text-xs text-text-secondary hover:bg-surface-active hover:text-text-primary",
-          )}
-        >
-          <ArrowLeft className="size-3.5" />
-          Kembali ke Daftar
-        </Link>
+        {surface !== "field" && (
+          <Link
+            href={backHref}
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "h-9 gap-1.5 border-border bg-surface px-3 text-xs text-text-secondary hover:bg-surface-active hover:text-text-primary",
+            )}
+          >
+            <ArrowLeft className="size-3.5" />
+            Kembali ke Daftar
+          </Link>
+        )}
 
         {canRevise && (
           <Button

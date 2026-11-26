@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowDownLeft, ArrowLeft, ArrowRight, ArrowUpRight, FileImage, MapPin, User } from "lucide-react";
+import { ArrowDownLeft, ArrowRight, ArrowUpRight, FileImage, MapPin, User } from "lucide-react";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { isCommsAllowedRole } from "@/lib/utils/role";
 import { projectStatusLabel } from "@/lib/utils/project-status";
@@ -21,9 +21,6 @@ export function SupervisorProjectDetail({ project, areas, isLoading, isError, er
   const isSiteManager = role === "SITE_MANAGER";
 
   return <div className="space-y-5">
-    <Link href="/field/projects" className="inline-flex min-h-12 items-center gap-2 text-sm font-semibold text-primary">
-      <ArrowLeft className="size-5" /> Project Saya
-    </Link>
     <AsyncStateView isLoading={isLoading} isError={isError} error={error} data={project}
       onRetry={onRetry} emptyTitle="Project tidak ditemukan">
       {(item) => <>
