@@ -16,6 +16,8 @@ export interface PaymentPayeeSummary {
   totalPaid: number;
   totalUnpaid: number;
   latestRecordDate: string | null;
+  overdueUnpaidCount?: number;
+  nearestDueDate?: string | null;
 }
 
 export interface PaymentPayeeItem {

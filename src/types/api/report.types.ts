@@ -1,4 +1,6 @@
 import type { PaginatedResponse } from "@/types/api";
+import type { UserRole } from "./auth.types";
+import type { ProjectStatus } from "./project.types";
 
 export type ReportType = "WORK" | "NO_WORK";
 export type ReportStatus = "SUBMITTED";
@@ -45,8 +47,15 @@ export interface DailyReportListItem {
   signedByTitle: string | null;
   photoCount: number;
   area: { id: string; code: string; name: string };
-  project: { id: string; code: string; name: string; timezone: string };
-  supervisor: { id: string; name: string; jobTitle: string };
+  project: {
+    id: string;
+    code: string;
+    name: string;
+    timezone: string;
+    status?: ProjectStatus;
+    archivedAt?: string | null;
+  };
+  supervisor: { id: string; name: string; jobTitle: string; role?: UserRole };
 }
 
 export interface DailyReportDetail extends DailyReportListItem {
@@ -71,6 +80,7 @@ export interface ListReportsQuery {
   areaId?: string;
   supervisorId?: string;
   scope?: "own" | "team";
+  archiveState?: "active" | "archived" | "all";
   reportDate?: string;
   dateFrom?: string;
   dateTo?: string;
@@ -124,7 +134,7 @@ export interface SubmitReportPayload {
 export type PaginatedReportsResponse = PaginatedResponse<DailyReportListItem>;
 
 export type ListArchivedReportsQuery = Pick<ListReportsQuery,
-  "page" | "pageSize" | "projectId" | "areaId" | "dateFrom" | "dateTo" | "sortBy" | "sortOrder"
+  "page" | "pageSize" | "search" | "projectId" | "areaId" | "dateFrom" | "dateTo" | "reportType" | "isLate" | "sortBy" | "sortOrder"
 >;
 export interface ArchivedDailyReportListItem extends DailyReportListItem {
   status: "SUBMITTED";

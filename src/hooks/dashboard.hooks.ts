@@ -15,11 +15,15 @@ export const DASHBOARD_QUERY_KEYS = {
     ["dashboard", "supervisor-lateness", params] as const,
 };
 
-export function useDashboardSummary(params: DashboardSummaryParams) {
+export function useDashboardSummary(
+  params: DashboardSummaryParams,
+  options: { enabled?: boolean } = {},
+) {
   return useQuery({
     queryKey: DASHBOARD_QUERY_KEYS.summary(params),
     queryFn: () => dashboardApi.getDashboardSummary(params),
     placeholderData: keepPreviousData,
+    enabled: options.enabled ?? true,
   });
 }
 

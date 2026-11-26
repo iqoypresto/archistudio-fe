@@ -44,8 +44,10 @@ export function MemberContent() {
   const [userToToggleStatus, setUserToToggleStatus] = useState<UserListItem | null>(null);
 
   const usersQuery = useUsersQuery(filters);
-  const activeCount = usersQuery.data?.data.filter((u) => u.isActive).length ?? 0;
-  const inactiveCount = usersQuery.data?.data.filter((u) => !u.isActive).length ?? 0;
+  const summary = usersQuery.data?.summary;
+  const activeCount = summary?.active ?? usersQuery.data?.data.filter((u) => u.isActive).length ?? 0;
+  const inactiveCount =
+    summary?.inactive ?? usersQuery.data?.data.filter((u) => !u.isActive).length ?? 0;
 
   const createMutation = useCreateUserMutation(() => setIsFormModalOpen(false));
   const updateMutation = useUpdateUserMutation(() => {
@@ -97,11 +99,17 @@ export function MemberContent() {
           }
           items={ROLE_TABS.map((t) => ({
             ...t,
-            count: t.value === activeRoleTab ? usersQuery.data?.meta.totalItems : undefined,
+            count: summary
+              ? t.value === "ALL"
+                ? summary.total
+                : summary.byRole[t.value]
+              : t.value === activeRoleTab
+                ? usersQuery.data?.meta.totalItems
+                : undefined,
           }))}
           rightSlot={
             usersQuery.data
-              ? `${activeCount} aktif · ${inactiveCount} nonaktif (halaman ini)`
+              ? `${activeCount} aktif · ${inactiveCount} nonaktif${summary ? "" : " (halaman ini)"}`
               : undefined
           }
         />

@@ -1,9 +1,13 @@
+import type { UserRole } from "./auth.types";
+
 export interface SupervisorSummary {
   id: string;
   name: string;
   username: string;
   phone: string;
   jobTitle: string;
+  role?: UserRole;
+  isActive?: boolean;
 }
 
 export interface ActiveAssignmentInfo {

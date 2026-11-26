@@ -37,6 +37,8 @@ export function DrawingPreviewModal({ drawing, onClose }: DrawingPreviewModalPro
             <StoredFileImage
               contentPath={drawing.contentPath}
               alt={drawing.fileName}
+              variant="full"
+              eager
               className="max-h-[65vh] w-full object-contain"
               fallbackClassName="min-h-64 w-full"
             />

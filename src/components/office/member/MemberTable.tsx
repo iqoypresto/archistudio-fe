@@ -48,12 +48,20 @@ export function MemberTable({
     {
       key: "role",
       header: "Peran & Jabatan",
-      cell: (row) => (
-        <div className="space-y-0.5">
-          <p className="text-[13px] font-medium text-text-primary">{getRoleLabel(row.role)}</p>
-          <p className="text-xs text-text-muted">{row.jobTitle || "-"}</p>
-        </div>
-      ),
+      cell: (row) => {
+        const workloadParts: string[] = [];
+        if (row.managedProjectCount) workloadParts.push(`${row.managedProjectCount} proyek`);
+        if (row.activeAreaCount) workloadParts.push(`${row.activeAreaCount} area aktif`);
+        return (
+          <div className="space-y-0.5">
+            <p className="text-[13px] font-medium text-text-primary">{getRoleLabel(row.role)}</p>
+            <p className="text-xs text-text-muted">
+              {row.jobTitle || "-"}
+              {workloadParts.length > 0 ? ` · ${workloadParts.join(" · ")}` : ""}
+            </p>
+          </div>
+        );
+      },
     },
     {
       key: "phone",

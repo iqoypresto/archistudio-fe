@@ -75,6 +75,7 @@ export function PaymentPayeeList({
             {items.map((person) => {
               const isActive = person.id === activePersonId;
               const hasUnpaid = person.summary.unpaidCount > 0;
+              const overdueCount = person.summary.overdueUnpaidCount ?? 0;
               return (
                 <button
                   key={person.id}
@@ -101,12 +102,18 @@ export function PaymentPayeeList({
                     <span
                       className={cn(
                         "shrink-0 text-[11px] font-medium",
-                        hasUnpaid ? "text-status-warning-fg" : "text-text-muted",
+                        overdueCount > 0
+                          ? "text-status-danger-fg"
+                          : hasUnpaid
+                            ? "text-status-warning-fg"
+                            : "text-text-muted",
                       )}
                     >
-                      {hasUnpaid
-                        ? `${person.summary.unpaidCount} belum lunas`
-                        : `${person.summary.recordCount} lunas`}
+                      {overdueCount > 0
+                        ? `${overdueCount} jatuh tempo`
+                        : hasUnpaid
+                          ? `${person.summary.unpaidCount} belum lunas`
+                          : `${person.summary.recordCount} lunas`}
                     </span>
                   </div>
                   <p className="text-xs text-text-muted">{person.phone ?? "Tanpa nomor HP"}</p>

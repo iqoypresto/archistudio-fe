@@ -32,6 +32,9 @@ export function ConfirmToggleStatusDialog({
 
   const isCurrentlyActive = targetUser.isActive;
   const targetNextState = !isCurrentlyActive;
+  const activeAreas = targetUser.activeAreaCount ?? 0;
+  const managedProjects = targetUser.managedProjectCount ?? 0;
+  const hasActiveWorkload = isCurrentlyActive && (activeAreas > 0 || managedProjects > 0);
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -52,6 +55,19 @@ export function ConfirmToggleStatusDialog({
           title={targetUser.name}
           meta={`@${targetUser.username} · ${targetUser.phone || "-"}`}
         />
+
+        {hasActiveWorkload && (
+          <ModalNoteBox tone="danger">
+            Akun ini masih memegang{" "}
+            {[
+              managedProjects > 0 ? `${managedProjects} proyek aktif sebagai Site Manager` : null,
+              activeAreas > 0 ? `${activeAreas} area aktif` : null,
+            ]
+              .filter(Boolean)
+              .join(" dan ")}
+            . Pastikan segera mengganti penanggung jawabnya agar pelaporan harian tidak terhenti.
+          </ModalNoteBox>
+        )}
 
         <ModalNoteBox>
           {isCurrentlyActive

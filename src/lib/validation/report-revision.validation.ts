@@ -1,5 +1,6 @@
 import * as z from "zod";
 import type { UserRole } from "@/types/api/auth.types";
+import type { ProjectStatus } from "@/types/api/project.types";
 import type {
   ReportRevisionSnapshot,
   ReportStatus,
@@ -22,12 +23,15 @@ export const reviseReportSchema = z.object({
 
 export type ReviseReportFormValues = z.infer<typeof reviseReportSchema>;
 
-/** Hanya OWNER yang boleh merevisi laporan berstatus SUBMITTED (BR-02, BR-24). */
+/** Hanya OWNER yang boleh merevisi laporan SUBMITTED pada proyek aktif non-arsip (BR-02, BR-12, BR-24, BR-39). */
 export function canOwnerReviseReport(
   role?: UserRole | null,
-  status?: ReportStatus | null
+  status?: ReportStatus | null,
+  project?: { status?: ProjectStatus; archivedAt?: string | null } | null,
 ): boolean {
-  return role === "OWNER" && status === "SUBMITTED";
+  if (role !== "OWNER" || status !== "SUBMITTED") return false;
+  if (project?.status === "SELESAI" || Boolean(project?.archivedAt)) return false;
+  return true;
 }
 
 /** Mem-parsing snapshot JSON versi lama secara aman (ADR-05). */

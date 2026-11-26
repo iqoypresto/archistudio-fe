@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Edit3 } from "lucide-react";
+import { ArrowLeft, Edit3, Info } from "lucide-react";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { useReportDetailQuery } from "@/hooks/report.hooks";
@@ -26,7 +26,12 @@ export function ReportDetailContent({
   const userRole = useAuthStore((state) => state.user?.role);
   const detailQuery = useReportDetailQuery(reportId, surface);
   const report = detailQuery.data;
-  const canRevise = Boolean(report && canOwnerReviseReport(userRole, report.status));
+  const isProjectArchived = Boolean(
+    report && (report.project.status === "SELESAI" || Boolean(report.project.archivedAt)),
+  );
+  const canRevise = Boolean(
+    report && canOwnerReviseReport(userRole, report.status, report.project),
+  );
 
   return (
     <div className="space-y-5">
@@ -57,6 +62,15 @@ export function ReportDetailContent({
         )}
       </div>
 
+      {userRole === "OWNER" && isProjectArchived && surface === "office" && (
+        <div className="flex items-start gap-2.5 rounded-xl border border-border bg-surface px-4 py-3 text-xs text-text-secondary">
+          <Info className="mt-0.5 size-4 shrink-0 text-text-muted" />
+          <span>
+            Proyek ini berada di Archive sehingga laporan bersifat baca saja. Pulihkan proyek terlebih dahulu bila perlu melakukan revisi.
+          </span>
+        </div>
+      )}
+
       <AsyncStateView
         isLoading={detailQuery.isLoading}
         isError={detailQuery.isError}
@@ -67,8 +81,8 @@ export function ReportDetailContent({
       >
         {(loadedReport) => (
           <>
-            <ReportDetailView report={loadedReport} />
-            {userRole === "OWNER" && loadedReport.status === "SUBMITTED" && (
+            <ReportDetailView report={loadedReport} surface={surface} />
+            {canRevise && (
               <OwnerReviseReportModal
                 key={`${loadedReport.id}:${loadedReport.revisionNo}`}
                 report={loadedReport}

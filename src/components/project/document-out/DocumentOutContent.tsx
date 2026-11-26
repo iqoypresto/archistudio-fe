@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ChangeEvent } from "react";
+import { useMemo, useState, type ChangeEvent } from "react";
 import { ExternalLink, FileText, Loader2, Upload } from "lucide-react";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { Button } from "@/components/ui/button";
@@ -34,9 +34,23 @@ export function DocumentOutContent({ projectId }: { projectId: string }) {
     role,
     project,
   );
-  const docsQuery = useProjectDocumentsQuery(projectId, { type: activeType }, { enabled: canView });
+  const docsQuery = useProjectDocumentsQuery(projectId, undefined, { enabled: canView });
   const deleteMutation = useDeleteProjectDocumentMutation(projectId, () => setDocToDelete(null));
   const { uploadFiles, isUploading } = useProjectDocumentUpload(projectId);
+
+  const allDocs = useMemo(() => docsQuery.data ?? [], [docsQuery.data]);
+  const countsByType = useMemo(
+    () => ({
+      QUOTATION: allDocs.filter((doc) => doc.type === "QUOTATION").length,
+      BAST: allDocs.filter((doc) => doc.type === "BAST").length,
+      INVOICE: allDocs.filter((doc) => doc.type === "INVOICE").length,
+    }),
+    [allDocs],
+  );
+  const visibleDocs = useMemo(
+    () => allDocs.filter((doc) => doc.type === activeType),
+    [allDocs, activeType],
+  );
 
   if (!canView) {
     return (
@@ -95,16 +109,16 @@ export function DocumentOutContent({ projectId }: { projectId: string }) {
           onChange={setActiveType}
           items={DOC_TABS.map((t) => ({
             ...t,
-            count: t.value === activeType ? docsQuery.data?.length : undefined,
+            count: docsQuery.data ? countsByType[t.value] : undefined,
           }))}
-          rightSlot={`${docsQuery.data?.length ?? 0} file ${activeLabel}`}
+          rightSlot={`${visibleDocs.length} file ${activeLabel}`}
         />
 
         <AsyncStateView
           isLoading={docsQuery.isLoading}
           isError={docsQuery.isError}
           error={docsQuery.error}
-          data={docsQuery.data}
+          data={docsQuery.data ? visibleDocs : undefined}
           isEmpty={(items) => items.length === 0}
           onRetry={() => docsQuery.refetch()}
           emptyTitle={`Belum ada file ${activeLabel}`}

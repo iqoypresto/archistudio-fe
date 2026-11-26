@@ -8,6 +8,7 @@ import { useLogoutMutation } from "@/hooks/auth.hooks";
 import { useProjectDetailQuery } from "@/hooks/project.hooks";
 import { useAuthStore } from "@/stores/auth.store";
 import { useSidebarNavStore } from "@/stores/sidebar-nav.store";
+import { FloatingAddProjectButton } from "./FloatingAddProjectButton";
 import { OfficeSidebar } from "./OfficeSidebar";
 
 export function OfficeAppShell({ children, projectId: propProjectId }: { children: ReactNode; projectId?: string }) {
@@ -59,9 +60,10 @@ export function OfficeAppShell({ children, projectId: propProjectId }: { childre
           <div className="px-4 pt-4 sm:px-6">
             <SidebarTrigger />
           </div>
-          <main className="mx-auto w-full max-w-7xl flex-1 p-4 sm:p-6">{content}</main>
+          <main className="mx-auto w-full max-w-7xl flex-1 p-4 pb-24 sm:p-6 sm:pb-24">{content}</main>
         </SidebarInset>
       </div>
+      <FloatingAddProjectButton role={user?.role} />
     </SidebarProvider>
   );
 }

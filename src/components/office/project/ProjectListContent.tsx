@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FolderPlus } from "lucide-react";
+import { getOfficeProjectDetailHref } from "@/components/layout/floating-add-project.helpers";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -33,6 +35,7 @@ const STATUS_TABS: readonly { value: ProjectStatusTab; label: string }[] = [
 ];
 
 export function ProjectListContent() {
+  const router = useRouter();
   const role = useAuthStore((state) => state.user?.role);
   const canManage = role === "OWNER" || role === "ADMIN";
   const canArchive = role === "OWNER";
@@ -47,7 +50,10 @@ export function ProjectListContent() {
   const [projectToArchive, setProjectToArchive] = useState<ProjectListItem | null>(null);
 
   const projectsQuery = useProjectsQuery(filters);
-  const createMutation = useCreateProjectMutation(() => setIsFormModalOpen(false));
+  const createMutation = useCreateProjectMutation((createdProject) => {
+    setIsFormModalOpen(false);
+    router.push(getOfficeProjectDetailHref(createdProject.id));
+  });
   const updateMutation = useUpdateProjectMutation(() => {
     setIsFormModalOpen(false);
     setProjectToEdit(null);
@@ -59,6 +65,7 @@ export function ProjectListContent() {
   };
 
   const activeTab: ProjectStatusTab = filters.status ?? "ALL";
+  const statusCounts = projectsQuery.data?.statusCounts;
 
   return (
     <div className="space-y-5">
@@ -94,7 +101,13 @@ export function ProjectListContent() {
           }
           items={STATUS_TABS.map((t) => ({
             ...t,
-            count: t.value === activeTab ? projectsQuery.data?.meta.totalItems : undefined,
+            count: statusCounts
+              ? t.value === "ALL"
+                ? statusCounts.all
+                : statusCounts[t.value]
+              : t.value === activeTab
+                ? projectsQuery.data?.meta.totalItems
+                : undefined,
           }))}
           rightSlot={
             <span>

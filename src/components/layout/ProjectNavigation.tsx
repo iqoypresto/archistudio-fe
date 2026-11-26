@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown, FolderKanban } from "lucide-react";
-import { MotionConfig, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, MotionConfig, motion, useReducedMotion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import {
   SidebarGroup,
@@ -85,7 +85,7 @@ export function ProjectNavigation({
           type="button"
           variant="ghost"
           aria-expanded={isOpen}
-          aria-controls={`${layoutGroupId}-panel`}
+          aria-controls={isOpen ? `${layoutGroupId}-panel` : undefined}
           onClick={toggleSection}
           title={isCollapsed ? "Project" : undefined}
           className={cn(
@@ -101,46 +101,49 @@ export function ProjectNavigation({
             <ChevronDown className={cn("size-4 transition-transform motion-reduce:transition-none", isOpen && "rotate-180")} />
           )}
         </Button>
-        <motion.div
-          id={`${layoutGroupId}-panel`}
-          aria-hidden={!isOpen}
-          inert={!isOpen}
-          initial={false}
-          animate={isOpen ? "open" : "closed"}
-          variants={{ open: { height: "auto", opacity: 1 }, closed: { height: 0, opacity: 0 } }}
-          transition={{ duration: reduceMotion ? 0 : 0.2, ease: "easeInOut" }}
-          className="ml-3 mt-1 overflow-hidden border-l border-border pl-3"
-        >
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                nativeButton={false}
-                render={<Link href={projectRoot} prefetch={false} onClick={onNavigate} aria-current={isProjectList ? "page" : undefined} />}
-                isActive={isProjectList}
-                title={isCollapsed ? "Semua Project" : undefined}
-                className={cn(largeTouchTarget && "min-h-12", isProjectList && "bg-primary-soft")}
+        {!isCollapsed && (
+          <AnimatePresence initial={false}>
+            {isOpen && (
+              <motion.div
+                id={`${layoutGroupId}-panel`}
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: reduceMotion ? 0 : 0.2, ease: "easeInOut" }}
+                className="ml-3 mt-1 overflow-hidden border-l border-border pl-3"
               >
-                {!isCollapsed && <span className="truncate">Semua Project</span>}
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-          <div className="mt-2 border-t border-border pt-2">
-            {isOpen && <ProjectSwitcher activeProject={activeProject} onNavigate={onNavigate} role={role} compact />}
-            {projectId && isOpen ? (
-              <div className="mt-2">
-                <ProjectNavList
-                  groups={projectGroups}
-                  onNavigate={onNavigate}
-                  largeTouchTarget={largeTouchTarget}
-                  layoutGroupId={`${layoutGroupId}-details`}
-                  resetKey={projectId}
-                />
-              </div>
-            ) : !projectId && isOpen ? (
-              <p className="px-3 py-2 text-xs text-text-muted">Pilih project untuk membuka menunya.</p>
-            ) : null}
-          </div>
-        </motion.div>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      nativeButton={false}
+                      render={<Link href="/projects" prefetch={false} onClick={onNavigate} aria-current={isProjectList ? "page" : undefined} />}
+                      isActive={isProjectList}
+                      className={cn(largeTouchTarget && "min-h-12", isProjectList && "bg-primary-soft")}
+                    >
+                      <span className="truncate">Semua Project</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+                <div className="mt-2 border-t border-border pt-2">
+                  <ProjectSwitcher activeProject={activeProject} onNavigate={onNavigate} role={role} compact />
+                  {projectId ? (
+                    <div className="mt-2">
+                      <ProjectNavList
+                        groups={projectGroups}
+                        onNavigate={onNavigate}
+                        largeTouchTarget={largeTouchTarget}
+                        layoutGroupId={`${layoutGroupId}-details`}
+                        resetKey={projectId}
+                      />
+                    </div>
+                  ) : (
+                    <p className="px-3 py-2 text-xs text-text-muted">Pilih project untuk membuka menunya.</p>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )}
       </SidebarGroup>
     </MotionConfig>
   );

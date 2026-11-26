@@ -22,7 +22,7 @@ export function resolveAreaStatusBadgeTone(
   status: AreaDailyStatusType,
 ): "success" | "warning" | "danger" | "muted" {
   if (status === "TERKIRIM") return "success";
-  if (status === "TERLAMBAT") return "warning";
+  if (status === "TERLAMBAT" || status === "BELUM_DITUGASKAN") return "warning";
   if (status === "BELUM_LAPOR") return "danger";
   return "muted";
 }

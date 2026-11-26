@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatIdDate, formatTimeInTimezone } from "@/lib/utils/office-format";
+import { getRoleLabel } from "@/lib/utils/role";
 import { resolveAreaStatusBadgeTone } from "@/lib/validation/dashboard.validation";
 import type { AreaDailyStatusType, DashboardAreaStatusItem } from "@/types/api/dashboard.types";
 
@@ -24,13 +25,17 @@ const STATUS_LABEL: Record<AreaDailyStatusType, string> = {
   TERLAMBAT: "Diunggah Terlambat",
   BELUM_LAPOR: "Belum Lapor",
   LIBUR_RUTIN: "Libur Rutin",
+  BELUM_DITUGASKAN: "Belum Ditugaskan",
+  DI_LUAR_JADWAL: "Di Luar Jadwal",
 };
 
 const STATUS_PRIORITY: Record<AreaDailyStatusType, number> = {
   BELUM_LAPOR: 1,
   TERLAMBAT: 2,
-  TERKIRIM: 3,
-  LIBUR_RUTIN: 4,
+  BELUM_DITUGASKAN: 3,
+  TERKIRIM: 4,
+  LIBUR_RUTIN: 5,
+  DI_LUAR_JADWAL: 6,
 };
 
 function sortAreas(items: DashboardAreaStatusItem[]): DashboardAreaStatusItem[] {
@@ -97,10 +102,19 @@ export function DashboardAreaTable({ areas, onOpenUnlockModal }: DashboardAreaTa
                       <p className="text-[13px] font-medium text-text-primary">
                         {area.supervisor.name}
                       </p>
-                      <p className="mt-0.5 text-xs text-text-muted">{area.supervisor.jobTitle}</p>
+                      <p className="mt-0.5 text-xs text-text-muted">
+                        {area.supervisor.role
+                          ? `${getRoleLabel(area.supervisor.role)} · ${area.supervisor.jobTitle}`
+                          : area.supervisor.jobTitle}
+                      </p>
+                      {area.supervisor.isActive === false && (
+                        <p className="mt-0.5 text-[11px] font-medium text-status-danger-fg">
+                          Akun nonaktif · perlu diganti
+                        </p>
+                      )}
                     </>
                   ) : (
-                    <span className="text-xs text-text-muted">Belum ditugaskan</span>
+                    <span className="text-xs text-status-warning-fg">Belum ditugaskan</span>
                   )}
                 </TableCell>
                 <TableCell className="px-4 py-3">
@@ -136,7 +150,7 @@ export function DashboardAreaTable({ areas, onOpenUnlockModal }: DashboardAreaTa
                 </TableCell>
                 <TableCell className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-2">
-                    {area.isOverdueMoreThan3Days && (
+                    {area.isOverdueMoreThan3Days && Boolean(area.supervisor) && (
                       <Button
                         type="button"
                         size="sm"

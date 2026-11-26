@@ -28,11 +28,13 @@ export function PaymentWorkspaceContent({ payeeType }: { payeeType: PayeeType })
   const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
   const [recordToEdit, setRecordToEdit] = useState<PaymentRecordItem | null>(null);
 
+  const allPeopleQuery = usePaymentPeopleQuery({ type: payeeType }, { enabled: allowed });
   const peopleQuery = usePaymentPeopleQuery(
     { type: payeeType, search: search.trim() || undefined },
     { enabled: allowed },
   );
 
+  const allPeople = useMemo(() => allPeopleQuery.data ?? [], [allPeopleQuery.data]);
   const people = useMemo(() => peopleQuery.data ?? [], [peopleQuery.data]);
   const selectedPayee = useMemo(
     () => people.find((item) => item.id === selectedPersonId) ?? people[0] ?? null,
@@ -42,16 +44,17 @@ export function PaymentWorkspaceContent({ payeeType }: { payeeType: PayeeType })
 
   const globalTotals = useMemo(
     () =>
-      people.reduce(
+      allPeople.reduce(
         (acc, person) => ({
           totalPaid: acc.totalPaid + person.summary.totalPaid,
           totalUnpaid: acc.totalUnpaid + person.summary.totalUnpaid,
           paidCount: acc.paidCount + person.summary.paidCount,
           unpaidCount: acc.unpaidCount + person.summary.unpaidCount,
+          overdueUnpaidCount: acc.overdueUnpaidCount + (person.summary.overdueUnpaidCount ?? 0),
         }),
-        { totalPaid: 0, totalUnpaid: 0, paidCount: 0, unpaidCount: 0 },
+        { totalPaid: 0, totalUnpaid: 0, paidCount: 0, unpaidCount: 0, overdueUnpaidCount: 0 },
       ),
-    [people],
+    [allPeople],
   );
 
   const recordsQuery = usePayeeRecordsQuery(
@@ -97,7 +100,7 @@ export function PaymentWorkspaceContent({ payeeType }: { payeeType: PayeeType })
         <div className="rounded-xl border border-border bg-surface p-4">
           <p className="text-xs text-text-secondary">Total {label} Tercatat</p>
           <p className="mt-2 text-2xl font-semibold tracking-tight text-text-primary">
-            {people.length}
+            {allPeople.length}
           </p>
           <p className="mt-1 text-xs text-text-muted">
             {globalTotals.paidCount + globalTotals.unpaidCount} catatan pembayaran
@@ -107,12 +110,21 @@ export function PaymentWorkspaceContent({ payeeType }: { payeeType: PayeeType })
           <p className="text-xs text-text-secondary">Total Belum Dibayar</p>
           <p
             className={`mt-2 text-2xl font-semibold tracking-tight ${
-              globalTotals.totalUnpaid > 0 ? "text-status-warning-fg" : "text-text-primary"
+              globalTotals.overdueUnpaidCount > 0
+                ? "text-status-danger-fg"
+                : globalTotals.totalUnpaid > 0
+                  ? "text-status-warning-fg"
+                  : "text-text-primary"
             }`}
           >
             {formatCurrencyIdr(globalTotals.totalUnpaid)}
           </p>
-          <p className="mt-1 text-xs text-text-muted">{globalTotals.unpaidCount} tagihan menunggu</p>
+          <p className="mt-1 text-xs text-text-muted">
+            {globalTotals.unpaidCount} tagihan menunggu
+            {globalTotals.overdueUnpaidCount > 0
+              ? ` · ${globalTotals.overdueUnpaidCount} melewati jatuh tempo`
+              : ""}
+          </p>
         </div>
         <div className="rounded-xl border border-border bg-surface p-4">
           <p className="text-xs text-text-secondary">Total Sudah Dibayar</p>

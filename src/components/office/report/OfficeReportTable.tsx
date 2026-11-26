@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { ServerDataTable, type DataColumn } from "@/components/ui/ServerDataTable";
 import { StatusIndicator } from "@/components/ui/StatusIndicator";
 import { formatIdDate, formatTimeInTimezone } from "@/lib/utils/office-format";
+import { getRoleLabel } from "@/lib/utils/role";
 import type { PaginationMeta } from "@/types/api";
 import type { DailyReportListItem } from "@/types/api/report.types";
 
@@ -38,10 +39,17 @@ function buildColumns(showArchivedAt: boolean): DataColumn<DailyReportListItem>[
     },
     {
       key: "supervisor",
-      header: "Supervisor & Tipe",
+      header: "Pengawas & Tipe",
       cell: (row) => (
         <div className="space-y-0.5">
-          <p className="text-[13px] font-medium text-text-primary">{row.supervisor.name}</p>
+          <p className="text-[13px] font-medium text-text-primary">
+            {row.supervisor.name}
+            {row.supervisor.role === "SITE_MANAGER" && (
+              <span className="ml-1.5 text-xs font-normal text-text-muted">
+                ({getRoleLabel(row.supervisor.role)})
+              </span>
+            )}
+          </p>
           <p className="text-xs text-text-muted">
             {row.reportType === "WORK" ? "Ada Pekerjaan" : "Tanpa Pekerjaan"} · {row.photoCount}{" "}
             foto

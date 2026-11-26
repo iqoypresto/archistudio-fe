@@ -20,8 +20,14 @@ describe("TASK-09 Frontend Revision Validation, Role Guard & Snapshot Parser", (
     assert.equal(valid.workerCount, 10);
   });
 
-  it("[BR-02 / BR-24] mengizinkan tombol revisi hanya bagi OWNER pada laporan SUBMITTED", () => {
+  it("[BR-02 / BR-12 / BR-24 / BR-39] mengizinkan tombol revisi hanya bagi OWNER pada laporan SUBMITTED di proyek aktif non-arsip", () => {
     assert.equal(canOwnerReviseReport("OWNER", "SUBMITTED"), true);
+    assert.equal(canOwnerReviseReport("OWNER", "SUBMITTED", { status: "BERJALAN", archivedAt: null }), true);
+    assert.equal(canOwnerReviseReport("OWNER", "SUBMITTED", { status: "SELESAI", archivedAt: null }), false);
+    assert.equal(
+      canOwnerReviseReport("OWNER", "SUBMITTED", { status: "BERJALAN", archivedAt: "2026-11-20T00:00:00.000Z" }),
+      false,
+    );
     assert.equal(canOwnerReviseReport("ADMIN", "SUBMITTED"), false);
     assert.equal(canOwnerReviseReport("SUPERVISOR", "SUBMITTED"), false);
   });

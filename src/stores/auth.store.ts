@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { clearStoredFileCache } from "@/lib/api/file-cache";
 import { isFieldRole } from "@/lib/utils/role";
 import type { AuthUserProfile, UserRole } from "@/types/api/auth.types";
 
@@ -76,6 +77,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isHydrated: false,
 
   setSession: (payload) => {
+    const previousUserId = get().user?.id;
+    if (previousUserId && previousUserId !== payload.user.id) {
+      clearStoredFileCache();
+    }
     writeStorage(payload);
     set({
       accessToken: payload.accessToken,
@@ -102,6 +107,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   clearSession: () => {
+    clearStoredFileCache();
     writeStorage(null);
     set({ accessToken: null, refreshToken: null, user: null, isHydrated: true });
   },

@@ -57,7 +57,7 @@ describe("TASK-16 Frontend Pembayaran Freelance/Agent — Validation, Guard & AP
     assert.equal(canAccessPayments(undefined), false);
   });
 
-  it("[API Client / US-17] paymentApi memanggil endpoint payments & uploads/sign purpose payment-proof", async () => {
+  it("[API Client / US-17] paymentApi memanggil endpoint payments & alur sesi upload payment-proof", async () => {
     const calls: string[] = [];
 
     api.defaults.adapter = async (config) => {
@@ -65,19 +65,48 @@ describe("TASK-16 Frontend Pembayaran Freelance/Agent — Validation, Guard & AP
       const url = config.url ?? "";
       calls.push(`${method} ${url}`);
 
-      if (url === "/office/uploads/sign") {
+      if (url === "/office/uploads/sessions") {
         return {
           data: {
             success: true,
             message: "OK",
             data: {
-              uploadUrl: "https://r2.local/upload",
-              storageKey: "payments/p-1/proofs/1.jpg",
-              expiresInSeconds: 300,
-              purpose: "payment-proof",
+              storedFileId: "sf-proof-1",
+              uploadSessionId: "us-proof-1",
+              chunkSizeBytes: 4 * 1024 * 1024,
+              expiresAt: "2026-11-21T00:00:00.000Z",
               fileName: "bukti.jpg",
               contentType: "image/jpeg",
-              fileSizeBytes: 1024,
+              fileSizeBytes: 4,
+            },
+          },
+          status: 201,
+          statusText: "Created",
+          headers: {},
+          config,
+        };
+      }
+      if (url === "/office/uploads/sessions/us-proof-1/chunks") {
+        return {
+          data: { success: true, message: "OK", data: { nextOffsetBytes: 4 } },
+          status: 200,
+          statusText: "OK",
+          headers: {},
+          config,
+        };
+      }
+      if (url === "/office/uploads/sessions/us-proof-1/complete") {
+        return {
+          data: {
+            success: true,
+            message: "OK",
+            data: {
+              storedFileId: "sf-proof-1",
+              uploadSessionId: "us-proof-1",
+              fileName: "bukti.jpg",
+              contentType: "image/jpeg",
+              fileSizeBytes: 4,
+              uploadedAt: "2026-11-20T00:00:00.000Z",
             },
           },
           status: 200,
@@ -96,26 +125,24 @@ describe("TASK-16 Frontend Pembayaran Freelance/Agent — Validation, Guard & AP
       };
     };
 
+    const proofFile = new File(["jpg1"], "bukti.jpg", { type: "image/jpeg" });
     await paymentApi.getPeople({ type: "FREELANCE" });
     await paymentApi.createPerson({ type: "FREELANCE", name: "Budi", phone: null });
     await paymentApi.getRecords("p-1");
     await paymentApi.createRecord("p-1", { status: "UNPAID", amount: 500000, recordDate: "2026-11-20" });
     await paymentApi.updateRecord("rec-1", { status: "PAID" });
-    const signed = await paymentApi.signProofUpload({
-      payeeId: "p-1",
-      fileName: "bukti.jpg",
-      contentType: "image/jpeg",
-      fileSizeBytes: 1024,
-    });
+    const uploaded = await paymentApi.uploadProof("p-1", proofFile, "image/jpeg");
 
-    assert.equal(signed.purpose, "payment-proof");
+    assert.equal(uploaded.storedFileId, "sf-proof-1");
     assert.deepEqual(calls, [
       "GET /office/payments/people",
       "POST /office/payments/people",
       "GET /office/payments/people/p-1/records",
       "POST /office/payments/people/p-1/records",
       "PATCH /office/payments/records/rec-1",
-      "POST /office/uploads/sign",
+      "POST /office/uploads/sessions",
+      "PUT /office/uploads/sessions/us-proof-1/chunks",
+      "POST /office/uploads/sessions/us-proof-1/complete",
     ]);
   });
 });

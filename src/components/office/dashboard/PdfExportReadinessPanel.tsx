@@ -13,12 +13,15 @@ const SHORT_STATUS: Record<AreaDailyStatusType, string> = {
   TERLAMBAT: "Terlambat",
   BELUM_LAPOR: "Belum Lapor",
   LIBUR_RUTIN: "Libur Rutin",
+  BELUM_DITUGASKAN: "Belum Ditugaskan",
+  DI_LUAR_JADWAL: "Di Luar Jadwal",
 };
 
 export function PdfExportReadinessPanel({ projectId, date }: PdfExportReadinessPanelProps) {
   const ready = Boolean(projectId && date);
   const { data, isLoading } = useDashboardSummary(
     ready ? { projectId, date } : {},
+    { enabled: ready },
   );
 
   if (!ready) {
@@ -38,7 +41,12 @@ export function PdfExportReadinessPanel({ projectId, date }: PdfExportReadinessP
   }
 
   const areas = data?.areas ?? [];
-  const required = areas.filter((a) => a.status !== "LIBUR_RUTIN");
+  const required = areas.filter(
+    (a) =>
+      a.status !== "LIBUR_RUTIN" &&
+      a.status !== "BELUM_DITUGASKAN" &&
+      a.status !== "DI_LUAR_JADWAL",
+  );
   const submitted = required.filter(
     (a) => a.status === "TERKIRIM" || a.status === "TERLAMBAT",
   );
