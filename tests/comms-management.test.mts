@@ -68,13 +68,63 @@ describe("TASK-20 Frontend Comms Project — Validation, RBAC & API (US-20, BR-3
     assert.equal(canEditCommsEntry({ id: "u-sup", role: "SUPERVISOR" }, entryBySm), false);
   });
 
-  it("[API Client / US-20] commsApi memanggil endpoint Office /comms & /uploads/sign purpose comms-attachment", async () => {
+  it("[API Client / US-20] commsApi memanggil endpoint Office /comms & alur sesi upload comms-attachment", async () => {
     const calls: string[] = [];
 
     api.defaults.adapter = async (config) => {
       const method = (config.method ?? "get").toUpperCase();
       const url = config.url ?? "";
       calls.push(`${method} ${url}`);
+      if (url === "/office/uploads/sessions") {
+        return {
+          data: {
+            success: true,
+            message: "OK",
+            data: {
+              storedFileId: "sf-1",
+              uploadSessionId: "us-1",
+              chunkSizeBytes: 4 * 1024 * 1024,
+              expiresAt: "2026-11-21T00:00:00.000Z",
+              fileName: "mom.pdf",
+              contentType: "application/pdf",
+              fileSizeBytes: 3,
+            },
+          },
+          status: 201,
+          statusText: "Created",
+          headers: {},
+          config,
+        };
+      }
+      if (url === "/office/uploads/sessions/us-1/chunks") {
+        return {
+          data: { success: true, message: "OK", data: { nextOffsetBytes: 3 } },
+          status: 200,
+          statusText: "OK",
+          headers: {},
+          config,
+        };
+      }
+      if (url === "/office/uploads/sessions/us-1/complete") {
+        return {
+          data: {
+            success: true,
+            message: "OK",
+            data: {
+              storedFileId: "sf-1",
+              uploadSessionId: "us-1",
+              fileName: "mom.pdf",
+              contentType: "application/pdf",
+              fileSizeBytes: 3,
+              uploadedAt: "2026-11-20T00:00:00.000Z",
+            },
+          },
+          status: 200,
+          statusText: "OK",
+          headers: {},
+          config,
+        };
+      }
       return {
         data: { success: true, message: "OK", data: method === "GET" ? [] : { id: "c-1" } },
         status: 200,
@@ -84,13 +134,10 @@ describe("TASK-20 Frontend Comms Project — Validation, RBAC & API (US-20, BR-3
       };
     };
 
+    const file = new File(["pdf"], "mom.pdf", { type: "application/pdf" });
     await commsApi.getEntries("p-1", { dateFrom: "2026-11-01", dateTo: "2026-11-20" });
-    await commsApi.signAttachmentUpload({
-      projectId: "p-1",
-      fileName: "mom.pdf",
-      contentType: "application/pdf",
-      fileSizeBytes: 1024,
-    });
+    const uploaded = await commsApi.uploadAttachment("p-1", file);
+    assert.equal(uploaded.storedFileId, "sf-1");
     await commsApi.createEntry("p-1", {
       entryDate: "2026-11-20",
       direction: "INBOUND",
@@ -100,7 +147,9 @@ describe("TASK-20 Frontend Comms Project — Validation, RBAC & API (US-20, BR-3
 
     assert.deepEqual(calls, [
       "GET /office/projects/p-1/comms",
-      "POST /office/uploads/sign",
+      "POST /office/uploads/sessions",
+      "PUT /office/uploads/sessions/us-1/chunks",
+      "POST /office/uploads/sessions/us-1/complete",
       "POST /office/projects/p-1/comms",
       "PATCH /office/comms/c-1",
     ]);

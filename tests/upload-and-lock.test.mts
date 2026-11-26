@@ -14,7 +14,7 @@ import type { PhotoQueueItem } from "@/types/api/upload.types";
 function makeQueueItem(
   id: string,
   status: PhotoQueueItem["status"],
-  storageKey: string | null = null
+  storedFileId: string | null = null
 ): PhotoQueueItem {
   return {
     id,
@@ -25,7 +25,8 @@ function makeQueueItem(
     status,
     progress: status === "uploaded" ? 100 : 0,
     caption: "",
-    storageKey,
+    storedFileId,
+    uploadSessionId: storedFileId ? `session-${id}` : null,
     takenAt: "2026-11-16T08:00:00.000Z",
     errorMessage: status === "failed" ? "Sinyal terputus" : null,
   };
@@ -63,7 +64,7 @@ describe("TASK-06 Frontend Upload Validation & Retry Queue", () => {
   });
 
   it("[NFR-02] retry satu foto gagal mempertahankan foto lain yang sudah terunggah", () => {
-    const photo1 = makeQueueItem("p1", "uploaded", "projects/p/areas/a/2026-11-16/1.jpg");
+    const photo1 = makeQueueItem("p1", "uploaded", "11111111-1111-4111-8111-111111111111");
     const photo2 = makeQueueItem("p2", "failed", null);
 
     const blockedSubmit = canSubmitPhotoQueue([photo1, photo2]);
@@ -71,14 +72,15 @@ describe("TASK-06 Frontend Upload Validation & Retry Queue", () => {
 
     const afterRetryPrep = prepareRetryItem([photo1, photo2], "p2");
     assert.equal(afterRetryPrep[0]?.status, "uploaded");
-    assert.equal(afterRetryPrep[0]?.storageKey, "projects/p/areas/a/2026-11-16/1.jpg");
+    assert.equal(afterRetryPrep[0]?.storedFileId, "11111111-1111-4111-8111-111111111111");
     assert.equal(afterRetryPrep[1]?.status, "idle");
     assert.equal(afterRetryPrep[1]?.errorMessage, null);
 
     const afterUploadRetry = applyQueueItemPatch(afterRetryPrep, "p2", {
       status: "uploaded",
       progress: 100,
-      storageKey: "projects/p/areas/a/2026-11-16/2.jpg",
+      storedFileId: "22222222-2222-4222-8222-222222222222",
+      uploadSessionId: "session-p2",
     });
     assert.equal(canSubmitPhotoQueue(afterUploadRetry).ready, true);
 
