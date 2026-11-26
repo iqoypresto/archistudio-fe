@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
+import { FieldMainPageLayout } from "@/components/layout/FieldMainPageLayout";
+import { FieldMainPageTitle } from "@/components/layout/FieldMainPageTitle";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ServerPagination } from "@/components/ui/ServerPagination";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -57,9 +59,14 @@ export function FieldHistoryContent() {
   }
 
   return (
+    <FieldMainPageLayout
+      headerContent={<FieldMainPageTitle>Riwayat Laporan</FieldMainPageTitle>}
+      overlap="raised"
+    >
     <div className="space-y-5">
       <PageHeader
         title={isSiteManager ? "Riwayat Laporan" : "Riwayat Saya"}
+        hideTitle
         description={
           isSiteManager
             ? "Telusuri riwayat laporan harian Anda maupun laporan tim Supervisor pada project yang Anda pimpin."
@@ -178,5 +185,6 @@ export function FieldHistoryContent() {
         )}
       </AsyncStateView>
     </div>
+    </FieldMainPageLayout>
   );
 }

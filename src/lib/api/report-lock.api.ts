@@ -1,5 +1,9 @@
 import type { ApiResponse } from "@/types/api";
-import type { SupervisorAreaTaskStatus } from "@/types/api/report-lock.types";
+import type {
+  ListMyReportWorkItemsQuery,
+  PaginatedSupervisorReportWorkItems,
+  SupervisorAreaTaskStatus,
+} from "@/types/api/report-lock.types";
 import { api } from "./axios";
 
 export class ReportLockApi {
@@ -8,6 +12,14 @@ export class ReportLockApi {
       "/field/reports/my-areas-status"
     );
     return res.data.data;
+  }
+
+  async listMyReportWorkItems(query: ListMyReportWorkItemsQuery): Promise<PaginatedSupervisorReportWorkItems> {
+    const res = await api.get<PaginatedSupervisorReportWorkItems>(
+      "/field/reports/my-obligations",
+      { params: query },
+    );
+    return res.data;
   }
 }
 

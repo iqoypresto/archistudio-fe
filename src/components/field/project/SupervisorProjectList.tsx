@@ -83,7 +83,7 @@ function ProjectCard({ project }: { project: ProjectListItem }) {
 
 function ProjectEmptyState() {
   return (
-    <div className="flex min-h-[calc(100svh-19rem)] flex-col items-center justify-center px-4 pb-16 pt-4 text-center">
+    <div className="flex min-h-[calc(100svh-19rem)] flex-col items-center justify-center pb-16 text-center">
       <SupervisorProjectEmptyIllustration />
       <h2 className="mt-2 max-w-[19rem] break-words text-[1.375rem] font-bold leading-[1.35] text-[var(--project-text-empty)]">
         Belum ada project yang ditugaskan kepadamu.
@@ -101,7 +101,7 @@ export function SupervisorProjectList({ projects, meta, onPageChange, isPageChan
   if (projects.length === 0) return <ProjectEmptyState />;
 
   return (
-    <div className="space-y-4 px-4 pb-8 pt-8" aria-busy={isPageChanging || undefined}>
+    <div className="space-y-4 pb-8" aria-busy={isPageChanging || undefined}>
       {projects.map((project) => <ProjectCard key={project.id} project={project} />)}
       {meta.totalPages > 1 && <ServerPagination meta={meta} onPageChange={onPageChange} isUpdating={isPageChanging} />}
     </div>
@@ -110,7 +110,7 @@ export function SupervisorProjectList({ projects, meta, onPageChange, isPageChan
 
 export function SupervisorProjectListSkeleton() {
   return (
-    <div className="project-list-skeleton space-y-4 px-4 pb-8 pt-8" aria-busy="true" aria-label="Memuat project">
+    <div className="project-list-skeleton space-y-4 pb-8" aria-busy="true" aria-label="Memuat project">
       <Skeleton className="min-h-[13.8125rem] w-full rounded-[1.125rem] bg-[var(--project-skeleton)]" />
       <Skeleton className="min-h-[13.8125rem] w-full rounded-[1.125rem] bg-[var(--project-skeleton)]" />
       <Skeleton className="min-h-[13.8125rem] w-full rounded-[1.125rem] bg-[var(--project-skeleton)]" />

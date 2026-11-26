@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { MY_AREAS_STATUS_QUERY_KEY } from "@/hooks/report-lock.hooks";
+import { MY_AREAS_STATUS_QUERY_KEY, MY_REPORT_WORK_ITEMS_QUERY_KEY } from "@/hooks/report-lock.hooks";
 import { reportApi } from "@/lib/api/report.api";
 import type { ApiSurface } from "@/lib/api/api-surface";
 import type {
@@ -52,6 +52,7 @@ export function useSubmitNewReportMutation() {
       queryClient.setQueryData([...REPORTS_QUERY_KEY, "field", "detail", report.id], report);
       void queryClient.invalidateQueries({ queryKey: REPORTS_QUERY_KEY });
       void queryClient.invalidateQueries({ queryKey: MY_AREAS_STATUS_QUERY_KEY });
+      void queryClient.invalidateQueries({ queryKey: MY_REPORT_WORK_ITEMS_QUERY_KEY });
     },
   });
 }

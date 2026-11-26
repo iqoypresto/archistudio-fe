@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { CalendarDays, CheckCircle2, ChevronRight, LockKeyhole } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
+import { ArrowRight, CalendarDays, LockKeyhole } from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import type { SupervisorAreaTaskStatus } from "@/types/api/report-lock.types";
+import type { SupervisorReportWorkItem } from "@/types/api/report-lock.types";
 
 function formatReportDate(date: string): string {
   return new Intl.DateTimeFormat("id-ID", {
@@ -12,76 +12,61 @@ function formatReportDate(date: string): string {
 }
 
 export function ReportObligationCard({
-  task,
-  date,
-  dateIndex,
-  totalDates,
-  isUnlocked,
-}: {
-  task: SupervisorAreaTaskStatus;
-  date: string;
-  dateIndex: number;
-  totalDates: number;
-  isUnlocked: boolean;
-}) {
-  const isOverdue = date < task.todayDate;
-  const href = `/field/reports/new?${new URLSearchParams({ areaId: task.areaId, date })}`;
+  item,
+}: { item: SupervisorReportWorkItem }) {
+  const statusPresentation = {
+    LATE: { label: "Terlambat", tone: "bg-status-warning-bg text-status-warning-fg" },
+    OVERDUE: { label: "Tertunggak", tone: "bg-status-danger-bg text-status-danger-fg" },
+    READY: { label: "Perlu dibuat", tone: "bg-primary-soft text-primary" },
+    WAITING: { label: "Menunggu urutan", tone: "bg-status-muted-bg text-status-muted-fg" },
+  }[item.status];
+  const actionHref = item.action === "VIEW_REPORT" && item.reportId
+    ? `/field/reports/${item.reportId}`
+    : `/field/reports/new?${new URLSearchParams({ areaId: item.areaId, date: item.reportDate })}`;
 
   return (
     <Card className="rounded-2xl border-border bg-surface py-0 shadow-xs">
-      <CardContent className="space-y-3 p-4">
+      <CardContent className="space-y-1.5 p-3">
         <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-text-primary">{task.projectName}</p>
-            <p className="mt-0.5 truncate text-sm text-text-secondary">{task.areaCode} · {task.areaName}</p>
-          </div>
+          <p className="min-w-0 truncate rounded-lg bg-[var(--project-canvas)] px-2 py-1.5 text-base font-bold text-text-primary">{item.projectName}</p>
           <span className={cn(
             "shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold",
-            isUnlocked ? isOverdue ? "bg-status-danger-bg text-status-danger-fg" : "bg-primary-soft text-primary"
-              : "bg-status-muted-bg text-status-muted-fg"
+            statusPresentation.tone,
           )}>
-            {isUnlocked ? isOverdue ? "Tertunggak" : "Perlu dibuat" : "Menunggu urutan"}
+            {statusPresentation.label}
           </span>
         </div>
 
-        <div className="flex items-center justify-between gap-3 rounded-xl bg-secondary/70 px-3 py-2.5">
-          <span className="flex min-w-0 items-center gap-2 text-sm text-text-primary">
-            <CalendarDays className="size-4 shrink-0 text-text-secondary" />
-            <span className="truncate">{formatReportDate(date)}</span>
-          </span>
-          <span className="shrink-0 text-xs tabular-nums text-text-secondary">{dateIndex + 1}/{totalDates}</span>
-        </div>
+        <div className="border-t border-border" />
 
-        {isUnlocked ? (
-          <Link href={href} className={cn(buttonVariants({ variant: "default" }), "min-h-12 w-full rounded-xl bg-primary text-base font-semibold text-primary-foreground hover:bg-primary-hover")}>
-            Buat laporan <ChevronRight className="ml-1 size-4" />
-          </Link>
-        ) : (
-          <div className="flex min-h-12 items-center gap-2 rounded-xl border border-border px-3 text-sm text-text-secondary">
-            <LockKeyhole className="size-4 shrink-0" />
-            Selesaikan laporan tanggal sebelumnya terlebih dahulu.
+        <div className="space-y-1.5 px-2">
+          <div className="flex min-w-0 items-baseline gap-2">
+            <span className="shrink-0 text-sm font-medium text-text-secondary">Area</span>
+            <p className="min-w-0 truncate text-sm font-semibold text-text-primary">
+              {item.areaCode} · {item.areaName}
+            </p>
           </div>
-        )}
+
+          <div className="flex min-h-9 items-center">
+            <span className="flex min-w-0 items-center gap-2 text-sm font-medium text-text-primary">
+              <CalendarDays className="size-4 shrink-0 text-[#c45b19]" />
+              <span>{formatReportDate(item.reportDate)}</span>
+            </span>
+          </div>
+
+          {item.action !== "WAIT" ? (
+            <Link href={actionHref} className={cn(buttonVariants({ variant: "default" }), "min-h-11 w-full justify-center gap-2 rounded-lg bg-[var(--project-action)] px-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-[var(--project-action-hover)]")}>
+              <span>{item.action === "VIEW_REPORT" ? "Lihat laporan" : "Buat laporan"}</span>
+              <ArrowRight className="size-4" />
+            </Link>
+          ) : (
+            <Button type="button" disabled variant="outline" className="min-h-11 w-full justify-center gap-2 rounded-lg border border-status-danger-fg/20 bg-status-danger-bg px-2 text-center text-xs font-medium leading-tight text-status-danger-fg whitespace-normal disabled:opacity-100 [&_svg]:text-status-danger-fg">
+              <LockKeyhole className="size-4 shrink-0" />
+              <span className="min-w-0 whitespace-normal text-center">Selesaikan laporan sebelumnya.</span>
+            </Button>
+          )}
+        </div>
       </CardContent>
     </Card>
-  );
-}
-
-export function ReportListEmptyState({ areas }: { areas: SupervisorAreaTaskStatus[] }) {
-  const completedToday = areas.filter((area) => area.isTodaySubmitted).length;
-  const restDayCount = areas.filter((area) => area.isTodayRestDay).length;
-  const Icon = completedToday > 0 && completedToday + restDayCount >= areas.length ? CheckCircle2 : CalendarDays;
-  const message = areas.every((area) => area.isTodayRestDay)
-    ? "Hari ini merupakan hari libur rutin untuk area Anda."
-    : completedToday === areas.length
-      ? "Laporan hari ini sudah terkirim untuk semua area aktif."
-      : "Belum ada kewajiban laporan yang perlu dibuat saat ini.";
-
-  return (
-    <div className="rounded-2xl border border-dashed border-border bg-surface px-5 py-8 text-center">
-      <Icon className="mx-auto size-8 text-status-success-fg" />
-      <p className="mt-3 font-semibold text-text-primary">Semua kewajiban sudah diperiksa</p>
-      <p className="mx-auto mt-1 max-w-sm text-sm leading-relaxed text-text-secondary">{message}</p>
-    </div>
   );
 }

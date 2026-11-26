@@ -279,6 +279,18 @@ html[data-login-splash-skip="true"] .login-splash-overlay { visibility: hidden; 
   --project-illustration-rays: #c97848;
 }
 
+.field-bottom-navigation {
+  --field-nav-active-start: var(--project-nav-active-start, #b55726);
+  --field-nav-active-end: var(--project-nav-active-end, #9c471d);
+  --field-nav-border: var(--project-nav-border, #eee6e0);
+  --field-nav-surface: var(--project-nav-surface, rgba(255, 255, 255, 0.95));
+  --field-nav-shadow: var(--project-nav-shadow, 0 8px 28px rgba(65, 45, 33, 0.16));
+  --field-nav-text: var(--project-nav-text, #393633);
+  --field-nav-hover: var(--project-nav-hover, #f7f3ef);
+  border-color: var(--field-nav-border);
+  background-color: var(--field-nav-surface);
+}
+
 .supervisor-main-menu-panel {
   --project-canvas: #faf8f6;
   --project-surface: #ffffff;
