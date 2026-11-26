@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { AnimatePresence, MotionConfig, motion, useReducedMotion, type Variants } from "motion/react";
 import { APP_MOTION } from "@/lib/motion/animation.config";
 
@@ -37,6 +37,12 @@ export function ReportSuccessOverlay({
   const formattedTime = submittedAt
     ? new Intl.DateTimeFormat("id-ID", { timeZone, dateStyle: "medium", timeStyle: "short" }).format(new Date(submittedAt))
     : "Waktu pengiriman tercatat di server.";
+
+  useEffect(() => {
+    if (!isVisible) return;
+    const timer = window.setTimeout(onClose, 2800);
+    return () => window.clearTimeout(timer);
+  }, [isVisible, onClose]);
 
   return (
     <MotionConfig reducedMotion="user">
@@ -123,7 +129,7 @@ export function ReportSuccessOverlay({
               transition={{ delay: reduceMotion ? 0 : APP_MOTION.reportSuccess.actionDelay, duration: reduceMotion ? 0.12 : APP_MOTION.reportSuccess.actionDuration, ease: APP_MOTION.easing.enter }}
               className="mt-8 min-h-12 min-w-40 rounded-xl bg-white px-6 font-bold text-[#161719] transition-colors hover:bg-white/90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
             >
-              Selesai
+              Kembali ke Daftar Laporan
             </motion.button>
           </motion.div>
         )}

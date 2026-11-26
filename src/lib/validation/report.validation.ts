@@ -13,6 +13,7 @@ const workReportSchema = z.object({
   progressText: z
     .string()
     .trim()
+    .max(500, "Uraian pekerjaan maksimal 500 karakter.")
     .min(3, "Isi progres pekerjaan minimal 3 karakter."),
   obstaclesText: z
     .string()

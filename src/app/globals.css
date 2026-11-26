@@ -282,6 +282,34 @@ html[data-login-splash-skip="true"] .login-splash-overlay { visibility: hidden; 
   --project-illustration-rays: #c97848;
 }
 
+.report-form-theme {
+  --primary: #9c471d;
+  --primary-hover: #823b19;
+  --primary-soft: #f6e8df;
+  --primary-foreground: #ffffff;
+  --text-primary: #1d1c1b;
+  --text-secondary: #545454;
+  --text-muted: #71665f;
+  --background: #faf8f6;
+  --foreground: #1d1c1b;
+  --surface: #ffffff;
+  --surface-input: #fffaf7;
+  --surface-active: #f7eee8;
+  --secondary: #f7f3ef;
+  --secondary-foreground: #393633;
+  --border: #e8d9cf;
+  --input: #e8d9cf;
+  --ring: #9c471d;
+  --popover: #fffaf7;
+  --popover-foreground: #1d1c1b;
+  --status-info-fg: #80543d;
+  --status-info-bg: #f5ebe4;
+  --status-muted-fg: #6d5548;
+  --status-muted-bg: #f3ebe6;
+  --status-warning-fg: #97401c;
+  --status-warning-bg: #fff0e8;
+}
+
 .field-bottom-navigation {
   --field-nav-active-start: var(--project-nav-active-start, #b55726);
   --field-nav-active-end: var(--project-nav-active-end, #9c471d);

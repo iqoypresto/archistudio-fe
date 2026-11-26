@@ -1,6 +1,5 @@
 import { Cloud, CloudRain, Sun } from "lucide-react";
 import { useWatch, type UseFormReturn } from "react-hook-form";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,36 +31,25 @@ export function WorkReportFields({
     formState: { errors },
   } = form;
   const selectedWeather = useWatch({ control, name: "weather" });
+  const progressText = useWatch({ control, name: "progressText" }) ?? "";
 
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label className="text-base font-semibold text-text-primary">Cuaca Lapangan</Label>
-        <div className="grid grid-cols-3 gap-2.5">
+        <fieldset className="grid grid-cols-3 gap-2.5" aria-label="Kondisi cuaca">
+          <legend className="col-span-3 mb-2 text-base font-semibold text-text-primary">Cuaca Lapangan</legend>
           {WEATHER_OPTIONS.map((opt) => {
             const Icon = opt.icon;
             const active = selectedWeather === opt.value;
-            return (
-              <Button
-                key={opt.value}
-                type="button"
-                disabled={disabled}
-                variant="outline"
-                aria-pressed={active}
-                onClick={() => setValue("weather", opt.value, { shouldValidate: true })}
-                className={cn(
-                  "h-auto flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl px-2 py-2.5 text-sm font-semibold transition-colors",
-                  active
-                    ? "border-white/25 bg-surface-active text-text-primary shadow-2xs"
-                    : "border-border bg-surface-input text-text-secondary hover:bg-surface-active/60"
-                )}
-              >
+            return <label key={opt.value} className={cn(
+                  "flex min-h-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2.5 text-sm font-semibold transition-colors",
+                  active ? "border-primary bg-primary-soft text-primary" : "border-border bg-surface-input text-text-secondary hover:bg-surface-active/60", disabled && "cursor-not-allowed opacity-60") }>
+                <input type="radio" name="weather" value={opt.value} checked={active} disabled={disabled} onChange={() => setValue("weather", opt.value, { shouldValidate: true })} className="sr-only" />
                 <Icon className="size-5" />
                 <span>{opt.label}</span>
-              </Button>
-            );
+              </label>;
           })}
-        </div>
+        </fieldset>
         {errors.weather && (
           <p className="text-sm font-medium text-status-danger-fg">
             {errors.weather.message}
@@ -91,16 +79,18 @@ export function WorkReportFields({
 
       <div className="space-y-1.5">
         <Label htmlFor="progressText" className="text-base font-semibold text-text-primary">
-          Progres Pekerjaan Hari Ini
+          Uraian pekerjaan hari ini
         </Label>
         <Textarea
           id="progressText"
           rows={3}
+          maxLength={500}
           disabled={disabled}
           placeholder="Contoh: Pengecoran sloof zona barat selesai 80%"
           className="w-full rounded-xl border-border bg-surface-input p-3 text-base text-text-primary focus-visible:ring-ring"
           {...register("progressText")}
         />
+        <p className="text-right text-xs tabular-nums text-text-secondary">{progressText.length}/500</p>
         {errors.progressText && (
           <p className="text-sm font-medium text-status-danger-fg">
             {errors.progressText.message}
