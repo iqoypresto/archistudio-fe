@@ -279,6 +279,22 @@ html[data-login-splash-skip="true"] .login-splash-overlay { visibility: hidden; 
   --project-illustration-rays: #c97848;
 }
 
+.supervisor-main-menu-panel {
+  --project-canvas: #faf8f6;
+  --project-surface: #ffffff;
+  --project-text-heading: #1d1c1b;
+  --project-text-secondary: #545454;
+  --project-text-body: #242220;
+  --project-border: #e8d9cf;
+  --project-action: #9c471d;
+  --project-nav-hover: #f7f3ef;
+}
+
+.supervisor-main-menu-panel [data-slot="button"]:focus-visible {
+  outline: 3px solid var(--project-action);
+  outline-offset: 2px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .project-mobile-shell .project-list-skeleton [data-slot="skeleton"] {
     animation: none;

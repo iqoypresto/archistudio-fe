@@ -2,15 +2,14 @@
 
 import { useSyncExternalStore, type ReactNode } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Wifi, WifiOff } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { usePathname } from "next/navigation";
+import { Wifi, WifiOff } from "lucide-react";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { useLogoutMutation } from "@/hooks/auth.hooks";
 import { cn } from "@/lib/utils";
 import { getRoleLabel } from "@/lib/utils/role";
 import { useAuthStore } from "@/stores/auth.store";
 import { FIELD_BOTTOM_TABS } from "./field-bottom-nav.config";
+import { SupervisorMainMenu } from "./SupervisorMainMenu";
 
 function subscribeOnlineStatus(callback: () => void): () => void {
   window.addEventListener("online", callback);
@@ -31,23 +30,16 @@ function useOnlineStatus(): boolean {
 
 export function FieldAppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
   const isOnline = useOnlineStatus();
   const isHome = pathname === "/field/home";
   const isProjectsHome = pathname === "/field/projects";
   const isLandingPage = isHome || isProjectsHome;
   const isReportDetail = pathname.startsWith("/field/reports/") && pathname !== "/field/reports/new";
   const user = useAuthStore((state) => state.user);
-  const logoutMutation = useLogoutMutation();
   const showNavigation = !pathname.endsWith("/success");
 
-  async function handleLogout(): Promise<void> {
-    await logoutMutation.mutateAsync();
-    router.replace("/login");
-  }
-
   return (
-    <div className={cn("supervisor-mobile relative isolate mx-auto flex min-h-dvh w-full max-w-md flex-col bg-canvas shadow-xs", isProjectsHome && "project-mobile-shell")}>
+    <div className={cn("supervisor-mobile relative isolate mx-auto flex min-h-dvh w-full max-w-md flex-col bg-canvas shadow-xs", isLandingPage && "project-mobile-shell")}>
       {!isLandingPage && <header className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b border-border bg-surface px-3 pt-[calc(1rem+env(safe-area-inset-top))] pb-3 sm:px-5 sm:py-4">
           <div className="min-w-0">
             <p className="truncate text-base font-bold text-text-primary">ArchiStudio</p>
@@ -61,23 +53,13 @@ export function FieldAppShell({ children }: { children: ReactNode }) {
             {isOnline ? <Wifi className="size-3.5" /> : <WifiOff className="size-3.5" />}
             <span className="truncate">{isOnline ? "Online" : "Koneksi Terputus"}</span>
           </StatusBadge>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleLogout}
-            disabled={logoutMutation.isPending}
-            className="min-h-12 min-w-12 px-3 text-sm font-medium"
-            aria-label="Keluar akun"
-          >
-            <LogOut className="size-4" />
-            <span className="ml-1">Keluar</span>
-          </Button>
+          {showNavigation && <SupervisorMainMenu tone="surface" />}
         </div>
       </header>}
 
       <main className={cn(
         "flex-1 text-base text-text-primary",
-        isProjectsHome ? "bg-[var(--project-canvas)] p-0" : isHome ? "bg-[#faf8f6] p-0" : "px-4 py-6 sm:px-5",
+        isLandingPage ? "bg-[var(--project-canvas)] p-0" : "px-4 py-6 sm:px-5",
         showNavigation
           ? isProjectsHome
             ? "pb-[calc(7rem+env(safe-area-inset-bottom))]"
@@ -91,11 +73,9 @@ export function FieldAppShell({ children }: { children: ReactNode }) {
         aria-label="Navigasi lapangan"
         className={cn(
           "fixed bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] left-1/2 z-30 grid w-[calc(100%-2rem)] max-w-[26.5rem] -translate-x-1/2 grid-cols-4 gap-1 p-2 backdrop-blur-xl",
-          isProjectsHome
+          isLandingPage
             ? "min-h-[5.125rem] rounded-[1.875rem] border border-[var(--project-nav-border)] bg-[var(--project-nav-surface)] shadow-[var(--project-nav-shadow)]"
-            : isLandingPage
-              ? "rounded-[2.5rem] border border-[#eee6e0] bg-white/95 shadow-[0_8px_28px_rgba(65,45,33,0.16)]"
-              : "rounded-[2rem] border border-border/80 bg-surface/95 shadow-sm",
+            : "rounded-[2rem] border border-border/80 bg-surface/95 shadow-sm",
         )}
       >
         {FIELD_BOTTOM_TABS.map((tab) => {
@@ -112,26 +92,22 @@ export function FieldAppShell({ children }: { children: ReactNode }) {
               aria-current={isActive ? "page" : undefined}
               className={cn(
                 "flex flex-col items-center justify-center gap-1 font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
-                isProjectsHome
+                isLandingPage
                   ? "min-h-16 min-w-0 rounded-[1.4375rem] text-sm"
-                  : isLandingPage
-                    ? "min-h-[4.5rem] rounded-[1.5rem] text-xs"
-                    : "min-h-14 rounded-2xl text-xs",
+                  : "min-h-14 rounded-2xl text-xs",
                 isActive
-                  ? isProjectsHome
+                  ? isLandingPage
                     ? "bg-gradient-to-br from-[var(--project-nav-active-start)] to-[var(--project-nav-active-end)] text-white shadow-sm"
-                    : isHome
-                      ? "bg-[#f3ece6] text-[#684832]"
-                      : "bg-primary-soft text-primary"
+                    : "bg-primary-soft text-primary"
                   : isProjectsHome
                     ? "text-[var(--project-nav-text)] hover:bg-[var(--project-nav-hover)]"
-                    : isLandingPage
-                      ? "text-[#393633] hover:bg-[#f7f3ef]"
-                    : "text-text-secondary hover:bg-secondary"
+                    : isHome
+                      ? "text-[var(--project-nav-text)] hover:bg-[var(--project-nav-hover)]"
+                      : "text-text-secondary hover:bg-secondary"
               )}
             >
-              <Icon className={isProjectsHome ? "size-[1.375rem] shrink-0" : "size-5"} />
-              <span className={isProjectsHome ? "max-w-full whitespace-normal break-words text-center leading-tight" : undefined}>{tab.label}</span>
+              <Icon className={isLandingPage ? "size-[1.375rem] shrink-0" : "size-5"} />
+              <span className={isLandingPage ? "max-w-full whitespace-normal break-words text-center leading-tight" : undefined}>{tab.label}</span>
             </Link>
           );
         })}
