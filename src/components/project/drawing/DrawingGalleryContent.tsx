@@ -154,6 +154,7 @@ export function DrawingGalleryContent({ projectId, surface = "office" }: { proje
                       <StoredFileImage
                         contentPath={item.contentPath}
                         alt={item.fileName}
+                        variant="thumb"
                         className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
                         fallbackClassName="h-full w-full"
                       />

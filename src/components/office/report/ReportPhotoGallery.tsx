@@ -52,6 +52,7 @@ export function ReportPhotoGallery({
                 <StoredFileImage
                   contentPath={photo.contentPath}
                   alt={photo.caption ?? `Foto ${index + 1}`}
+                  variant="thumb"
                   className="aspect-4/3 w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
                   fallbackClassName="aspect-4/3 w-full"
                 />
@@ -94,6 +95,8 @@ export function ReportPhotoGallery({
               <StoredFileImage
                 contentPath={zoomPhoto.contentPath}
                 alt={zoomPhoto.caption ?? "Foto"}
+                variant="full"
+                eager
                 className="max-h-[65vh] w-full rounded-lg bg-canvas object-contain"
                 fallbackClassName="min-h-64 w-full"
               />
