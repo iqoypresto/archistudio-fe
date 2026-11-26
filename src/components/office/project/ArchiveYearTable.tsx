@@ -31,13 +31,13 @@ export function ArchiveYearTable({ year, projects, isOwner, onRestore }: Archive
               Proyek &amp; Klien
             </TableHead>
             <TableHead className="h-9 px-4 text-[11px] font-medium tracking-wider text-text-muted uppercase">
+              Tim &amp; Area
+            </TableHead>
+            <TableHead className="h-9 px-4 text-[11px] font-medium tracking-wider text-text-muted uppercase">
               Jenis Arsip
             </TableHead>
             <TableHead className="h-9 px-4 text-[11px] font-medium tracking-wider text-text-muted uppercase">
               Tanggal Tindakan
-            </TableHead>
-            <TableHead className="h-9 px-4 text-[11px] font-medium tracking-wider text-text-muted uppercase">
-              Akses
             </TableHead>
             <TableHead className="h-9 px-4 text-right text-[11px] font-medium tracking-wider text-text-muted uppercase">
               Aksi
@@ -56,6 +56,14 @@ export function ArchiveYearTable({ year, projects, isOwner, onRestore }: Archive
                 </p>
               </TableCell>
               <TableCell className="px-4 py-3">
+                <p className="text-[13px] font-medium text-text-primary">
+                  {project.siteManager?.name ?? "Belum ditetapkan"}
+                </p>
+                <p className="mt-0.5 text-xs text-text-muted">
+                  {project._count?.areas ?? 0} area · Baca saja
+                </p>
+              </TableCell>
+              <TableCell className="px-4 py-3">
                 <StatusIndicator tone={project.archiveType === "COMPLETED" ? "success" : "warning"}>
                   {project.archiveType === "COMPLETED" ? "Selesai" : "Arsip Manual"}
                 </StatusIndicator>
@@ -66,7 +74,6 @@ export function ArchiveYearTable({ year, projects, isOwner, onRestore }: Archive
                   {project.archiveType === "COMPLETED" ? "Diselesaikan" : "Diarsipkan manual"}
                 </p>
               </TableCell>
-              <TableCell className="px-4 py-3 text-xs text-text-muted">Baca saja</TableCell>
               <TableCell className="px-4 py-3 text-right">
                 <div className="flex items-center justify-end gap-1.5">
                   {isOwner && (

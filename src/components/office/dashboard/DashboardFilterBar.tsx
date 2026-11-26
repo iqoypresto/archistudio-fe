@@ -26,7 +26,7 @@ export function DashboardFilterBar({
   onTargetDateChange,
   onOpenExportDialog,
 }: DashboardFilterBarProps) {
-  const { data: projectsRes } = useProjectsQuery({ page: 1, pageSize: 100 });
+  const { data: projectsRes } = useProjectsQuery({ status: "BERJALAN", page: 1, pageSize: 100 });
   const projects: ProjectListItem[] = projectsRes?.data ?? [];
   const selectedProject = projects.find((p) => p.id === projectId);
   const selectedProjectLabel = selectedProject

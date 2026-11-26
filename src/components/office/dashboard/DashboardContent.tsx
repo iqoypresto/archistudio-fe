@@ -9,6 +9,7 @@ import { DashboardKpiCards } from "@/components/office/dashboard/DashboardKpiCar
 import {
   DashboardAreaToolbar, DashboardSupervisorToolbar, type DisciplineTier,
 } from "@/components/office/dashboard/DashboardPanelToolbars";
+import { DashboardSystemOverviewPanel } from "@/components/office/dashboard/DashboardSystemOverviewPanel";
 import { PdfExportDialog } from "@/components/office/dashboard/PdfExportDialog";
 import { SupervisorLatenessTable } from "@/components/office/dashboard/SupervisorLatenessTable";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
@@ -16,9 +17,10 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { UnderlineTabsBar } from "@/components/ui/UnderlineTabsNav";
 import { useDashboardSummary, useSupervisorLateness } from "@/hooks/dashboard.hooks";
 import { getTodayInJakarta } from "@/lib/utils/office-format";
+import { formatCurrencyIdr } from "@/lib/validation/payment.validation";
 import type { DashboardAreaStatusItem, DashboardStatusFilter, SupervisorLatenessItem } from "@/types/api/dashboard.types";
 
-type DashboardTab = "areas" | "supervisors";
+type DashboardTab = "areas" | "supervisors" | "system";
 
 function filterAreas(
   areas: DashboardAreaStatusItem[],
@@ -88,7 +90,7 @@ export function DashboardContent() {
     <div className="space-y-5">
       <PageHeader
         title="Dashboard Monitoring"
-        description="Pantau kelengkapan laporan harian per area, status kunci tunggakan, dan kedisiplinan supervisor."
+        description="Ringkasan operasional proyek berjalan, kelengkapan laporan harian, tim internal, dan indikator lintas sistem."
         titleSuffix={<DashboardInfoDialog />}
         action={
           <DashboardFilterBar
@@ -108,74 +110,144 @@ export function DashboardContent() {
         error={summaryQuery.error as Error | null}
         onRetry={() => summaryQuery.refetch()}
       >
-        {(summary) => (
-          <div className="space-y-5">
-            {(summaryQuery.isFetching || summaryQuery.isError) && (
-              <p role="status" aria-live="polite" className="text-xs text-text-muted">
-                {summaryQuery.isFetching
-                  ? "Memperbarui ringkasan pemantauan..."
-                  : "Ringkasan belum berhasil diperbarui. Data sebelumnya tetap ditampilkan."}
-              </p>
-            )}
+        {(summary) => {
+          const overview = summary.systemOverview;
+          const systemAlertCount = overview
+            ? overview.projects.withoutSiteManager +
+              overview.team.unassignedAreasCount +
+              overview.team.areasWithInactiveSupervisorCount +
+              (overview.payments?.overdueUnpaidCount ?? 0)
+            : 0;
 
-            <DashboardKpiCards
-              metrics={summary.metrics}
-              areas={summary.areas}
-              onClickOverdue={handleClickOverdue}
-            />
+          return (
+            <div className="space-y-5">
+              {(summaryQuery.isFetching || summaryQuery.isError) && (
+                <p role="status" aria-live="polite" className="text-xs text-text-muted">
+                  {summaryQuery.isFetching
+                    ? "Memperbarui ringkasan pemantauan..."
+                    : "Ringkasan belum berhasil diperbarui. Data sebelumnya tetap ditampilkan."}
+                </p>
+              )}
 
-            <section className="overflow-hidden rounded-xl border border-border bg-surface">
-              <UnderlineTabsBar
-                ariaLabel="Tab pemantauan"
-                activeValue={activeTab}
-                onChange={setActiveTab}
-                items={[
-                  { value: "areas", label: "Status Area & Pelaporan", count: summary.areas.length },
-                  {
-                    value: "supervisors",
-                    label: "Kedisiplinan Supervisor",
-                    count: latenessQuery.data?.length,
-                  },
-                ]}
+              <DashboardKpiCards
+                metrics={summary.metrics}
+                areas={summary.areas}
+                systemOverview={overview}
+                onClickOverdue={handleClickOverdue}
               />
 
-              {activeTab === "areas" ? (
-                <div>
-                  <DashboardAreaToolbar
-                    search={areaSearch}
-                    onSearchChange={setAreaSearch}
-                    statusFilter={statusFilter}
-                    onStatusFilterChange={setStatusFilter}
-                  />
-                  <DashboardAreaTable
-                    areas={filteredAreas}
-                    onOpenUnlockModal={(area) => setSelectedUnlockArea(area)}
-                  />
-                </div>
-              ) : (
-                <div>
-                  <DashboardSupervisorToolbar
-                    dateFrom={dateFrom}
-                    dateTo={dateTo}
-                    onDateFromChange={setDateFrom}
-                    onDateToChange={setDateTo}
-                    tierFilter={tierFilter}
-                    onTierFilterChange={setTierFilter}
-                  />
-                  <AsyncStateView
-                    data={latenessQuery.data}
-                    isLoading={latenessQuery.isLoading}
-                    isError={latenessQuery.isError}
-                    error={latenessQuery.error as Error | null}
-                    onRetry={() => latenessQuery.refetch()}
+              {overview && (
+                <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 rounded-xl border border-border bg-surface px-4 py-3 text-xs text-text-secondary tabular-nums">
+                  <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5">
+                    <span>
+                      Tim aktif:{" "}
+                      <strong className="font-semibold text-text-primary">
+                        {overview.team.totalActive} akun
+                      </strong>
+                    </span>
+                    <span>
+                      Aktivitas {overview.recentActivity.days} hari:{" "}
+                      <strong className="font-semibold text-text-primary">
+                        {overview.recentActivity.commsInCount + overview.recentActivity.commsOutCount} comms
+                      </strong>{" "}
+                      ·{" "}
+                      <strong className="font-semibold text-text-primary">
+                        {overview.recentActivity.drawingsCount} drawing
+                      </strong>
+                    </span>
+                    {overview.payments && (
+                      <span>
+                        Tagihan HR belum lunas:{" "}
+                        <strong
+                          className={`font-semibold ${
+                            overview.payments.overdueUnpaidCount > 0
+                              ? "text-status-danger-fg"
+                              : overview.payments.unpaidCount > 0
+                                ? "text-status-warning-fg"
+                                : "text-text-primary"
+                          }`}
+                        >
+                          {formatCurrencyIdr(overview.payments.totalUnpaidAmount)} ({overview.payments.unpaidCount})
+                        </strong>
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("system")}
+                    className="text-xs font-medium text-text-primary underline-offset-4 hover:underline"
                   >
-                    {() => <SupervisorLatenessTable items={filteredSupervisors} />}
-                  </AsyncStateView>
+                    {systemAlertCount > 0
+                      ? `${systemAlertCount} perhatian sistem`
+                      : "Lihat ringkasan sistem"}
+                  </button>
                 </div>
               )}
-            </section>
-          </div>
-        )}
+
+              <section className="overflow-hidden rounded-xl border border-border bg-surface">
+                <UnderlineTabsBar
+                  ariaLabel="Tab pemantauan"
+                  activeValue={activeTab}
+                  onChange={setActiveTab}
+                  items={[
+                    { value: "areas", label: "Status Area & Pelaporan", count: summary.areas.length },
+                    {
+                      value: "supervisors",
+                      label: "Kedisiplinan Pengawas",
+                      count: latenessQuery.data?.length,
+                    },
+                    ...(overview
+                      ? [
+                          {
+                            value: "system" as const,
+                            label: "Ringkasan Sistem",
+                            count: systemAlertCount > 0 ? systemAlertCount : undefined,
+                          },
+                        ]
+                      : []),
+                  ]}
+                />
+
+                {activeTab === "areas" ? (
+                  <div>
+                    <DashboardAreaToolbar
+                      search={areaSearch}
+                      onSearchChange={setAreaSearch}
+                      statusFilter={statusFilter}
+                      onStatusFilterChange={setStatusFilter}
+                    />
+                    <DashboardAreaTable
+                      areas={filteredAreas}
+                      onOpenUnlockModal={(area) => setSelectedUnlockArea(area)}
+                    />
+                  </div>
+                ) : activeTab === "supervisors" ? (
+                  <div>
+                    <DashboardSupervisorToolbar
+                      dateFrom={dateFrom}
+                      dateTo={dateTo}
+                      onDateFromChange={setDateFrom}
+                      onDateToChange={setDateTo}
+                      tierFilter={tierFilter}
+                      onTierFilterChange={setTierFilter}
+                    />
+                    <AsyncStateView
+                      data={latenessQuery.data}
+                      isLoading={latenessQuery.isLoading}
+                      isError={latenessQuery.isError}
+                      error={latenessQuery.error as Error | null}
+                      onRetry={() => latenessQuery.refetch()}
+                    >
+                      {() => <SupervisorLatenessTable items={filteredSupervisors} />}
+                    </AsyncStateView>
+                  </div>
+                ) : overview ? (
+                  <DashboardSystemOverviewPanel overview={overview} />
+                ) : null}
+              </section>
+            </div>
+          );
+        }}
       </AsyncStateView>
 
       <AreaUnlockModal

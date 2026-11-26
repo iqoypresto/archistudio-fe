@@ -1,5 +1,6 @@
 import { ApiError } from "@/lib/api/api-error";
 import { api } from "@/lib/api/axios";
+import type { ApiResponse } from "@/types/api";
 
 export interface ExportPdfParams {
   projectId: string;
@@ -10,6 +11,21 @@ export interface ExportPdfParams {
 export interface MonthlyPdfParams {
   projectId: string;
   month: string;
+}
+
+export interface MonthlyAreaMetricsItem {
+  areaCode: string;
+  areaName: string;
+  requiredDays: number;
+  onTime: number;
+  late: number;
+  missing: number;
+}
+
+export interface MonthlyReportSummaryResponse {
+  project: { id: string; code: string; name: string };
+  month: string;
+  areas: MonthlyAreaMetricsItem[];
 }
 
 export interface DailyRangePdfParams {
@@ -58,6 +74,13 @@ export const pdfExportApi = {
   async downloadMonthlyReportPdf(params: MonthlyPdfParams): Promise<void> {
     await requestPdf("/office/exports/monthly-report-pdf", { projectId: params.projectId, month: params.month },
       `laporan-bulanan-${params.month}.pdf`);
+  },
+  async getMonthlyReportSummary(params: MonthlyPdfParams): Promise<MonthlyReportSummaryResponse> {
+    const response = await api.get<ApiResponse<MonthlyReportSummaryResponse>>(
+      "/office/exports/monthly-report-summary",
+      { params: { projectId: params.projectId, month: params.month } },
+    );
+    return response.data.data;
   },
   async downloadDailyReportRangePdf(params: DailyRangePdfParams): Promise<void> {
     await requestPdf("/office/exports/daily-report-range-pdf", {

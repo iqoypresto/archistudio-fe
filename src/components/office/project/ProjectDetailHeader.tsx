@@ -108,46 +108,83 @@ export function ProjectDetailHeader({
       </div>
 
       {project && (
-        <div className="grid grid-cols-1 divide-y divide-border rounded-xl border border-border bg-surface sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 lg:divide-x">
-          <div className="p-4">
-            <p className="text-[11px] font-medium tracking-wider text-text-muted uppercase">
-              Klien &amp; Lokasi
-            </p>
-            <p className="mt-1 text-[13px] font-medium text-text-primary">{project.clientName}</p>
-            <p className="mt-0.5 text-xs text-text-secondary">{project.location}</p>
+        <>
+          <div className="grid grid-cols-1 divide-y divide-border rounded-xl border border-border bg-surface sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 lg:divide-x">
+            <div className="p-4">
+              <p className="text-[11px] font-medium tracking-wider text-text-muted uppercase">
+                Klien &amp; Lokasi
+              </p>
+              <p className="mt-1 text-[13px] font-medium text-text-primary">{project.clientName}</p>
+              <p className="mt-0.5 text-xs text-text-secondary">{project.location}</p>
+            </div>
+            <div className="p-4">
+              <p className="text-[11px] font-medium tracking-wider text-text-muted uppercase">
+                Site Manager
+              </p>
+              <p className="mt-1 text-[13px] font-medium text-text-primary">
+                {project.siteManager?.name ?? "Belum ditetapkan"}
+              </p>
+              <p className="mt-0.5 text-xs text-text-secondary">
+                {project.siteManager?.phone ?? "Penanggung jawab proyek"}
+              </p>
+            </div>
+            <div className="p-4">
+              <p className="text-[11px] font-medium tracking-wider text-text-muted uppercase">
+                Jadwal Pelaksanaan
+              </p>
+              <p className="mt-1 text-[13px] font-medium text-text-primary">
+                {formatIdDate(project.startDate)}
+              </p>
+              <p className="mt-0.5 text-xs text-text-secondary">
+                Target selesai: {project.endDate ? formatIdDate(project.endDate) : "Fleksibel"}
+              </p>
+            </div>
+            <div className="p-4">
+              <p className="text-[11px] font-medium tracking-wider text-text-muted uppercase">
+                Zona &amp; Hari Libur
+              </p>
+              <p className="mt-1 text-[13px] font-medium text-text-primary">
+                {formatShortTimezone(project.timezone)} ({project.timezone})
+              </p>
+              <p className="mt-0.5 text-xs text-text-secondary">Libur rutin: {holidays}</p>
+            </div>
           </div>
-          <div className="p-4">
-            <p className="text-[11px] font-medium tracking-wider text-text-muted uppercase">
-              Site Manager
-            </p>
-            <p className="mt-1 text-[13px] font-medium text-text-primary">
-              {project.siteManager?.name ?? "Belum ditetapkan"}
-            </p>
-            <p className="mt-0.5 text-xs text-text-secondary">
-              {project.siteManager?.phone ?? "Penanggung jawab proyek"}
-            </p>
-          </div>
-          <div className="p-4">
-            <p className="text-[11px] font-medium tracking-wider text-text-muted uppercase">
-              Jadwal Pelaksanaan
-            </p>
-            <p className="mt-1 text-[13px] font-medium text-text-primary">
-              {formatIdDate(project.startDate)}
-            </p>
-            <p className="mt-0.5 text-xs text-text-secondary">
-              Target selesai: {project.endDate ? formatIdDate(project.endDate) : "Fleksibel"}
-            </p>
-          </div>
-          <div className="p-4">
-            <p className="text-[11px] font-medium tracking-wider text-text-muted uppercase">
-              Zona &amp; Hari Libur
-            </p>
-            <p className="mt-1 text-[13px] font-medium text-text-primary">
-              {formatShortTimezone(project.timezone)} ({project.timezone})
-            </p>
-            <p className="mt-0.5 text-xs text-text-secondary">Libur rutin: {holidays}</p>
-          </div>
-        </div>
+
+          {project._count && (
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-xs text-text-secondary">
+              <span>
+                Area: <strong className="font-semibold text-text-primary">{project._count.areas}</strong>
+              </span>
+              {project._count.drawings !== undefined && (
+                <Link
+                  href={`/office/projects/${project.id}/drawings`}
+                  className="underline-offset-4 hover:text-text-primary hover:underline"
+                >
+                  Drawing aktif:{" "}
+                  <strong className="font-semibold text-text-primary">{project._count.drawings}</strong>
+                </Link>
+              )}
+              {project._count.commsEntries !== undefined && (
+                <Link
+                  href={`/office/projects/${project.id}/comms/in`}
+                  className="underline-offset-4 hover:text-text-primary hover:underline"
+                >
+                  Catatan Comms:{" "}
+                  <strong className="font-semibold text-text-primary">{project._count.commsEntries}</strong>
+                </Link>
+              )}
+              {project._count.documents !== undefined && (canCompleteProject || canRestoreProject) && (
+                <Link
+                  href={`/office/projects/${project.id}/document-out`}
+                  className="underline-offset-4 hover:text-text-primary hover:underline"
+                >
+                  Document Out:{" "}
+                  <strong className="font-semibold text-text-primary">{project._count.documents}</strong>
+                </Link>
+              )}
+            </div>
+          )}
+        </>
       )}
 
       {(isSupervisorReadOnly || isProjectReadOnly) && (

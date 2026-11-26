@@ -8,6 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { StatusTone } from "@/components/ui/StatusBadge";
+import { getRoleLabel } from "@/lib/utils/role";
 import type { SupervisorLatenessItem } from "@/types/api/dashboard.types";
 
 interface SupervisorLatenessTableProps {
@@ -89,7 +90,10 @@ export function SupervisorLatenessTable({ items }: SupervisorLatenessTableProps)
               >
                 <TableCell className="px-4 py-3">
                   <p className="text-[13px] font-medium text-text-primary">{spv.supervisorName}</p>
-                  <p className="mt-0.5 text-xs text-text-muted">@{spv.supervisorUsername}</p>
+                  <p className="mt-0.5 text-xs text-text-muted">
+                    @{spv.supervisorUsername}
+                    {spv.supervisorRole ? ` · ${getRoleLabel(spv.supervisorRole)}` : ""}
+                  </p>
                 </TableCell>
                 <TableCell className="px-4 py-3 text-right text-[13px] font-medium text-text-primary">
                   {spv.totalReports}

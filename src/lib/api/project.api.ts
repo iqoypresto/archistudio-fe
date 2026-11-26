@@ -1,10 +1,11 @@
 import { api } from "./axios";
 import { apiSurfacePath, type ApiSurface } from "./api-surface";
-import type { ApiResponse, PaginatedResponse } from "@/types/api";
+import type { ApiResponse } from "@/types/api";
 import type {
   ArchivedProjectItem,
   ArchiveFilterParams,
   CreateProjectPayload,
+  PaginatedProjectsResponse,
   ProjectDetail,
   ProjectFilterParams,
   ProjectListItem,
@@ -17,8 +18,8 @@ export const projectApi = {
   async getProjects(
     params?: ProjectFilterParams,
     surface: ApiSurface = "office",
-  ): Promise<PaginatedResponse<ProjectListItem>> {
-    const response = await api.get<PaginatedResponse<ProjectListItem>>(apiSurfacePath(surface, "/projects"), {
+  ): Promise<PaginatedProjectsResponse> {
+    const response = await api.get<PaginatedProjectsResponse>(apiSurfacePath(surface, "/projects"), {
       params,
     });
     return response.data;

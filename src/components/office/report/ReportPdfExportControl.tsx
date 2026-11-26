@@ -16,6 +16,6 @@ export function ReportPdfExportControl() {
     >
       <FileDown className="size-3.5" /> Export PDF Harian
     </Button>
-    <PdfExportDialog isOpen={open} onClose={() => setOpen(false)} />
+    {open && <PdfExportDialog isOpen onClose={() => setOpen(false)} />}
   </>;
 }

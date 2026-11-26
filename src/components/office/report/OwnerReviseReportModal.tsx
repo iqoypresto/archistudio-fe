@@ -12,6 +12,7 @@ import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { Textarea } from "@/components/ui/textarea";
 import { useReviseReportMutation } from "@/hooks/report.hooks";
 import { formatIdDate } from "@/lib/utils/office-format";
+import { getRoleLabel } from "@/lib/utils/role";
 import { reviseReportSchema, type ReviseReportFormValues } from "@/lib/validation/report-revision.validation";
 import type { DailyReportDetail, WeatherType } from "@/types/api/report.types";
 
@@ -71,7 +72,7 @@ export function OwnerReviseReportModal({
         <ModalContextStrip
           kicker={`${report.reportNumber} · ${formatIdDate(report.reportDate)}`}
           title={`${report.project.name} — ${report.area.code} ${report.area.name}`}
-          meta={`Supervisor: ${report.supervisor.name}`}
+          meta={`${report.supervisor.role ? getRoleLabel(report.supervisor.role) : "Pengirim"}: ${report.supervisor.name}`}
         />
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5">

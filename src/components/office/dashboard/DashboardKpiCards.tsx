@@ -1,37 +1,56 @@
 import { ArrowRight } from "lucide-react";
-import type { DashboardAreaStatusItem, DashboardKpiMetrics } from "@/types/api/dashboard.types";
+import type {
+  DashboardAreaStatusItem,
+  DashboardKpiMetrics,
+  DashboardSystemOverview,
+} from "@/types/api/dashboard.types";
 
 interface DashboardKpiCardsProps {
   metrics: DashboardKpiMetrics;
   areas: DashboardAreaStatusItem[];
+  systemOverview?: DashboardSystemOverview;
   onClickOverdue?: () => void;
 }
 
 export function DashboardKpiCards({
   metrics,
   areas,
+  systemOverview,
   onClickOverdue,
 }: DashboardKpiCardsProps) {
   const onTimeCount = areas.filter((a) => a.status === "TERKIRIM").length;
   const lateCount = areas.filter((a) => a.status === "TERLAMBAT").length;
   const unreportedCount = areas.filter((a) => a.status === "BELUM_LAPOR").length;
   const holidayCount = areas.filter((a) => a.status === "LIBUR_RUTIN").length;
-  const requiredToday = Math.max(metrics.activeAreas - holidayCount, 0);
+  const nonRequiredCount = areas.filter(
+    (a) =>
+      a.status === "LIBUR_RUTIN" ||
+      a.status === "BELUM_DITUGASKAN" ||
+      a.status === "DI_LUAR_JADWAL",
+  ).length;
+  const unassignedCount = areas.filter((a) => a.status === "BELUM_DITUGASKAN").length;
+  const requiredToday = Math.max(metrics.activeAreas - nonRequiredCount, 0);
   const progressPct =
     requiredToday > 0
       ? Math.min(Math.round((metrics.reportsSubmittedToday / requiredToday) * 100), 100)
       : 0;
   const hasOverdue = metrics.areasOverdueMoreThan3Days > 0;
+  const archivedTotal = systemOverview
+    ? systemOverview.projects.completed + systemOverview.projects.archivedManual
+    : 0;
 
   return (
     <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4 tabular-nums">
       <div className="rounded-xl border border-border bg-surface p-4">
-        <p className="text-xs text-text-secondary">Proyek Aktif</p>
+        <p className="text-xs text-text-secondary">Proyek Berjalan</p>
         <p className="mt-2.5 text-[28px] leading-none font-semibold tracking-tight text-text-primary">
           {metrics.totalProjects}
         </p>
         <p className="mt-2 text-xs text-text-muted">
-          {metrics.activeAreas} area aktif terpantau
+          {metrics.activeAreas} area terpantau
+          {systemOverview
+            ? ` · ${systemOverview.projects.preparing} persiapan · ${archivedTotal} arsip`
+            : ""}
         </p>
       </div>
 
@@ -63,6 +82,7 @@ export function DashboardKpiCards({
           {unreportedCount}
         </p>
         <p className="mt-2 text-xs text-text-muted">
+          {unassignedCount > 0 ? `${unassignedCount} belum di-plot · ` : ""}
           {holidayCount > 0 ? `${holidayCount} libur rutin · ` : ""}Batas normal 17:00
         </p>
       </div>

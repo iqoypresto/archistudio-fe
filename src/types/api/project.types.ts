@@ -1,6 +1,14 @@
+import type { PaginatedResponse } from "./index";
+
 export type ActiveProjectStatus = "PERSIAPAN" | "BERJALAN";
 export type ProjectStatus = ActiveProjectStatus | "SELESAI";
 export type ArchiveType = "COMPLETED" | "MANUAL";
+
+export interface ProjectStatusCounts {
+  all: number;
+  BERJALAN: number;
+  PERSIAPAN: number;
+}
 
 export interface ProjectSiteManagerSummary {
   id: string;
@@ -27,7 +35,14 @@ export interface ProjectListItem {
   updatedAt: string;
   _count?: {
     areas: number;
+    drawings?: number;
+    commsEntries?: number;
+    documents?: number;
   };
+}
+
+export interface PaginatedProjectsResponse extends PaginatedResponse<ProjectListItem> {
+  statusCounts?: ProjectStatusCounts;
 }
 
 export interface ProjectAreaSummary {

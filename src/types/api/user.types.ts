@@ -1,3 +1,4 @@
+import type { PaginatedResponse } from "./index";
 import type { UserRole } from "./auth.types";
 
 export interface UserListItem {
@@ -8,8 +9,21 @@ export interface UserListItem {
   role: UserRole;
   jobTitle: string;
   isActive: boolean;
+  activeAreaCount?: number;
+  managedProjectCount?: number;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface UserSummaryCount {
+  total: number;
+  active: number;
+  inactive: number;
+  byRole: Record<UserRole, number>;
+}
+
+export interface PaginatedUsersResponse extends PaginatedResponse<UserListItem> {
+  summary?: UserSummaryCount;
 }
 
 export interface CreateUserPayload {

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { StatusIndicator } from "@/components/ui/StatusIndicator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { formatIdDate } from "@/lib/utils/office-format";
+import { formatIdDate, getTodayInJakarta } from "@/lib/utils/office-format";
 import { formatCurrencyIdr } from "@/lib/validation/payment.validation";
 import type { PaymentPayeeItem, PaymentRecordItem, PaymentStatus } from "@/types/api/payment.types";
 
@@ -136,7 +136,12 @@ export function PaymentRecordList({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {items.map((record) => (
+                {items.map((record) => {
+                  const isOverdue =
+                    record.status === "UNPAID" &&
+                    Boolean(record.dueDate) &&
+                    (record.dueDate as string) < getTodayInJakarta();
+                  return (
                   <TableRow key={record.id} className="border-border/60 hover:bg-surface-input/40">
                     <TableCell className="px-4 py-3 text-[13px] font-semibold text-text-primary">
                       {formatCurrencyIdr(record.amount)}
@@ -145,13 +150,25 @@ export function PaymentRecordList({
                       <p className="text-[13px] text-text-primary">
                         {formatIdDate(record.recordDate)}
                       </p>
-                      <p className="mt-0.5 text-xs text-text-muted">
-                        {record.dueDate ? `Jatuh tempo ${formatIdDate(record.dueDate)}` : "Tanpa jatuh tempo"}
+                      <p
+                        className={`mt-0.5 text-xs ${
+                          isOverdue ? "font-medium text-status-danger-fg" : "text-text-muted"
+                        }`}
+                      >
+                        {record.dueDate
+                          ? `${isOverdue ? "Melewati jatuh tempo" : "Jatuh tempo"} ${formatIdDate(record.dueDate)}`
+                          : "Tanpa jatuh tempo"}
                       </p>
                     </TableCell>
                     <TableCell className="px-4 py-3">
-                      <StatusIndicator tone={record.status === "PAID" ? "success" : "warning"}>
-                        {record.status === "PAID" ? "Sudah Dibayar" : "Belum Dibayar"}
+                      <StatusIndicator
+                        tone={record.status === "PAID" ? "success" : isOverdue ? "danger" : "warning"}
+                      >
+                        {record.status === "PAID"
+                          ? "Sudah Dibayar"
+                          : isOverdue
+                            ? "Jatuh Tempo"
+                            : "Belum Dibayar"}
                       </StatusIndicator>
                     </TableCell>
                     <TableCell className="px-4 py-3 text-right">
@@ -179,7 +196,8 @@ export function PaymentRecordList({
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                  );
+                })}
               </TableBody>
             </Table>
           </div>

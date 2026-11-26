@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { Calendar, MapPin, ShieldCheck } from "lucide-react";
 import { StatusIndicator } from "@/components/ui/StatusIndicator";
+import type { ApiSurface } from "@/lib/api/api-surface";
 import {
   formatIdDate,
   formatShortTimezone,
@@ -17,7 +19,13 @@ const WEATHER_LABEL: Record<WeatherType, string> = {
   HUJAN: "Hujan",
 };
 
-export function ReportDetailView({ report }: { report: DailyReportDetail }) {
+export function ReportDetailView({
+  report,
+  surface = "office",
+}: {
+  report: DailyReportDetail;
+  surface?: ApiSurface;
+}) {
   const sentTime = formatTimeInTimezone(report.submittedAt, report.project.timezone);
   const weatherText = report.weather ? WEATHER_LABEL[report.weather] : "-";
 
@@ -38,10 +46,26 @@ export function ReportDetailView({ report }: { report: DailyReportDetail }) {
               <span className="text-text-secondary">Direvisi Owner (#{report.revisionNo})</span>
             </>
           )}
+          {report.archivedAt && (
+            <>
+              <span>·</span>
+              <span className="text-text-secondary">Arsip Harian</span>
+            </>
+          )}
         </div>
 
         <h1 className="font-heading text-xl font-semibold tracking-tight text-text-primary sm:text-[22px]">
-          {report.project.name} — {report.area.code} {report.area.name}
+          {surface === "office" ? (
+            <Link
+              href={`/office/projects/${report.project.id}`}
+              className="underline-offset-4 hover:underline"
+            >
+              {report.project.name}
+            </Link>
+          ) : (
+            report.project.name
+          )}{" "}
+          — {report.area.code} {report.area.name}
         </h1>
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-secondary">

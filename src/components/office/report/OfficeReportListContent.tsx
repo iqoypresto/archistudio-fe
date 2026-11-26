@@ -15,6 +15,7 @@ import { ReportPdfExportControl } from "./ReportPdfExportControl";
 const INITIAL_FILTERS: ListReportsQuery = {
   page: 1,
   pageSize: 10,
+  archiveState: "active",
   sortBy: "reportDate",
   sortOrder: "desc",
 };
@@ -25,9 +26,13 @@ export function OfficeReportListContent({ view = "reports" }: { view?: "reports"
   const showArchive = canArchive && view === "archive";
   const [filters, setFilters] = useState<ListReportsQuery>(INITIAL_FILTERS);
   const reportsQuery = useOfficeReportsQuery(filters, !showArchive);
+  const activeCountQuery = useOfficeReportsQuery(
+    { page: 1, pageSize: 1, archiveState: "active" },
+    canArchive && showArchive,
+  );
   const archiveCountQuery = useArchivedReportsQuery(
     { page: 1, pageSize: 1 },
-    canArchive && !showArchive,
+    canArchive,
   );
 
   function handleFilterPatch(patch: Partial<ListReportsQuery>) {
@@ -52,13 +57,15 @@ export function OfficeReportListContent({ view = "reports" }: { view?: "reports"
                 value: "reports",
                 label: "Laporan Aktif",
                 href: "/office/reports",
-                count: !showArchive ? reportsQuery.data?.meta.totalItems : undefined,
+                count: showArchive
+                  ? activeCountQuery.data?.meta.totalItems
+                  : reportsQuery.data?.meta.totalItems,
               },
               {
                 value: "archive",
                 label: "Arsip Harian",
                 href: "/office/reports?view=archive",
-                count: !showArchive ? archiveCountQuery.data?.meta.totalItems : undefined,
+                count: archiveCountQuery.data?.meta.totalItems,
               },
             ]}
             rightSlot={

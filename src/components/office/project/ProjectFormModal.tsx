@@ -25,7 +25,7 @@ interface ProjectFormModalProps {
 const DEFAULT_VALUES: ProjectFormValues = {
   code: "", name: "", location: "", clientName: "",
   startDate: new Date().toISOString().slice(0, 10), endDate: "",
-  status: "BERJALAN", timezone: "Asia/Jakarta", routineHolidays: [0], siteManagerId: "",
+  status: "PERSIAPAN", timezone: "Asia/Jakarta", routineHolidays: [0], siteManagerId: "",
 };
 
 export function ProjectFormModal({

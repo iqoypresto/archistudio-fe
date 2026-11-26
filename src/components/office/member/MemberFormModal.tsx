@@ -39,6 +39,9 @@ export function MemberFormModal({
   const currentActor = useAuthStore((state) => state.user);
   const isEditing = Boolean(userToEdit);
   const isAdminActor = currentActor?.role === "ADMIN";
+  const isTargetOwner = userToEdit?.role === "OWNER";
+  const isEditingSelf = Boolean(userToEdit && userToEdit.id === currentActor?.id);
+  const isRoleLocked = isAdminActor || isTargetOwner || isEditingSelf;
   const { register, handleSubmit, reset, control, setError, clearErrors, formState: { errors } } =
     useForm<MemberFormValues>({ resolver: zodResolver(memberFormSchema), defaultValues: EMPTY_VALUES });
 
@@ -49,7 +52,11 @@ export function MemberFormModal({
   const onFormSubmit = (data: MemberFormValues) => {
     if (isEditing && userToEdit) {
       onSubmitUpdate(userToEdit.id, {
-        name: data.name, username: data.username, phone: data.phone, role: data.role, jobTitle: data.jobTitle,
+        name: data.name,
+        username: data.username,
+        phone: data.phone,
+        ...(isTargetOwner || isEditingSelf ? {} : { role: data.role }),
+        jobTitle: data.jobTitle,
       });
       return;
     }
@@ -125,16 +132,19 @@ export function MemberFormModal({
                   control={control}
                   render={({ field }) => (
                     <Select
-                      value={field.value}
-                      disabled={isAdminActor}
+                      value={isTargetOwner ? "OWNER" : field.value}
+                      disabled={isRoleLocked}
                       onValueChange={(val: string | null) =>
                         field.onChange(val === "ADMIN" || val === "SITE_MANAGER" ? val : "SUPERVISOR")
                       }
                     >
                       <SelectTrigger id="role" className="h-9 text-xs">
-                        <SelectValue placeholder="Pilih Peran">{getRoleLabel(field.value)}</SelectValue>
+                        <SelectValue placeholder="Pilih Peran">
+                          {isTargetOwner ? getRoleLabel("OWNER") : getRoleLabel(field.value)}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
+                        {isTargetOwner && <SelectItem value="OWNER">Owner</SelectItem>}
                         {!isAdminActor && <SelectItem value="ADMIN">Admin</SelectItem>}
                         {!isAdminActor && <SelectItem value="SITE_MANAGER">Site Manager</SelectItem>}
                         <SelectItem value="SUPERVISOR">Supervisor</SelectItem>
@@ -142,7 +152,13 @@ export function MemberFormModal({
                     </Select>
                   )}
                 />
-                {isAdminActor && <p className="text-[11px] text-text-muted">Admin hanya dapat mengelola Supervisor.</p>}
+                {isTargetOwner ? (
+                  <p className="text-[11px] text-text-muted">Peran akun Owner terkunci dan tidak dapat diturunkan.</p>
+                ) : isEditingSelf ? (
+                  <p className="text-[11px] text-text-muted">Anda tidak dapat mengubah peran akun Anda sendiri.</p>
+                ) : isAdminActor ? (
+                  <p className="text-[11px] text-text-muted">Admin hanya dapat mengelola Supervisor.</p>
+                ) : null}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="jobTitle" className="text-xs font-medium">Jabatan Paraf</Label>

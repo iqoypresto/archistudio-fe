@@ -6,6 +6,7 @@ import type {
   ArchiveFilterParams,
   CreateProjectPayload,
   ProjectFilterParams,
+  ProjectListItem,
   RestoreProjectPayload,
   UpdateProjectPayload,
 } from "@/types/api/project.types";
@@ -48,14 +49,16 @@ export function useProjectDetailQuery(id: string, surface: ApiSurface = "office"
   });
 }
 
-export function useCreateProjectMutation(onSuccessCallback?: () => void) {
+export function useCreateProjectMutation(
+  onSuccessCallback?: (created: ProjectListItem) => void,
+) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (payload: CreateProjectPayload) => projectApi.createProject(payload),
-    onSuccess: () => {
+    onSuccess: (created) => {
       toast.success("Project baru berhasil dibuat.");
       queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
-      onSuccessCallback?.();
+      onSuccessCallback?.(created);
     },
     onError: (error: Error) => {
       toast.error(error.message || "Gagal membuat project.");

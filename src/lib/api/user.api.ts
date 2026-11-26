@@ -1,7 +1,8 @@
 import { api } from "./axios";
-import type { ApiResponse, PaginatedResponse } from "@/types/api";
+import type { ApiResponse } from "@/types/api";
 import type {
   CreateUserPayload,
+  PaginatedUsersResponse,
   ResetPasswordPayload,
   ToggleStatusPayload,
   UpdateUserPayload,
@@ -10,9 +11,9 @@ import type {
 } from "@/types/api/user.types";
 
 export const userApi = {
-  /** Mengambil daftar anggota berpaginasi beserta filter. */
-  async getUsers(params?: UserFilterParams): Promise<PaginatedResponse<UserListItem>> {
-    const response = await api.get<PaginatedResponse<UserListItem>>("/office/users", {
+  /** Mengambil daftar anggota berpaginasi beserta filter dan ringkasan global. */
+  async getUsers(params?: UserFilterParams): Promise<PaginatedUsersResponse> {
+    const response = await api.get<PaginatedUsersResponse>("/office/users", {
       params,
     });
     return response.data;

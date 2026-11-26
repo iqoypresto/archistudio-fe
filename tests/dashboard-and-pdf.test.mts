@@ -37,11 +37,13 @@ describe("TASK-08 Frontend Dashboard Monitoring, Buka Kunci & Export PDF", () =>
     assert.equal(calculateOnTimePercentage(10, 10), 100);
   });
 
-  it("[BR-11 / BR-18] resolveAreaStatusBadgeTone memetakan status harian area ke warna tone badge yang sesuai", () => {
+  it("[BR-11 / BR-18 / Wave 1A] resolveAreaStatusBadgeTone memetakan semua status harian area termasuk belum ditugaskan & di luar jadwal", () => {
     assert.equal(resolveAreaStatusBadgeTone("TERKIRIM"), "success");
     assert.equal(resolveAreaStatusBadgeTone("TERLAMBAT"), "warning");
+    assert.equal(resolveAreaStatusBadgeTone("BELUM_DITUGASKAN"), "warning");
     assert.equal(resolveAreaStatusBadgeTone("BELUM_LAPOR"), "danger");
     assert.equal(resolveAreaStatusBadgeTone("LIBUR_RUTIN"), "muted");
+    assert.equal(resolveAreaStatusBadgeTone("DI_LUAR_JADWAL"), "muted");
   });
 
   it("[AC-27.1 / BR-30] menampilkan error API dan area yang belum lengkap pada respons Blob", async () => {

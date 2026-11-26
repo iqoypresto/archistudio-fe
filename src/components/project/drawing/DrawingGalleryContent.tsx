@@ -6,6 +6,8 @@ import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
+import { StatusIndicator } from "@/components/ui/StatusIndicator";
 import { useArchiveDrawingMutation, useDrawingUpload, useProjectDrawingsQuery } from "@/hooks/drawing.hooks";
 import { useProjectDetailQuery } from "@/hooks/project.hooks";
 import { formatIdDate } from "@/lib/utils/office-format";
@@ -17,8 +19,17 @@ import type { ApiSurface } from "@/lib/api/api-surface";
 import { ConfirmArchiveDrawingDialog } from "./ConfirmArchiveDrawingDialog";
 import { DrawingPreviewModal } from "./DrawingPreviewModal";
 
+type DrawingViewMode = "ACTIVE" | "ARCHIVED";
+
+const DRAWING_VIEW_OPTIONS = [
+  { value: "ACTIVE", label: "Aktif" },
+  { value: "ARCHIVED", label: "Diarsipkan" },
+] as const;
+
 export function DrawingGalleryContent({ projectId, surface = "office" }: { projectId: string; surface?: ApiSurface }) {
   const role = useAuthStore((state) => state.user?.role);
+  const isOwnerOffice = role === "OWNER" && surface === "office";
+  const [viewMode, setViewMode] = useState<DrawingViewMode>("ACTIVE");
   const [search, setSearch] = useState("");
   const [previewItem, setPreviewItem] = useState<DrawingItem | null>(null);
   const [archiveTarget, setArchiveTarget] = useState<DrawingItem | null>(null);
@@ -27,15 +38,22 @@ export function DrawingGalleryContent({ projectId, surface = "office" }: { proje
   const project = projectQuery.data;
   const { canView, canManage, isProjectReadOnly } = resolveDrawingPermissions(role, project);
 
-  const drawingsQuery = useProjectDrawingsQuery(projectId, undefined, { enabled: canView }, surface);
+  const drawingsQuery = useProjectDrawingsQuery(
+    projectId,
+    isOwnerOffice && viewMode === "ARCHIVED" ? { includeArchived: true } : undefined,
+    { enabled: canView },
+    surface,
+  );
   const archiveMutation = useArchiveDrawingMutation(projectId);
   const { uploadDrawing, isUploading } = useDrawingUpload(projectId);
 
   const filteredItems = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const items = drawingsQuery.data ?? [];
+    const items = (drawingsQuery.data ?? []).filter((item) =>
+      isOwnerOffice && viewMode === "ARCHIVED" ? Boolean(item.archivedAt) : !item.archivedAt,
+    );
     return q ? items.filter((item) => item.fileName.toLowerCase().includes(q)) : items;
-  }, [drawingsQuery.data, search]);
+  }, [drawingsQuery.data, isOwnerOffice, search, viewMode]);
 
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -95,9 +113,19 @@ export function DrawingGalleryContent({ projectId, surface = "office" }: { proje
               className="h-9 pl-8 text-xs"
             />
           </div>
-          <span className="text-xs text-text-muted">
-            {filteredItems.length} gambar · Klik gambar untuk pratinjau penuh
-          </span>
+          <div className="flex flex-wrap items-center gap-3">
+            {isOwnerOffice && (
+              <SegmentedControl
+                ariaLabel="Filter status drawing"
+                options={DRAWING_VIEW_OPTIONS}
+                value={viewMode}
+                onChange={setViewMode}
+              />
+            )}
+            <span className="text-xs text-text-muted">
+              {filteredItems.length} gambar · Klik gambar untuk pratinjau penuh
+            </span>
+          </div>
         </div>
 
         <div className="p-5">
@@ -145,7 +173,11 @@ export function DrawingGalleryContent({ projectId, surface = "office" }: { proje
                           {formatIdDate(item.uploadedAt)} · {Math.max(1, Math.round(item.sizeBytes / 1024))} KB
                         </p>
                       </div>
-                      {canManage && (
+                      {item.archivedAt ? (
+                        <StatusIndicator tone="muted" className="shrink-0 text-[11px]">
+                          Diarsipkan
+                        </StatusIndicator>
+                      ) : canManage ? (
                         <Button
                           type="button"
                           variant="outline"
@@ -156,7 +188,7 @@ export function DrawingGalleryContent({ projectId, surface = "office" }: { proje
                         >
                           Arsipkan
                         </Button>
-                      )}
+                      ) : null}
                     </div>
                   </article>
                 ))}

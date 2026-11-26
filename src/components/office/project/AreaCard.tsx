@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { StatusIndicator } from "@/components/ui/StatusIndicator";
 import { formatIdDate } from "@/lib/utils/office-format";
+import { getRoleLabel } from "@/lib/utils/role";
 import type { AreaListItem } from "@/types/api/area.types";
 
 interface AreaCardProps {
@@ -23,6 +24,7 @@ export function AreaCard({
   canViewHistory,
 }: AreaCardProps) {
   const active = area.activeAssignment;
+  const isSupervisorInactive = active?.supervisor.isActive === false;
   const showFooter = canEditArea || canViewHistory;
 
   return (
@@ -35,8 +37,11 @@ export function AreaCard({
               {area.name}
             </h3>
           </div>
-          <StatusIndicator tone={active ? "success" : "warning"} className="shrink-0 text-xs">
-            {active ? "Aktif" : "Belum ditugaskan"}
+          <StatusIndicator
+            tone={!active ? "warning" : isSupervisorInactive ? "danger" : "success"}
+            className="shrink-0 text-xs"
+          >
+            {!active ? "Belum ditugaskan" : isSupervisorInactive ? "Pengawas nonaktif" : "Aktif"}
           </StatusIndicator>
         </div>
 
@@ -51,8 +56,16 @@ export function AreaCard({
                 <span className="font-normal text-text-muted">@{active.supervisor.username}</span>
               </p>
               <p className="truncate text-xs text-text-secondary">
-                {active.supervisor.jobTitle} · Sejak {formatIdDate(active.startDate)}
+                {active.supervisor.role
+                  ? `${getRoleLabel(active.supervisor.role)} · ${active.supervisor.jobTitle}`
+                  : active.supervisor.jobTitle}{" "}
+                · Sejak {formatIdDate(active.startDate)}
               </p>
+              {isSupervisorInactive && (
+                <p className="pt-0.5 text-[11px] font-medium text-status-danger-fg">
+                  Akun pengawas sedang nonaktif — segera ganti pengawas area ini.
+                </p>
+              )}
             </div>
           ) : (
             <p className="mt-1 text-xs text-status-warning-fg">
