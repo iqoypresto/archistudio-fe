@@ -8,7 +8,18 @@ import type {
   UploadSessionTarget,
 } from "@/types/api/upload.types";
 import { apiSurfacePath, type ApiSurface } from "./api-surface";
+import { ApiError } from "./api-error";
 import { api } from "./axios";
+
+const MAX_UNCHANGED_OFFSET_RETRIES = 3;
+
+function isTransientUploadError(error: unknown): boolean {
+  return error instanceof ApiError && (error.code === "NETWORK_ERROR" || error.statusCode >= 500);
+}
+
+function wait(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
 
 export class UploadApi {
   async createSession(payload: UploadSessionPayload, surface?: ApiSurface): Promise<UploadSessionReceipt> {
@@ -49,6 +60,7 @@ export class UploadApi {
 
     try {
       let nextOffsetBytes = 0;
+      let unchangedOffsetRetries = 0;
       while (nextOffsetBytes < file.size) {
         const start = nextOffsetBytes;
         const endExclusive = Math.min(start + receipt.chunkSizeBytes, file.size);
@@ -75,12 +87,22 @@ export class UploadApi {
             throw new Error("Offset upload tidak valid.");
           }
           nextOffsetBytes = acknowledgedOffset;
+          unchangedOffsetRetries = 0;
         } catch (uploadError) {
           const reconciled = await this.getStatus(receipt.uploadSessionId, resolvedSurface).catch(() => null);
-          if (!reconciled || reconciled.nextOffsetBytes <= start || reconciled.nextOffsetBytes > file.size) {
+          if (!reconciled || reconciled.nextOffsetBytes < start || reconciled.nextOffsetBytes > file.size) {
             throw uploadError;
           }
+          if (reconciled.nextOffsetBytes === start) {
+            if (!isTransientUploadError(uploadError) || unchangedOffsetRetries >= MAX_UNCHANGED_OFFSET_RETRIES) {
+              throw uploadError;
+            }
+            await wait(300 * 2 ** unchangedOffsetRetries);
+            unchangedOffsetRetries += 1;
+            continue;
+          }
           nextOffsetBytes = reconciled.nextOffsetBytes;
+          unchangedOffsetRetries = 0;
         }
       }
 
