@@ -48,13 +48,13 @@ export class UploadApi {
     onSessionCreated?.(receipt);
 
     try {
-      let status = await this.getStatus(receipt.uploadSessionId, resolvedSurface);
-      while (status.nextOffsetBytes < file.size) {
-        const start = status.nextOffsetBytes;
+      let nextOffsetBytes = 0;
+      while (nextOffsetBytes < file.size) {
+        const start = nextOffsetBytes;
         const endExclusive = Math.min(start + receipt.chunkSizeBytes, file.size);
         const chunk = file.slice(start, endExclusive);
         try {
-          await api.put<ApiResponse<{ nextOffsetBytes: number }>>(
+          const response = await api.put<ApiResponse<{ nextOffsetBytes: number }>>(
             `${this.sessionsPath(payload, resolvedSurface)}/${receipt.uploadSessionId}/chunks`,
             chunk,
             {
@@ -70,11 +70,18 @@ export class UploadApi {
               },
             },
           );
+          const acknowledgedOffset = response.data.data.nextOffsetBytes;
+          if (acknowledgedOffset <= start || acknowledgedOffset > file.size) {
+            throw new Error("Offset upload tidak valid.");
+          }
+          nextOffsetBytes = acknowledgedOffset;
         } catch (uploadError) {
           const reconciled = await this.getStatus(receipt.uploadSessionId, resolvedSurface).catch(() => null);
-          if (!reconciled || reconciled.nextOffsetBytes <= start) throw uploadError;
+          if (!reconciled || reconciled.nextOffsetBytes <= start || reconciled.nextOffsetBytes > file.size) {
+            throw uploadError;
+          }
+          nextOffsetBytes = reconciled.nextOffsetBytes;
         }
-        status = await this.getStatus(receipt.uploadSessionId, resolvedSurface);
       }
 
       const response = await api.post<ApiResponse<CompletedStoredFile>>(
