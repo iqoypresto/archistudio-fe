@@ -9,7 +9,7 @@ export interface CommsActorSummary {
 }
 
 export interface CommsAttachmentPayload {
-  storageKey: string;
+  storedFileId: string;
   fileName: string;
   mimeType: string;
   sizeBytes: number;
@@ -22,11 +22,11 @@ export interface CommsEntryItem {
   entryDate: string;
   subject: string;
   note: string | null;
-  attachmentKey: string | null;
+  attachmentStoredFileId: string | null;
   attachmentName: string | null;
   attachmentMime: string | null;
   attachmentBytes: number | null;
-  attachmentViewUrl: string | null;
+  attachmentContentPath: string | null;
   createdBy: CommsActorSummary;
   updatedBy: CommsActorSummary | null;
   createdAt: string;
@@ -54,14 +54,4 @@ export interface CommsFilterParams {
   dateTo?: string;
   direction?: CommsDirection;
   search?: string;
-}
-
-export interface SignedCommsAttachmentResponse {
-  uploadUrl: string;
-  storageKey: string;
-  expiresInSeconds: number;
-  purpose: "comms-attachment";
-  fileName: string;
-  contentType: string;
-  fileSizeBytes: number;
 }

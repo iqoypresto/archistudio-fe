@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { formatIdDate } from "@/lib/utils/office-format";
 import { formatCurrencyIdr } from "@/lib/validation/payment.validation";
 import type { PaymentPayeeItem, PaymentRecordItem, PaymentStatus } from "@/types/api/payment.types";
+import { fileApi } from "@/lib/api/file.api";
 
 type StatusSegment = "ALL" | PaymentStatus;
 
@@ -156,16 +157,15 @@ export function PaymentRecordList({
                     </TableCell>
                     <TableCell className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1.5">
-                        {record.proofViewUrl && (
-                          <a
-                            href={record.proofViewUrl}
-                            target="_blank"
-                            rel="noreferrer"
+                        {record.proofContentPath && (
+                          <button
+                            type="button"
+                            onClick={() => void fileApi.openContent(record.proofContentPath!)}
                             className="inline-flex h-8 items-center gap-1 rounded-lg border border-border bg-surface-input px-2.5 text-xs font-medium text-text-secondary transition-colors hover:bg-surface-active hover:text-text-primary"
                           >
                             <ExternalLink className="size-3" />
                             Bukti
-                          </a>
+                          </button>
                         )}
                         <Button
                           type="button"

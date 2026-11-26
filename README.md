@@ -53,7 +53,7 @@ src/
 
 ## 🛡️ Ergonomi Lapangan & Resiliensi Lemah Sinyal
 
-1. **Kompresi Sisi Klien**: Seluruh foto dikompresi di browser pengawas sebelum diunggah langsung ke Cloudflare R2 menggunakan *presigned URL*, sehingga menghemat kuota dan menjaga kestabilan sinyal.
+1. **Kompresi Sisi Klien**: Foto dikompresi di browser sebelum dikirim dalam chunk resumable 4 MiB melalui backend ke folder Google Drive privat aplikasi. Token OAuth dan URL sesi Drive tetap di backend; akses baca melewati endpoint API yang memeriksa hak akses.
 2. **Auto-Backup `localStorage`**: Draf formulir laporan lapangan disimpan secara berkala ke penyimpanan lokal browser HP (`local-form-backup.hooks.ts`) agar pekerjaan tidak hilang bila browser tertutup mendadak.
 3. **Penyajian 4-State Terstandarisasi**: Seluruh tabel dan view data dibungkus komponen `<AsyncStateView>` untuk menjamin *loading skeleton*, penanganan error yang informatif dengan tombol *retry*, serta pesan *empty state* yang ramah pengguna.
 4. **Touch Target Sesuai Standar**: Elemen tombol mobile dirancang dengan ukuran minimal 44×44px (48×48px untuk tombol utama lapangan) dan font form berukuran 16px untuk mencegah auto-zoom pada iOS Safari.

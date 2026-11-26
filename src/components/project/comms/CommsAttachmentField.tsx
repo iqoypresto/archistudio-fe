@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { COMMS_ATTACHMENT_ACCEPT } from "@/lib/validation/comms.validation";
 import type { CommsAttachmentPayload } from "@/types/api/comms.types";
+import { fileApi } from "@/lib/api/file.api";
 
 interface CommsAttachmentFieldProps {
   attachment: CommsAttachmentPayload | null;
-  existingViewUrl?: string | null;
+  existingContentPath?: string | null;
   isUploading: boolean;
   errorMessage: string | null;
   onSelectFile: (file: File) => void;
@@ -19,7 +20,7 @@ interface CommsAttachmentFieldProps {
 
 export function CommsAttachmentField({
   attachment,
-  existingViewUrl,
+  existingContentPath,
   isUploading,
   errorMessage,
   onSelectFile,
@@ -45,17 +46,16 @@ export function CommsAttachmentField({
               <p className="truncate font-medium text-text-primary">{attachment.fileName}</p>
               <p className="text-text-secondary">
                 {Math.max(1, Math.round(attachment.sizeBytes / 1024))} KB
-                {existingViewUrl && (
+                {existingContentPath && (
                   <>
                     {" · "}
-                    <a
-                      href={existingViewUrl}
-                      target="_blank"
-                      rel="noreferrer"
+                    <button
+                      type="button"
+                      onClick={() => void fileApi.openContent(existingContentPath)}
                       className="text-text-primary underline"
                     >
                       Buka lampiran
-                    </a>
+                    </button>
                   </>
                 )}
               </p>

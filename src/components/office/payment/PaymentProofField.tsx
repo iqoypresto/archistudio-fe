@@ -6,10 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { PaymentProofPayload } from "@/types/api/payment.types";
+import { fileApi } from "@/lib/api/file.api";
 
 interface PaymentProofFieldProps {
   proof: PaymentProofPayload | null;
-  existingViewUrl?: string | null;
+  existingContentPath?: string | null;
   isUploading: boolean;
   errorMessage: string | null;
   onSelectFile: (file: File) => void;
@@ -18,7 +19,7 @@ interface PaymentProofFieldProps {
 
 export function PaymentProofField({
   proof,
-  existingViewUrl,
+  existingContentPath,
   isUploading,
   errorMessage,
   onSelectFile,
@@ -42,17 +43,16 @@ export function PaymentProofField({
               <p className="truncate font-medium text-text-primary">{proof.fileName}</p>
               <p className="text-text-secondary">
                 {Math.max(1, Math.round(proof.sizeBytes / 1024))} KB
-                {existingViewUrl && (
+                {existingContentPath && (
                   <>
                     {" · "}
-                    <a
-                      href={existingViewUrl}
-                      target="_blank"
-                      rel="noreferrer"
+                    <button
+                      type="button"
+                      onClick={() => void fileApi.openContent(existingContentPath)}
                       className="text-text-primary underline"
                     >
                       Lihat bukti
-                    </a>
+                    </button>
                   </>
                 )}
               </p>

@@ -15,7 +15,7 @@ export function applyQueueItemPatch(items: PhotoQueueItem[], id: string, change:
 }
 
 export function prepareRetryItem(items: PhotoQueueItem[], id: string): PhotoQueueItem[] {
-  return applyQueueItemPatch(items, id, { status: "idle", progress: 0, errorMessage: null, storageKey: null });
+  return applyQueueItemPatch(items, id, { status: "idle", progress: 0, errorMessage: null, storedFileId: null, uploadSessionId: null });
 }
 
 export function removeQueueItem(items: PhotoQueueItem[], id: string): PhotoQueueItem[] {
@@ -30,16 +30,16 @@ async function prepareFile(file: File, id: string): Promise<PhotoQueueItem> {
   });
   return {
     id, fileName: file.name, contentType, previewUrl: URL.createObjectURL(compressed),
-    file: compressed, status: "local", progress: 100, caption: "", storageKey: null,
+    file: compressed, status: "local", progress: 100, caption: "", storedFileId: null, uploadSessionId: null,
     takenAt, errorMessage: null,
   };
 }
 
 export function buildReportPhotoInputs(items: PhotoQueueItem[]): ReportPhotoInput[] {
   return items.map((item, sortOrder) => {
-    if (!item.storageKey) throw new Error("Tunggu semua foto berhasil diunggah.");
+    if (!item.storedFileId) throw new Error("Tunggu semua foto berhasil diunggah.");
     return {
-      storageKey: item.storageKey, caption: item.caption.trim() || null,
+      storedFileId: item.storedFileId, caption: item.caption.trim() || null,
       sortOrder, takenAt: item.takenAt,
     };
   });
@@ -67,21 +67,21 @@ export function usePhotoUploadQueue(params: { areaId: string; reportDate: string
   }, [updateItems]);
 
   const uploadItem = useCallback(async (item: PhotoQueueItem, sessionId: string): Promise<boolean> => {
-    if (item.storageKey) return true;
+    if (item.storedFileId) return true;
     if (!item.file) return false;
     try {
+      if (item.uploadSessionId) await uploadApi.cancelSession(item.uploadSessionId, "field");
       patch(item.id, { status: "signing", progress: 0, errorMessage: null });
-      const [signed] = await uploadApi.signUploadUrls({
-        areaId: params.areaId, reportDate: params.reportDate, sessionId,
-        files: [{ contentType: item.contentType, fileSizeBytes: item.file.size }],
-      });
-      if (!signed) throw new Error("URL unggah foto tidak tersedia.");
       patch(item.id, { status: "uploading", progress: 0 });
-      await uploadApi.putFileToSignedUrl({
-        uploadUrl: signed.uploadUrl, file: item.file, contentType: item.contentType,
-        onProgress: (progress) => patch(item.id, { progress }),
-      });
-      patch(item.id, { status: "uploaded", progress: 100, storageKey: signed.storageKey });
+      const completed = await uploadApi.uploadFile(
+        { reportSessionId: sessionId, areaId: params.areaId, reportDate: params.reportDate },
+        item.file, item.contentType,
+        (progress) => patch(item.id, { progress }),
+        item.fileName,
+        undefined,
+        (receipt) => patch(item.id, { uploadSessionId: receipt.uploadSessionId }),
+      );
+      patch(item.id, { status: "uploaded", progress: 100, storedFileId: completed.storedFileId, uploadSessionId: completed.uploadSessionId });
       return true;
     } catch (error) {
       patch(item.id, {
@@ -100,7 +100,7 @@ export function usePhotoUploadQueue(params: { areaId: string; reportDate: string
     const pending: PhotoQueueItem[] = files.map((file) => ({
       id: crypto.randomUUID(), fileName: file.name,
       contentType: file.type as SupportedImageMime, previewUrl: URL.createObjectURL(file),
-      file, status: "compressing", progress: 10, caption: "", storageKey: null,
+      file, status: "compressing", progress: 10, caption: "", storedFileId: null, uploadSessionId: null,
       takenAt: null, errorMessage: null,
     }));
     updateItems((current) => [...current, ...pending]);
@@ -119,7 +119,7 @@ export function usePhotoUploadQueue(params: { areaId: string; reportDate: string
   }, [updateItems]);
 
   const uploadItems = useCallback(async (selected: PhotoQueueItem[], sessionId: string): Promise<boolean> => {
-    const results = await Promise.all(selected.filter((item) => !item.storageKey).map((item) => uploadItem(item, sessionId)));
+    const results = await Promise.all(selected.filter((item) => !item.storedFileId).map((item) => uploadItem(item, sessionId)));
     return results.every(Boolean);
   }, [uploadItem]);
 
@@ -142,7 +142,16 @@ export function usePhotoUploadQueue(params: { areaId: string; reportDate: string
   }, [patch, uploadItem]);
 
   const updateCaption = useCallback((id: string, caption: string) => patch(id, { caption }), [patch]);
-  const removePhoto = useCallback((id: string) => {
+  const removePhoto = useCallback(async (id: string) => {
+    const removed = currentItems.current.find((item) => item.id === id);
+    if (removed?.uploadSessionId) {
+      try {
+        await uploadApi.cancelSession(removed.uploadSessionId, "field");
+      } catch {
+        toast.error("File belum dapat dilepas dari sesi laporan. Coba hapus lagi.");
+        return;
+      }
+    }
     updateItems((current) => {
       const removed = current.find((item) => item.id === id);
       if (removed?.previewUrl.startsWith("blob:")) URL.revokeObjectURL(removed.previewUrl);
@@ -153,11 +162,12 @@ export function usePhotoUploadQueue(params: { areaId: string; reportDate: string
   const restoreItems = useCallback((saved: PersistedReportPhoto[]) => {
     updateItems(() => saved.map((photo) => ({
       ...photo,
+      uploadSessionId: photo.uploadSessionId ?? null,
       previewUrl: "",
       file: null,
-      status: photo.storageKey ? "uploaded" : "failed",
-      progress: photo.storageKey ? 100 : 0,
-      errorMessage: photo.storageKey
+      status: photo.storedFileId ? "uploaded" : "failed",
+      progress: photo.storedFileId ? 100 : 0,
+      errorMessage: photo.storedFileId
         ? null
         : "File foto belum tersimpan di tab. Hapus item ini, lalu pilih ulang fotonya.",
     })));
@@ -168,7 +178,8 @@ export function usePhotoUploadQueue(params: { areaId: string; reportDate: string
       ...item,
       status: "failed",
       progress: 0,
-      storageKey: null,
+      storedFileId: null,
+      uploadSessionId: item.uploadSessionId,
       errorMessage: item.file
         ? "Sesi unggah kedaluwarsa. Tekan ulang untuk mengunggah foto ini lagi."
         : "Sesi unggah kedaluwarsa. Hapus item ini, lalu pilih ulang fotonya.",

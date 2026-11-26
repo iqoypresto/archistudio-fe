@@ -5,6 +5,7 @@ import { Loader2, Search, Upload } from "lucide-react";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { StoredFileImage } from "@/components/ui/StoredFileImage";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useArchiveDrawingMutation, useDrawingUpload, useProjectDrawingsQuery } from "@/hooks/drawing.hooks";
 import { useProjectDetailQuery } from "@/hooks/project.hooks";
@@ -60,26 +61,18 @@ export function DrawingGalleryContent({ projectId, surface = "office" }: { proje
         }
         action={
           canManage ? (
-            <label className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-white/15 bg-primary px-3.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary-hover">
-              {isUploading ? (
-                <>
-                  <Loader2 className="size-3.5 animate-spin" />
-                  Mengunggah...
-                </>
-              ) : (
-                <>
-                  <Upload className="size-3.5" />
-                  Unggah Drawing
-                </>
-              )}
-              <Input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                onChange={handleFileChange}
-                disabled={isUploading}
-                className="sr-only"
-              />
-            </label>
+            <div className="flex items-center gap-2">
+              <label className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-white/15 bg-primary px-3.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary-hover">
+                {isUploading ? <><Loader2 className="size-3.5 animate-spin" /> Mengunggah...</> : <><Upload className="size-3.5" /> Unggah Drawing</>}
+                <Input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleFileChange}
+                  disabled={isUploading}
+                  className="sr-only"
+                />
+              </label>
+            </div>
           ) : undefined
         }
       />
@@ -130,11 +123,11 @@ export function DrawingGalleryContent({ projectId, surface = "office" }: { proje
                       onClick={() => setPreviewItem(item)}
                       className="group relative aspect-4/3 w-full overflow-hidden bg-canvas"
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={item.viewUrl}
+                      <StoredFileImage
+                        contentPath={item.contentPath}
                         alt={item.fileName}
                         className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
+                        fallbackClassName="h-full w-full"
                       />
                     </button>
 

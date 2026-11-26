@@ -34,9 +34,9 @@ interface PaymentRecordFormModalProps {
 }
 
 function toInitialProof(record: PaymentRecordItem | null): PaymentProofPayload | null {
-  if (!record?.proofStorageKey || !record.proofFileName || !record.proofMimeType || !record.proofSizeBytes) return null;
+  if (!record?.proofStoredFileId || !record.proofFileName || !record.proofMimeType || !record.proofSizeBytes) return null;
   return {
-    storageKey: record.proofStorageKey, fileName: record.proofFileName,
+    storedFileId: record.proofStoredFileId, fileName: record.proofFileName,
     mimeType: record.proofMimeType as PaymentProofMime, sizeBytes: record.proofSizeBytes,
   };
 }
@@ -129,7 +129,7 @@ export function PaymentRecordFormModal({
 
           <PaymentProofField
             proof={proof}
-            existingViewUrl={recordToEdit?.proofStorageKey === proof?.storageKey ? recordToEdit?.proofViewUrl : null}
+            existingContentPath={recordToEdit?.proofStoredFileId === proof?.storedFileId ? recordToEdit?.proofContentPath : null}
             isUploading={isUploading}
             errorMessage={errorMessage}
             onSelectFile={handleSelectFile}

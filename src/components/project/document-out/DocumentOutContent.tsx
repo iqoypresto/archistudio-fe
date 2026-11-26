@@ -15,6 +15,7 @@ import { getDocumentTypeLabel, PROJECT_DOCUMENT_ACCEPT, resolveProjectDocumentPe
 import { useAuthStore } from "@/stores/auth.store";
 import type { ProjectDocumentItem, ProjectDocumentType } from "@/types/api/project-document.types";
 import { ConfirmDeleteDocumentDialog } from "./ConfirmDeleteDocumentDialog";
+import { fileApi } from "@/lib/api/file.api";
 
 const DOC_TABS: readonly { value: ProjectDocumentType; label: string }[] = [
   { value: "QUOTATION", label: "Quotation" },
@@ -144,15 +145,14 @@ export function DocumentOutContent({ projectId }: { projectId: string }) {
                     </TableCell>
                     <TableCell className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1.5">
-                        <a
-                          href={doc.viewUrl}
-                          target="_blank"
-                          rel="noreferrer"
+                        <button
+                          type="button"
+                          onClick={() => void fileApi.openContent(doc.contentPath)}
                           className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-surface-input px-2.5 text-xs font-medium text-text-secondary transition-colors hover:bg-surface-active hover:text-text-primary"
                         >
                           <ExternalLink className="size-3.5" />
                           Buka / Unduh
-                        </a>
+                        </button>
                         {canMutate && (
                           <Button
                             type="button"

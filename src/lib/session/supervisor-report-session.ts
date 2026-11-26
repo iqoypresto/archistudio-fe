@@ -16,7 +16,8 @@ const reportPhotoSchema = z.object({
   fileName: z.string(),
   contentType: z.enum(["image/jpeg", "image/png", "image/webp"]),
   caption: z.string(),
-  storageKey: z.string().nullable(),
+  storedFileId: z.string().nullable(),
+  uploadSessionId: z.string().nullable().optional(),
   takenAt: z.string().nullable(),
 });
 

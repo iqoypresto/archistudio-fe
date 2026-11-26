@@ -27,7 +27,8 @@ function toPersistedPhoto(photo: PhotoQueueItem): PersistedReportPhoto {
     fileName: photo.fileName,
     contentType: photo.contentType,
     caption: photo.caption,
-    storageKey: photo.storageKey,
+    storedFileId: photo.storedFileId,
+    uploadSessionId: photo.uploadSessionId,
     takenAt: photo.takenAt,
   };
 }
@@ -47,7 +48,7 @@ export function useSupervisorReportDraft({
   restorePhotos: (items: PersistedReportPhoto[]) => void;
   requireReselection: () => void;
 }) {
-  const storageKey = useMemo(() => supervisorReportDraftKey(areaId, reportDate), [areaId, reportDate]);
+  const draftKey = useMemo(() => supervisorReportDraftKey(areaId, reportDate), [areaId, reportDate]);
   const [step, setStep] = useState<ReportStep>(1);
   const [uploadSession, setUploadSession] = useState<UploadSession | null>(null);
   const [draftReady, setDraftReady] = useState(false);
@@ -59,7 +60,7 @@ export function useSupervisorReportDraft({
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
-      const draft = readSupervisorReportDraft(storageKey);
+      const draft = readSupervisorReportDraft(draftKey);
       if (draft) {
         form.reset({ ...buildDefaultReportValues(), ...draft.values } as ReportFormValues);
         const expired = draft.uploadSession
@@ -74,7 +75,7 @@ export function useSupervisorReportDraft({
             setDraftNotice("Sesi foto sebelumnya kedaluwarsa. Isian dipulihkan; hapus foto bertanda gagal lalu pilih ulang sebelum melanjutkan.");
           }
         } else {
-          const needsReselection = draft.photos.some((photo) => !photo.storageKey);
+          const needsReselection = draft.photos.some((photo) => !photo.storedFileId);
           setStep(needsReselection || (draft.step === 3 && !draft.photos.length) ? 2 : draft.step);
           setUploadSession(draft.uploadSession);
           if (needsReselection) {
@@ -87,14 +88,14 @@ export function useSupervisorReportDraft({
       setDraftReady(true);
     });
     return () => window.cancelAnimationFrame(frame);
-  }, [form, requireReselection, restorePhotos, storageKey]);
+  }, [form, requireReselection, restorePhotos, draftKey]);
 
   const persist = useCallback((values: ReportFormValues) => {
     if (!draftReady || completed) return;
     const persistedPhotos = photos.map(toPersistedPhoto);
     const hasWork = hasMeaningfulValues(values) || step > 1 || Boolean(uploadSession) || persistedPhotos.length > 0;
     if (!hasWork) {
-      removeSupervisorReportDraft(storageKey);
+      removeSupervisorReportDraft(draftKey);
       setDraftSaved(false);
       setStorageWarning(null);
       return;
@@ -104,7 +105,7 @@ export function useSupervisorReportDraft({
       ...values,
       workerCount: Number.isFinite(values.workerCount) ? values.workerCount : undefined,
     };
-    const saved = writeSupervisorReportDraft(storageKey, {
+    const saved = writeSupervisorReportDraft(draftKey, {
       version: 1,
       values: safeValues,
       step,
@@ -113,7 +114,7 @@ export function useSupervisorReportDraft({
     });
     setDraftSaved(saved);
     setStorageWarning(saved ? null : "Browser tidak dapat menyimpan isian sementara. Jangan tutup tab sebelum laporan terkirim.");
-  }, [completed, draftReady, photos, step, storageKey, uploadSession]);
+  }, [completed, draftReady, photos, step, draftKey, uploadSession]);
 
   useEffect(() => {
     if (!draftReady) return;
@@ -128,11 +129,11 @@ export function useSupervisorReportDraft({
   }, [draftReady, form, persist]);
 
   const clearDraft = useCallback(() => {
-    removeSupervisorReportDraft(storageKey);
+    removeSupervisorReportDraft(draftKey);
     setCompleted(true);
     setDraftSaved(false);
     setStorageWarning(null);
-  }, [storageKey]);
+  }, [draftKey]);
 
   return {
     step,

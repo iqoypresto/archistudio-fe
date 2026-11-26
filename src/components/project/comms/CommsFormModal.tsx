@@ -35,9 +35,9 @@ interface CommsFormModalProps {
 }
 
 function toInitialAttachment(entry: CommsEntryItem | null): CommsAttachmentPayload | null {
-  if (!entry?.attachmentKey || !entry.attachmentName || !entry.attachmentMime || !entry.attachmentBytes) return null;
+  if (!entry?.attachmentStoredFileId || !entry.attachmentName || !entry.attachmentMime || !entry.attachmentBytes) return null;
   return {
-    storageKey: entry.attachmentKey, fileName: entry.attachmentName,
+    storedFileId: entry.attachmentStoredFileId, fileName: entry.attachmentName,
     mimeType: entry.attachmentMime, sizeBytes: entry.attachmentBytes,
   };
 }
@@ -130,7 +130,7 @@ export function CommsFormModal({
 
           <CommsAttachmentField
             attachment={attachment}
-            existingViewUrl={entryToEdit?.attachmentKey === attachment?.storageKey ? entryToEdit?.attachmentViewUrl : null}
+            existingContentPath={entryToEdit?.attachmentStoredFileId === attachment?.storedFileId ? entryToEdit?.attachmentContentPath : null}
             isUploading={isUploading}
             errorMessage={errorMessage}
             onSelectFile={handleSelectFile}

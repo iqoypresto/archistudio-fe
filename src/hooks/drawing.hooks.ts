@@ -69,22 +69,9 @@ export function useDrawingUpload(projectId: string) {
       }
 
       const mimeType = (compressed.type || typeCheck.mimeType) as DrawingMimeType;
-      const signed = await drawingApi.signDrawingUpload({
-        projectId,
-        fileName: file.name,
-        contentType: mimeType,
-        fileSizeBytes: compressed.size,
-      });
-      await drawingApi.uploadDrawingToSignedUrl({
-        uploadUrl: signed.uploadUrl,
-        file: compressed,
-        contentType: mimeType,
-      });
+      const completed = await drawingApi.uploadDrawing(projectId, compressed, file.name, mimeType);
       await drawingApi.createDrawing(projectId, {
-        storageKey: signed.storageKey,
-        fileName: file.name,
-        mimeType,
-        sizeBytes: compressed.size,
+        storedFileId: completed.storedFileId,
       });
 
       toast.success("Drawing berhasil diunggah.");

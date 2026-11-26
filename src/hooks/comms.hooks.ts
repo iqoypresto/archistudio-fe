@@ -70,19 +70,9 @@ export function useCommsAttachmentUpload(projectId: string, surface: ApiSurface 
     setErrorMessage(null);
     setIsUploading(true);
     try {
-      const signed = await commsApi.signAttachmentUpload({
-        projectId,
-        fileName: file.name,
-        contentType: file.type,
-        fileSizeBytes: file.size,
-      }, surface);
-      await commsApi.uploadAttachmentToSignedUrl({
-        uploadUrl: signed.uploadUrl,
-        file,
-        contentType: file.type,
-      });
+      const completed = await commsApi.uploadAttachment(projectId, file, surface);
       return {
-        storageKey: signed.storageKey,
+        storedFileId: completed.storedFileId,
         fileName: file.name,
         mimeType: file.type,
         sizeBytes: file.size,

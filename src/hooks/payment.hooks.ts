@@ -107,19 +107,9 @@ export function usePaymentProofUpload(payeeId: string) {
     setErrorMessage(null);
     setIsUploading(true);
     try {
-      const signed = await paymentApi.signProofUpload({
-        payeeId,
-        fileName: file.name,
-        contentType: check.mimeType,
-        fileSizeBytes: file.size,
-      });
-      await paymentApi.uploadProofToSignedUrl({
-        uploadUrl: signed.uploadUrl,
-        file,
-        contentType: check.mimeType,
-      });
+      const completed = await paymentApi.uploadProof(payeeId, file, check.mimeType);
       return {
-        storageKey: signed.storageKey,
+        storedFileId: completed.storedFileId,
         fileName: file.name,
         mimeType: check.mimeType,
         sizeBytes: file.size,
