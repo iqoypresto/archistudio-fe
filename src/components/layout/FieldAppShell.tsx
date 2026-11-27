@@ -11,11 +11,12 @@ export function FieldAppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isHome = pathname === "/field/home";
   const isProjectsHome = pathname === "/field/projects";
+  const isReportDetail = /^\/field\/reports\/[^/]+$/.test(pathname);
   const isMainPage = isHome
     || isProjectsHome
     || pathname === "/field/reports"
     || pathname === "/field/history";
-  const showNavigation = isMainPage;
+  const showNavigation = isMainPage || isReportDetail;
 
   return (
     <div className="supervisor-mobile project-mobile-shell relative isolate mx-auto flex min-h-dvh w-full max-w-md flex-col bg-canvas shadow-xs">
