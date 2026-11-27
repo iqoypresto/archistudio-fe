@@ -2,8 +2,16 @@ interface ExifDateTags {
   DateTimeOriginal?: unknown;
   CreateDate?: unknown;
   OffsetTimeOriginal?: unknown;
-  OffsetTime?: unknown;
+  OffsetTimeDigitized?: unknown;
 }
+
+type ExifDateTag = "DateTimeOriginal" | "CreateDate";
+
+export type PhotoExifReadResult =
+  | { status: "read"; takenAt: string; sourceTag: ExifDateTag }
+  | { status: "missing-date"; takenAt: null }
+  | { status: "invalid-date"; takenAt: null; sourceTag: ExifDateTag }
+  | { status: "parse-error"; takenAt: null; errorName: string; errorMessage: string };
 
 function normalizeOffset(value: unknown): string | null | undefined {
   if (value === undefined) return undefined;
@@ -41,24 +49,70 @@ function toPhotoDate(value: unknown, rawOffset: unknown): string | null {
   return Number.isNaN(new Date(timestamp).getTime()) ? null : timestamp;
 }
 
-/** Mengubah tag EXIF mentah menjadi kandidat timestamp untuk API laporan. */
-export function normalizeExifTimestamp(tags: ExifDateTags | null | undefined): string | null {
-  if (!tags) return null;
-  const date = tags.DateTimeOriginal ?? tags.CreateDate;
-  const offset = tags.OffsetTimeOriginal ?? tags.OffsetTime;
-  return toPhotoDate(date, offset);
+function readTimestamp(tags: ExifDateTags | null | undefined): PhotoExifReadResult {
+  if (!tags) return { status: "missing-date", takenAt: null };
+  const candidates: { tag: ExifDateTag; value: unknown; offset: unknown }[] = [
+    { tag: "DateTimeOriginal", value: tags.DateTimeOriginal, offset: tags.OffsetTimeOriginal },
+    { tag: "CreateDate", value: tags.CreateDate, offset: tags.OffsetTimeDigitized },
+  ];
+  let invalidTag: ExifDateTag | null = null;
+  for (const candidate of candidates) {
+    if (candidate.value === undefined || candidate.value === null) continue;
+    const takenAt = toPhotoDate(candidate.value, candidate.offset);
+    if (takenAt) return { status: "read", takenAt, sourceTag: candidate.tag };
+    invalidTag ??= candidate.tag;
+  }
+  return invalidTag
+    ? { status: "invalid-date", takenAt: null, sourceTag: invalidTag }
+    : { status: "missing-date", takenAt: null };
 }
 
-/** EXIF reader is split into the upload path and failures never block photo upload. */
-export async function readPhotoTakenAt(file: File): Promise<string | null> {
+/** Mengubah tag EXIF mentah menjadi kandidat timestamp untuk API laporan. */
+export function normalizeExifTimestamp(tags: ExifDateTags | null | undefined): string | null {
+  const result = readTimestamp(tags);
+  return result.status === "read" ? result.takenAt : null;
+}
+
+function logExifReadFailure(file: File, result: Exclude<PhotoExifReadResult, { status: "read" }>): void {
+  if (process.env.NODE_ENV !== "development") return;
+  console.warn("[report-photo-exif] Waktu EXIF tidak terbaca.", {
+    status: result.status,
+    mimeType: file.type || "unknown",
+    ...(result.status === "invalid-date" ? { sourceTag: result.sourceTag } : {}),
+    ...(result.status === "parse-error"
+      ? { errorName: result.errorName, errorMessage: result.errorMessage }
+      : {}),
+  });
+}
+
+/** Membaca waktu dari file asli; kegagalan metadata tidak menghentikan unggah foto. */
+export async function readPhotoTakenAt(file: File): Promise<PhotoExifReadResult> {
   try {
-    const exifr = await import("exifr");
-    const tags = (await exifr.parse(file, {
-      pick: ["DateTimeOriginal", "CreateDate", "OffsetTimeOriginal", "OffsetTime"],
+    const exifrNamespace = await import("exifr") as typeof import("exifr") & {
+      default?: { parse: typeof import("exifr")["parse"] };
+    };
+    const parseExif = exifrNamespace.parse ?? exifrNamespace.default?.parse;
+    if (!parseExif) throw new Error("EXIF parser export is unavailable.");
+    const input = typeof FileReader === "undefined"
+      ? new Uint8Array(await file.arrayBuffer())
+      : file;
+    const options: Parameters<typeof parseExif>[1] & { silentErrors: boolean } = {
+      pick: ["DateTimeOriginal", "CreateDate", "OffsetTimeOriginal", "OffsetTimeDigitized"],
       reviveValues: false,
-    })) as ExifDateTags | undefined;
-    return normalizeExifTimestamp(tags);
-  } catch {
-    return null;
+      silentErrors: false,
+    };
+    const tags = (await parseExif(input, options)) as ExifDateTags | undefined;
+    const result = readTimestamp(tags);
+    if (result.status !== "read") logExifReadFailure(file, result);
+    return result;
+  } catch (error) {
+    const result: PhotoExifReadResult = {
+      status: "parse-error",
+      takenAt: null,
+      errorName: error instanceof Error ? error.name : "UnknownError",
+      errorMessage: error instanceof Error ? error.message : "Unknown parser error.",
+    };
+    logExifReadFailure(file, result);
+    return result;
   }
 }

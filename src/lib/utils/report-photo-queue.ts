@@ -45,7 +45,7 @@ export function requireQueueReselection(items: PhotoQueueItem[]): PhotoQueueItem
 
 export async function prepareReportPhoto(file: File, id: string, signal?: AbortSignal): Promise<PhotoQueueItem> {
   const contentType: SupportedImageMime = isSupportedImageMime(file.type) ? file.type : "image/jpeg";
-  const takenAt = await readPhotoTakenAt(file);
+  const exifResult = await readPhotoTakenAt(file);
   if (signal?.aborted) throw signal.reason ?? new Error("Kompresi foto dibatalkan.");
   const compressed = await imageCompression(file, {
     maxSizeMB: 0.8, maxWidthOrHeight: 1600, useWebWorker: true, fileType: contentType, signal,
@@ -54,7 +54,7 @@ export async function prepareReportPhoto(file: File, id: string, signal?: AbortS
   return {
     id, fileName: file.name, contentType, previewUrl: URL.createObjectURL(compressed),
     file: compressed, status: "local", progress: 100, caption: "", storedFileId: null, uploadSessionId: null,
-    takenAt, errorMessage: null,
+    takenAt: exifResult.takenAt, errorMessage: null,
   };
 }
 
