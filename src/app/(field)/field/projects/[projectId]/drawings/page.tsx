@@ -1,4 +1,4 @@
-import { DrawingGalleryContent } from "@/components/project/drawing/DrawingGalleryContent";
+import { FieldDrawingListContent } from "@/components/project/drawing/FieldDrawingListContent";
 
 export const instant = false;
 
@@ -8,5 +8,5 @@ export default async function FieldProjectDrawingsPage({
   params: Promise<{ projectId: string }>;
 }) {
   const { projectId } = await params;
-  return <DrawingGalleryContent projectId={projectId} surface="field" />;
+  return <FieldDrawingListContent projectId={projectId} />;
 }

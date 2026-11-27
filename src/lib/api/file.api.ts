@@ -41,4 +41,17 @@ export const fileApi = {
       toast.error("Gagal membuka file. Coba lagi.");
     }
   },
+
+  async downloadContent(contentPath: string, fileName: string): Promise<void> {
+    try {
+      const entry = await fileApi.getCachedEntry(contentPath, "full");
+      const link = document.createElement("a");
+      link.href = entry.objectUrl;
+      link.download = fileName;
+      link.rel = "noopener";
+      link.click();
+    } catch {
+      toast.error("Gagal mengunduh file. Coba lagi.");
+    }
+  },
 };

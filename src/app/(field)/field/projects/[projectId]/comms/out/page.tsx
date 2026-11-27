@@ -1,4 +1,4 @@
-import { CommsContent } from "@/components/project/comms/CommsContent";
+import { redirect } from "next/navigation";
 
 export const instant = false;
 
@@ -8,5 +8,5 @@ export default async function FieldProjectCommsOutPage({
   params: Promise<{ projectId: string }>;
 }) {
   const { projectId } = await params;
-  return <CommsContent projectId={projectId} fixedDirection="OUTBOUND" surface="field" />;
+  redirect(`/field/projects/${projectId}/comms`);
 }

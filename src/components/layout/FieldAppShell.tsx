@@ -52,9 +52,8 @@ export function FieldAppShell({ children }: { children: ReactNode }) {
 function getChildPageTitle(pathname: string): string {
   if (pathname === "/field/reports/new") return "Laporan Baru";
   if (pathname.startsWith("/field/reports/")) return "Detail Laporan";
-  if (pathname.endsWith("/drawings")) return "Drawing";
-  if (pathname.endsWith("/comms/in")) return "Comms In";
-  if (pathname.endsWith("/comms/out")) return "Comms Out";
+  if (pathname.endsWith("/drawings")) return "Gambar";
+  if (pathname.endsWith("/comms") || pathname.startsWith("/field/projects/") && pathname.includes("/comms/")) return "Comms";
   if (/^\/field\/projects\/[^/]+$/.test(pathname)) return "Detail Project";
   return "Halaman Lapangan";
 }
