@@ -4,7 +4,7 @@ import { FieldHistoryContent } from "@/components/field/report/FieldHistoryConte
 export const instant = false;
 
 export const metadata: Metadata = {
-  title: "Riwayat Saya | ArchiStudio Lapangan",
+  title: "Riwayat Laporan | ArchiStudio Lapangan",
 };
 
 export default function FieldHistoryPage() {
