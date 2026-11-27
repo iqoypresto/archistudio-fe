@@ -86,8 +86,8 @@ export function FieldHistoryFilterSheet({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="desc">Tanggal terbaru</SelectItem>
-                <SelectItem value="asc">Tanggal terlama</SelectItem>
+                <SelectItem value="desc">Terbaru</SelectItem>
+                <SelectItem value="asc">Terlama</SelectItem>
               </SelectContent>
             </Select>
           </label>

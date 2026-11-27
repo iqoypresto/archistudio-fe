@@ -77,7 +77,7 @@ export function FieldHistoryControls({
               {filters.sortOrder === "asc" && (
                 <FilterChip
                   prefix="Urutan:"
-                  value="Tanggal terlama"
+                  value="Terlama"
                   removeLabel="Kembalikan urutan ke tanggal terbaru"
                   onRemove={() => removeFilter("sort")}
                 />
