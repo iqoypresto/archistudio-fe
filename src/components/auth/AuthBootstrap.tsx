@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
 import { useMeQuery } from "@/hooks/auth.hooks";
 import { ApiError } from "@/lib/api/api-error";
 import { isFieldRole } from "@/lib/utils/role";
 import { getDefaultRouteForRole, useAuthStore } from "@/stores/auth.store";
 import type { UserRole } from "@/types/api/auth.types";
+import { AuthBootstrapFallback, type AuthBootstrapScope } from "./AuthBootstrapFallback";
 
-export type AuthScope = "guest" | "office" | "field" | "project" | "root";
+export type AuthScope = AuthBootstrapScope;
 
 function computeRedirectPath(
   scope: AuthScope,
@@ -32,19 +32,6 @@ function computeRedirectPath(
   return null;
 }
 
-function SessionCheckingScreen() {
-  return (
-    <div className="flex min-h-dvh items-center justify-center bg-canvas px-4">
-      <div className="flex items-center gap-3 rounded-xl border border-border bg-surface px-5 py-4 shadow-xs">
-        <Loader2 className="size-5 animate-spin text-text-primary" />
-        <span className="text-sm font-medium text-text-primary">
-          Memeriksa sesi akun...
-        </span>
-      </div>
-    </div>
-  );
-}
-
 export function AuthBootstrap({
   scope,
   children,
@@ -62,7 +49,7 @@ export function AuthBootstrap({
 
   const meQuery = useMeQuery(isHydrated);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!isHydrated) {
       hydrateFromStorage();
     }
@@ -103,7 +90,7 @@ export function AuthBootstrap({
       : !isHydrated || Boolean(redirectTarget);
 
   if (shouldBlockChildren) {
-    return <SessionCheckingScreen />;
+    return <AuthBootstrapFallback scope={scope} />;
   }
 
   return <>{children}</>;
