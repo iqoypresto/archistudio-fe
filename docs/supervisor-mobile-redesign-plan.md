@@ -12,7 +12,7 @@ Acuan Home: referensi `code.html` yang diberikan pengguna. PRD dan spesifikasi b
 - Form pengiriman langsung memiliki tiga langkah: **Keterangan → Foto + Keterangan → Konfirmasi**.
 - Setelah backend berhasil menyimpan laporan, aplikasi menampilkan animasi sukses menggunakan Motion, lalu kembali ke daftar Laporan.
 - Riwayat hanya berisi laporan terkirim Supervisor. Project tetap menggunakan desain project yang berlaku.
-- Tidak ada draft laporan, backup lokal, atau pemulihan isian setelah route ditutup/dimuat ulang. Isian hanya bertahan dalam memori selama halaman form aktif.
+- Tidak ada draft laporan di server. Isian, langkah, dan metadata foto dipulihkan dari `sessionStorage` pada tab yang sama; file foto asli tetap berada di memori dan harus dipilih ulang setelah reload. Sebelum reload atau menutup tab saat ada isian, browser menampilkan konfirmasi bawaan. Foto yang hilang memiliki aksi `Pilih ulang` tanpa perlu dihapus dahulu.
 - Pengguna mengonfirmasi tidak ada catatan draft lama yang perlu dipertahankan di database. Upload session sementara tetap dipakai untuk mengelola file unggahan; session itu bukan laporan draft.
 
 ## Route dan navigasi
@@ -53,7 +53,7 @@ Navigasi bawah menampilkan Home, Laporan, Riwayat, dan Project. Pada route detai
 
 - Kartu menyebut project, area, tanggal, dan status urutan kewajiban.
 - Kartu tanggal tertua yang terbuka menampilkan tombol **Buat Laporan**. Tanggal yang lebih baru menunjukkan terkunci.
-- Saat kembali dengan `submittedId`, tampilkan kartu `Baru Terkirim` di atas kewajiban dari data laporan yang sudah dikonfirmasi server. Tetap perbarui daftar kewajiban dari API.
+- Setelah submit berhasil, kembali ke `/field/reports` dan tampilkan daftar kewajiban terbaru dari API. Jangan menambahkan kartu hijau `Baru Terkirim`; laporan tetap tersedia di Riwayat.
 - Backend tetap menjadi sumber kebenaran tanggal wajib, hari libur, dan lock state.
 - Loading, kosong, error + coba lagi, dan success memiliki tampilan masing-masing.
 
@@ -63,15 +63,17 @@ Navigasi bawah menampilkan Home, Laporan, Riwayat, dan Project. Pada route detai
 2. **Foto + keterangan** — pilih 1–10 foto, tulis caption per foto, kompres di browser, tunjukkan progress, dan izinkan retry hanya pada foto gagal.
 3. **Konfirmasi** — periksa tanggal, area, jenis, seluruh keterangan, foto, dan caption sebelum Kirim Laporan.
 
+Langkah Konfirmasi membuka satu dialog keputusan di tengah yang merangkum proyek, area, tanggal, jenis laporan, dan jumlah foto. Jangan tampilkan drawer konfirmasi tambahan dari bawah.
+
 Nilai form dan foto yang berhasil diproses dipertahankan saat perpindahan langkah dan retry selama route tetap aktif. Tidak ada `localStorage`, IndexedDB, ataupun simpan draft server. Reload atau keluar dari halaman menghapus isian form. Status terlambat dan hasil akhir tetap berasal dari backend.
 
 ### Sukses submit
 
 - State submit: `idle → submitting → success` atau `idle → submitting → error`. Tombol Kirim dinonaktifkan selama `submitting` dan `success`. Saat menunggu server, teks menjadi spinner; tombol tampak menyempit via `scaleX(0.92)`, tanpa animasi width.
-- Hanya respons sukses dari `POST /api/v1/reports/submit` memicu overlay Motion. Timeline sukses sekitar 1,8 detik: tombol fade; overlay brand `#161719`; lingkaran hijau `#16A34A` spring ringan; centang SVG putih digambar lewat `pathLength`; satu ring pulse; judul “Laporan Terkirim” dan waktu kirim tampil berurutan; tombol `Selesai` fade in.
+- Hanya respons sukses dari `POST /api/v1/reports/submit` memicu overlay Motion. Timeline sukses sekitar 1,8 detik: tombol fade; overlay brand `#161719`; lingkaran hijau `#16A34A` spring ringan; centang SVG putih digambar lewat `pathLength`; satu ring pulse; judul “Laporan Terkirim” dan waktu kirim tampil berurutan; tombol `Kembali ke Daftar Laporan` fade in.
 - Animasi memakai `motion/react`, `AnimatePresence`, `MotionConfig reducedMotion="user"`, variants bertahap, easing masuk `easeOut`, dan easing keluar yang halus. Hanya transform/opacity yang dianimasikan; tidak ada confetti, suara, atau haptic wajib.
-- `Selesai` menjadi satu-satunya cara menutup overlay; tidak ada auto-close. Fokus masuk ke tombol saat muncul, pesan sukses diumumkan dengan `role="status"`/`aria-live`, target sentuh minimal 48 × 48 px.
-- Saat ditutup, `AnimatePresence` menjalankan exit fade/translate; `onExitComplete` kembali ke `/field/reports?submittedId={id}`. Cache detail/riwayat diisi dari respons server dan `my-areas-status` disegarkan. Halaman Laporan menampilkan kartu `Baru Terkirim` untuk laporan tersebut sebelum daftar kewajiban.
+- Tombol `Kembali ke Daftar Laporan` tersedia setelah choreography sukses; overlay juga kembali otomatis setelah 2,8 detik. Fokus masuk ke tombol saat muncul, pesan sukses diumumkan dengan `role="status"`/`aria-live`, target sentuh minimal 48 × 48 px.
+- Setelah submit terkonfirmasi, invalidasi cache laporan, status area, dan semua daftar kewajiban langsung dimulai. Saat tombol ditekan atau overlay ditutup otomatis, route diganti ke `/field/reports`; daftar meneruskan refetch hingga menampilkan kewajiban terbaru tanpa kartu hijau laporan baru.
 - Pada error submit, tidak ada overlay atau redirect. Tombol Kirim kembali aktif dengan shake kecil dan pesan error serta coba lagi; semua isian tetap ada selama halaman form aktif. Reduced motion menghilangkan gerakan dan memakai feedback statis/fade sederhana.
 
 ### Riwayat dan Project
@@ -105,8 +107,8 @@ Nilai form dan foto yang berhasil diproses dipertahankan saat perpindahan langka
 - Laporan mengurutkan kewajiban dari yang tertua serta hanya membuka tanggal yang diizinkan backend.
 - Form memuat tepat tiga langkah dan upload foto dapat diulang tanpa menghapus isian di halaman aktif.
 - Tidak ada penyimpanan/pemulihan draft lokal maupun server.
-- Motion hanya tampil setelah submit berhasil; overlay menunggu Selesai, keluar dengan AnimatePresence, lalu daftar menampilkan laporan baru dan kewajiban terbaru.
-- Performa, reduced motion, ukuran tombol, dan fokus Selesai diverifikasi pada HP fisik kelas menengah, bukan hanya emulator.
+- Motion hanya tampil setelah submit berhasil; tombol overlay dan pengalihan otomatis membawa Supervisor ke daftar kewajiban terbaru tanpa kartu hijau laporan baru.
+- Performa, reduced motion, ukuran tombol, dan fokus tombol kembali diverifikasi pada HP fisik kelas menengah, bukan hanya emulator.
 - Riwayat hanya menampilkan laporan terkirim dalam scope Supervisor.
 - Target sentuh minimal 48 × 48 px, teks utama minimal 16 px, safe area aktif, dan ada loading/empty/error/success state.
 

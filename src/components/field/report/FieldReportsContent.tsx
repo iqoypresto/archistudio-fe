@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { RefreshCw } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { FieldMainPageLayout } from "@/components/layout/FieldMainPageLayout";
 import { FieldMainPageTitle } from "@/components/layout/FieldMainPageTitle";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
@@ -11,31 +10,12 @@ import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group"
 import { ServerPagination } from "@/components/ui/ServerPagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useMyReportHistoryQuery, useReportDetailQuery } from "@/hooks/report.hooks";
+import { useMyReportHistoryQuery } from "@/hooks/report.hooks";
 import { useMyReportWorkItemsQuery } from "@/hooks/report-lock.hooks";
-import { consumeRecentSupervisorSubmission } from "@/lib/session/supervisor-report-session";
 import { useAuthStore } from "@/stores/auth.store";
 import type { SupervisorReportWorkFilter } from "@/types/api/report-lock.types";
 import { FieldReportCard } from "./FieldReportCard";
 import { ReportObligationCard } from "./ReportObligationCard";
-
-function NewSubmissionNotice({ reportId }: { reportId: string }) {
-  const reportQuery = useReportDetailQuery(reportId, "field");
-  if (reportQuery.isLoading) return <Skeleton className="h-24 w-full rounded-2xl" />;
-  if (!reportQuery.data) return null;
-
-  const report = reportQuery.data;
-  return (
-    <section role="status" aria-live="polite" className="rounded-2xl border border-status-success-fg/30 bg-status-success-bg p-4" aria-label="Laporan baru terkirim">
-      <p className="text-xs font-bold uppercase tracking-wide text-status-success-fg">Baru terkirim</p>
-      <p className="mt-1 font-semibold text-text-primary">{report.project.name} · {report.area.name}</p>
-      <p className="mt-0.5 text-sm text-text-secondary">Laporan tanggal {report.reportDate} berhasil tersimpan.</p>
-      <Link href={`/field/reports/${report.id}`} className="mt-2 inline-flex min-h-12 items-center font-semibold text-status-success-fg">
-        Lihat laporan
-      </Link>
-    </section>
-  );
-}
 
 export function FieldReportsContent() {
   const role = useAuthStore((state) => state.user?.role);
@@ -44,7 +24,6 @@ export function FieldReportsContent() {
   const [filter, setFilter] = useState<SupervisorReportWorkFilter>("ALL");
   const [page, setPage] = useState(1);
   const [teamPage, setTeamPage] = useState(1);
-  const [submittedId, setSubmittedId] = useState<string | null>(null);
   const workItemsQuery = useMyReportWorkItemsQuery(
     { status: filter, page, pageSize: 10 },
     !isSiteManager || activeTab === "own",
@@ -59,13 +38,6 @@ export function FieldReportsContent() {
     },
     isSiteManager && activeTab === "team",
   );
-
-  useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
-      setSubmittedId(consumeRecentSupervisorSubmission());
-    });
-    return () => window.cancelAnimationFrame(frame);
-  }, []);
 
   const isTeamTab = isSiteManager && activeTab === "team";
   const isRefreshing = isTeamTab ? teamReportsQuery.isFetching : workItemsQuery.isFetching;
@@ -155,8 +127,6 @@ export function FieldReportsContent() {
             </TabsList>
           </Tabs>
         )}
-
-        {submittedId && !isTeamTab && filter === "ALL" && <NewSubmissionNotice reportId={submittedId} />}
 
         {isTeamTab ? (
           <AsyncStateView

@@ -59,7 +59,7 @@ export function canSubmitPhotoQueue(
   if (items.some((item) => item.status === "failed")) {
     return {
       ready: false,
-      reason: "Masih ada foto gagal diunggah. Tekan Ulangi Foto Ini atau hapus foto tersebut.",
+      reason: "Masih ada foto yang perlu diperbaiki. Coba lagi foto gagal atau pilih ulang foto yang belum tersedia.",
     };
   }
   if (items.some((item) => item.status !== "uploaded")) {

@@ -72,14 +72,14 @@ export function useSupervisorReportDraft({
           setUploadSession(null);
           requireReselection();
           if (draft.photos.length) {
-            setDraftNotice("Sesi foto sebelumnya kedaluwarsa. Isian dipulihkan; hapus foto bertanda gagal lalu pilih ulang sebelum melanjutkan.");
+            setDraftNotice("Sesi foto sebelumnya kedaluwarsa. Isian dipulihkan; pilih ulang foto yang belum tersedia sebelum melanjutkan.");
           }
         } else {
           const needsReselection = draft.photos.some((photo) => !photo.storedFileId);
           setStep(needsReselection || (draft.step === 3 && !draft.photos.length) ? 2 : draft.step);
           setUploadSession(draft.uploadSession);
           if (needsReselection) {
-            setDraftNotice("Berkas foto yang belum selesai tidak tersimpan di tab. Hapus item bertanda gagal lalu pilih ulang; foto yang sudah terunggah tetap tersedia.");
+            setDraftNotice("Berkas foto yang belum terunggah tidak dapat dipulihkan setelah halaman dimuat ulang. Pilih ulang item bertanda gagal; foto yang sudah terunggah tetap tersedia.");
           }
         }
         setDraftRestored(true);

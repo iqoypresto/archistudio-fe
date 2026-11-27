@@ -11,7 +11,7 @@ export interface UploadFileDescriptor {
 }
 
 export type UploadSessionPayload =
-  | { reportSessionId: string; areaId: string; reportDate: string; file: UploadFileDescriptor }
+  | { reportSessionId: string; areaId: string; reportDate: string; photoOrder: number; file: UploadFileDescriptor }
   | { purpose: "report-photo"; reportId: string; file: UploadFileDescriptor }
   | { purpose: "payment-proof"; payeeId: string; file: UploadFileDescriptor }
   | { purpose: "drawing"; projectId: string; file: UploadFileDescriptor }

@@ -22,13 +22,11 @@ export function ReportSuccessOverlay({
   submittedAt,
   timeZone,
   onClose,
-  onExited,
 }: {
   isVisible: boolean;
   submittedAt: string | null;
   timeZone: string;
   onClose: () => void;
-  onExited: () => void;
 }) {
   const finishButton = useRef<HTMLButtonElement>(null);
   const reduceMotion = useReducedMotion();
@@ -46,7 +44,7 @@ export function ReportSuccessOverlay({
 
   return (
     <MotionConfig reducedMotion="user">
-      <AnimatePresence mode="wait" onExitComplete={onExited}>
+      <AnimatePresence mode="wait">
         {isVisible && (
           <motion.div
             key="report-success"

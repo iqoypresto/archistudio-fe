@@ -33,7 +33,6 @@ export type PersistedReportPhoto = z.infer<typeof reportPhotoSchema>;
 export type SupervisorReportDraft = z.infer<typeof supervisorReportDraftSchema>;
 
 const REPORT_DRAFT_PREFIX = "archistudio:supervisor-report:v1";
-const RECENT_SUBMISSION_KEY = "archistudio:supervisor:recent-submission:v1";
 
 export function supervisorReportDraftKey(areaId: string, reportDate: string): string {
   return `${REPORT_DRAFT_PREFIX}:${encodeURIComponent(areaId)}:${encodeURIComponent(reportDate)}`;
@@ -68,23 +67,5 @@ export function removeSupervisorReportDraft(key: string): void {
     window.sessionStorage.removeItem(key);
   } catch {
     // Storage may be unavailable in a restricted browser context.
-  }
-}
-
-export function recordRecentSupervisorSubmission(reportId: string): void {
-  try {
-    window.sessionStorage.setItem(RECENT_SUBMISSION_KEY, reportId);
-  } catch {
-    // The successful submit screen remains available when session storage is blocked.
-  }
-}
-
-export function consumeRecentSupervisorSubmission(): string | null {
-  try {
-    const reportId = window.sessionStorage.getItem(RECENT_SUBMISSION_KEY);
-    if (reportId) window.sessionStorage.removeItem(RECENT_SUBMISSION_KEY);
-    return reportId;
-  } catch {
-    return null;
   }
 }

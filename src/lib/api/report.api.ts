@@ -19,6 +19,24 @@ export class ReportApi {
     return res.data.data;
   }
 
+  async cancelUploadSession(sessionId: string): Promise<{ cancelled: boolean; photosDeleted: number; cleanupPending: boolean }> {
+    const res = await api.delete<ApiResponse<{ cancelled: boolean; photosDeleted: number; cleanupPending: boolean }>>(
+      apiSurfacePath("field", `/reports/upload-sessions/${sessionId}`),
+      { timeout: 60_000 },
+    );
+    return res.data.data;
+  }
+
+  cancelUploadSessionOnPageHide(sessionId: string, accessToken: string | null): void {
+    if (!accessToken || typeof window === "undefined") return;
+    const url = api.getUri({ url: apiSurfacePath("field", `/reports/upload-sessions/${sessionId}`) });
+    void fetch(url, {
+      method: "DELETE",
+      keepalive: true,
+      headers: { Authorization: `Bearer ${accessToken}` },
+    }).catch(() => undefined);
+  }
+
   async listArchive(params: ListArchivedReportsQuery): Promise<PaginatedArchivedReportsResponse> {
     const res = await api.get<PaginatedArchivedReportsResponse>(apiSurfacePath("office", "/reports/archive"), { params });
     return res.data;

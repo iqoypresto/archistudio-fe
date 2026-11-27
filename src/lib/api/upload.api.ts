@@ -22,14 +22,15 @@ function wait(milliseconds: number): Promise<void> {
 }
 
 export class UploadApi {
-  async createSession(payload: UploadSessionPayload, surface?: ApiSurface): Promise<UploadSessionReceipt> {
-    const response = await api.post<ApiResponse<UploadSessionReceipt>>(this.sessionsPath(payload, surface), payload);
+  async createSession(payload: UploadSessionPayload, surface?: ApiSurface, signal?: AbortSignal): Promise<UploadSessionReceipt> {
+    const response = await api.post<ApiResponse<UploadSessionReceipt>>(this.sessionsPath(payload, surface), payload, { signal });
     return response.data.data;
   }
 
-  async getStatus(uploadSessionId: string, surface: ApiSurface = "office"): Promise<UploadSessionStatus> {
+  async getStatus(uploadSessionId: string, surface: ApiSurface = "office", signal?: AbortSignal): Promise<UploadSessionStatus> {
     const response = await api.get<ApiResponse<UploadSessionStatus>>(
       `${apiSurfacePath(surface, "/uploads/sessions")}/${uploadSessionId}`,
+      { signal },
     );
     return response.data.data;
   }
@@ -46,6 +47,7 @@ export class UploadApi {
     fileName?: string,
     surface?: ApiSurface,
     onSessionCreated?: (receipt: UploadSessionReceipt) => void,
+    signal?: AbortSignal,
   ): Promise<CompletedStoredFile> {
     const resolvedSurface = surface ?? this.defaultSurface(payload);
     const receipt = await this.createSession({
@@ -55,7 +57,7 @@ export class UploadApi {
         contentType,
         fileSizeBytes: file.size,
       },
-    } as UploadSessionPayload, resolvedSurface);
+    } as UploadSessionPayload, resolvedSurface, signal);
     onSessionCreated?.(receipt);
 
     try {
@@ -75,6 +77,7 @@ export class UploadApi {
                 "Content-Range": `bytes ${start}-${endExclusive - 1}/${file.size}`,
               },
               timeout: 60_000,
+              signal,
               onUploadProgress: (event) => {
                 if (!onProgress) return;
                 const sent = Math.min(endExclusive - start, event.loaded);
@@ -89,7 +92,8 @@ export class UploadApi {
           nextOffsetBytes = acknowledgedOffset;
           unchangedOffsetRetries = 0;
         } catch (uploadError) {
-          const reconciled = await this.getStatus(receipt.uploadSessionId, resolvedSurface).catch(() => null);
+          if (signal?.aborted) throw uploadError;
+          const reconciled = await this.getStatus(receipt.uploadSessionId, resolvedSurface, signal).catch(() => null);
           if (!reconciled || reconciled.nextOffsetBytes < start || reconciled.nextOffsetBytes > file.size) {
             throw uploadError;
           }
@@ -108,6 +112,8 @@ export class UploadApi {
 
       const response = await api.post<ApiResponse<CompletedStoredFile>>(
         `${this.sessionsPath(payload, resolvedSurface)}/${receipt.uploadSessionId}/complete`,
+        undefined,
+        { signal },
       );
       onProgress?.(100);
       return response.data.data;

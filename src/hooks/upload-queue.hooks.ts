@@ -1,55 +1,22 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import imageCompression from "browser-image-compression";
 import { toast } from "sonner";
 import { uploadApi } from "@/lib/api/upload.api";
-import { readPhotoTakenAt } from "@/lib/utils/photo-exif";
-import { canSubmitPhotoQueue, isSupportedImageMime, validateSelectedPhotoFiles } from "@/lib/validation/upload.validation";
-import type { ReportPhotoInput } from "@/types/api/report.types";
-import type { PhotoQueueItem, SupportedImageMime } from "@/types/api/upload.types";
+import { applyQueueItemPatch, prepareCancellableReportPhoto, prepareRetryItem, removeQueueItem, requireQueueReselection, restoreReportPhotoQueue } from "@/lib/utils/report-photo-queue";
 import type { PersistedReportPhoto } from "@/lib/session/supervisor-report-session";
-
-export function applyQueueItemPatch(items: PhotoQueueItem[], id: string, change: Partial<PhotoQueueItem>) {
-  return items.map((item) => item.id === id ? { ...item, ...change } : item);
-}
-
-export function prepareRetryItem(items: PhotoQueueItem[], id: string): PhotoQueueItem[] {
-  return applyQueueItemPatch(items, id, { status: "idle", progress: 0, errorMessage: null, storedFileId: null, uploadSessionId: null });
-}
-
-export function removeQueueItem(items: PhotoQueueItem[], id: string): PhotoQueueItem[] {
-  return items.filter((item) => item.id !== id);
-}
-
-async function prepareFile(file: File, id: string): Promise<PhotoQueueItem> {
-  const contentType: SupportedImageMime = isSupportedImageMime(file.type) ? file.type : "image/jpeg";
-  const takenAt = await readPhotoTakenAt(file);
-  const compressed = await imageCompression(file, {
-    maxSizeMB: 0.8, maxWidthOrHeight: 1600, useWebWorker: true, fileType: contentType,
-  });
-  return {
-    id, fileName: file.name, contentType, previewUrl: URL.createObjectURL(compressed),
-    file: compressed, status: "local", progress: 100, caption: "", storedFileId: null, uploadSessionId: null,
-    takenAt, errorMessage: null,
-  };
-}
-
-export function buildReportPhotoInputs(items: PhotoQueueItem[]): ReportPhotoInput[] {
-  return items.map((item, sortOrder) => {
-    if (!item.storedFileId) throw new Error("Tunggu semua foto berhasil diunggah.");
-    return {
-      storedFileId: item.storedFileId, caption: item.caption.trim() || null,
-      sortOrder, takenAt: item.takenAt,
-    };
-  });
-}
+import { canSubmitPhotoQueue, validateSelectedPhotoFiles } from "@/lib/validation/upload.validation";
+import type { PhotoQueueItem, SupportedImageMime } from "@/types/api/upload.types";
+export { applyQueueItemPatch, prepareRetryItem, removeQueueItem };
 
 export function usePhotoUploadQueue(params: { areaId: string; reportDate: string }) {
   const [items, setItems] = useState<PhotoQueueItem[]>([]);
   const currentItems = useRef(items);
+  const compressionControllers = useRef(new Map<string, AbortController>());
   useEffect(() => { currentItems.current = items; }, [items]);
   useEffect(() => () => {
+    for (const controller of compressionControllers.current.values()) controller.abort();
+    compressionControllers.current.clear();
     for (const item of currentItems.current) {
       if (item.previewUrl.startsWith("blob:")) URL.revokeObjectURL(item.previewUrl);
     }
@@ -66,29 +33,41 @@ export function usePhotoUploadQueue(params: { areaId: string; reportDate: string
     updateItems((current) => applyQueueItemPatch(current, id, change));
   }, [updateItems]);
 
-  const uploadItem = useCallback(async (item: PhotoQueueItem, sessionId: string): Promise<boolean> => {
-    if (item.storedFileId) return true;
-    if (!item.file) return false;
+  const uploadItem = useCallback(async (item: PhotoQueueItem, sessionId: string, photoOrder: number, signal?: AbortSignal): Promise<PhotoQueueItem | null> => {
+    if (item.storedFileId) return item;
+    if (!item.file) return null;
     try {
       if (item.uploadSessionId) await uploadApi.cancelSession(item.uploadSessionId, "field");
       patch(item.id, { status: "signing", progress: 0, errorMessage: null });
       patch(item.id, { status: "uploading", progress: 0 });
       const completed = await uploadApi.uploadFile(
-        { reportSessionId: sessionId, areaId: params.areaId, reportDate: params.reportDate },
+        { reportSessionId: sessionId, areaId: params.areaId, reportDate: params.reportDate, photoOrder },
         item.file, item.contentType,
         (progress) => patch(item.id, { progress }),
         item.fileName,
         undefined,
         (receipt) => patch(item.id, { uploadSessionId: receipt.uploadSessionId }),
+        signal,
       );
-      patch(item.id, { status: "uploaded", progress: 100, storedFileId: completed.storedFileId, uploadSessionId: completed.uploadSessionId });
-      return true;
+      const uploaded = {
+        ...item,
+        status: "uploaded" as const,
+        progress: 100,
+        storedFileId: completed.storedFileId,
+        uploadSessionId: completed.uploadSessionId,
+      };
+      patch(item.id, uploaded);
+      return uploaded;
     } catch (error) {
+      if (signal?.aborted) {
+        patch(item.id, { status: "failed", progress: 0, errorMessage: "Unggahan dibatalkan. Anda dapat mencoba lagi." });
+        return null;
+      }
       patch(item.id, {
         status: "failed",
         errorMessage: error instanceof Error ? error.message : "Gagal mengunggah foto.",
       });
-      return false;
+      return null;
     }
   }, [params.areaId, params.reportDate, patch]);
 
@@ -106,7 +85,7 @@ export function usePhotoUploadQueue(params: { areaId: string; reportDate: string
     updateItems((current) => [...current, ...pending]);
     return Promise.all(pending.map(async (item) => {
       try {
-        const prepared = await prepareFile(item.file as File, item.id);
+        const prepared = await prepareCancellableReportPhoto(item.file as File, item.id, compressionControllers.current);
         URL.revokeObjectURL(item.previewUrl);
         updateItems((current) => applyQueueItemPatch(current, item.id, prepared));
         return prepared;
@@ -118,9 +97,47 @@ export function usePhotoUploadQueue(params: { areaId: string; reportDate: string
     }));
   }, [updateItems]);
 
-  const uploadItems = useCallback(async (selected: PhotoQueueItem[], sessionId: string): Promise<boolean> => {
-    const results = await Promise.all(selected.filter((item) => !item.storedFileId).map((item) => uploadItem(item, sessionId)));
-    return results.every(Boolean);
+  const replacePhotoFile = useCallback(async (id: string, file: File): Promise<void> => {
+    const current = currentItems.current.find((item) => item.id === id);
+    if (!current) return;
+    const check = validateSelectedPhotoFiles(0, [file]);
+    if (!check.ok) { toast.error(check.message); return; }
+
+    if (current.uploadSessionId) void uploadApi.cancelSession(current.uploadSessionId, "field").catch(() => undefined);
+    if (current.previewUrl.startsWith("blob:")) URL.revokeObjectURL(current.previewUrl);
+    const previewUrl = URL.createObjectURL(file);
+    const pending: PhotoQueueItem = {
+      ...current,
+      fileName: file.name,
+      contentType: file.type as SupportedImageMime,
+      previewUrl,
+      file,
+      status: "compressing",
+      progress: 10,
+      storedFileId: null,
+      uploadSessionId: null,
+      takenAt: null,
+      errorMessage: null,
+    };
+    patch(id, pending);
+
+    try {
+      const prepared = await prepareCancellableReportPhoto(file, id, compressionControllers.current);
+      URL.revokeObjectURL(previewUrl);
+      patch(id, { ...prepared, caption: current.caption });
+    } catch {
+      patch(id, { status: "failed", progress: 0, errorMessage: "Gagal menyiapkan foto." });
+    }
+  }, [patch]);
+
+  const uploadItems = useCallback(async (selected: PhotoQueueItem[], sessionId: string, signal?: AbortSignal): Promise<PhotoQueueItem[] | null> => {
+    const results = await Promise.all(selected.map((item, index) => uploadItem(item, sessionId, index + 1, signal)));
+    const uploadedItems: PhotoQueueItem[] = [];
+    for (const item of results) {
+      if (!item) return null;
+      uploadedItems.push(item);
+    }
+    return uploadedItems;
   }, [uploadItem]);
 
   const retryPhoto = useCallback(async (id: string, sessionId?: string) => {
@@ -130,7 +147,7 @@ export function usePhotoUploadQueue(params: { areaId: string; reportDate: string
       patch(id, { status: "compressing", progress: 10, errorMessage: null });
       try {
         const oldPreview = item.previewUrl;
-        item = await prepareFile(item.file, item.id);
+        item = await prepareCancellableReportPhoto(item.file, item.id, compressionControllers.current);
         if (oldPreview.startsWith("blob:")) URL.revokeObjectURL(oldPreview);
         patch(id, item);
       } catch {
@@ -138,11 +155,16 @@ export function usePhotoUploadQueue(params: { areaId: string; reportDate: string
         return;
       }
     }
-    if (sessionId) await uploadItem(item, sessionId);
+    if (sessionId) {
+      const photoOrder = currentItems.current.findIndex((photo) => photo.id === id) + 1;
+      await uploadItem(item, sessionId, Math.max(photoOrder, 1));
+    }
   }, [patch, uploadItem]);
 
   const updateCaption = useCallback((id: string, caption: string) => patch(id, { caption }), [patch]);
   const removePhoto = useCallback(async (id: string) => {
+    compressionControllers.current.get(id)?.abort();
+    compressionControllers.current.delete(id);
     const removed = currentItems.current.find((item) => item.id === id);
     if (removed?.uploadSessionId) {
       try {
@@ -160,30 +182,11 @@ export function usePhotoUploadQueue(params: { areaId: string; reportDate: string
   }, [updateItems]);
 
   const restoreItems = useCallback((saved: PersistedReportPhoto[]) => {
-    updateItems(() => saved.map((photo) => ({
-      ...photo,
-      uploadSessionId: photo.uploadSessionId ?? null,
-      previewUrl: "",
-      file: null,
-      status: photo.storedFileId ? "uploaded" : "failed",
-      progress: photo.storedFileId ? 100 : 0,
-      errorMessage: photo.storedFileId
-        ? null
-        : "File foto belum tersimpan di tab. Hapus item ini, lalu pilih ulang fotonya.",
-    })));
+    updateItems(() => restoreReportPhotoQueue(saved));
   }, [updateItems]);
 
   const requireReselection = useCallback(() => {
-    updateItems((current) => current.map((item) => ({
-      ...item,
-      status: "failed",
-      progress: 0,
-      storedFileId: null,
-      uploadSessionId: item.uploadSessionId,
-      errorMessage: item.file
-        ? "Sesi unggah kedaluwarsa. Tekan ulang untuk mengunggah foto ini lagi."
-        : "Sesi unggah kedaluwarsa. Hapus item ini, lalu pilih ulang fotonya.",
-    })));
+    updateItems(requireQueueReselection);
   }, [updateItems]);
 
   return {
@@ -191,6 +194,7 @@ export function usePhotoUploadQueue(params: { areaId: string; reportDate: string
     submitReadiness: useMemo(() => canSubmitPhotoQueue(items), [items]),
     addFiles,
     uploadItems,
+    replacePhotoFile,
     retryPhoto,
     updateCaption,
     removePhoto,

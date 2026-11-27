@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { MY_AREAS_STATUS_QUERY_KEY, MY_REPORT_WORK_ITEMS_QUERY_KEY } from "@/hooks/report-lock.hooks";
 import { reportApi } from "@/lib/api/report.api";
@@ -11,6 +11,14 @@ import type {
 } from "@/types/api/report.types";
 
 export const REPORTS_QUERY_KEY = ["reports"] as const;
+
+export async function refreshSupervisorReportQueries(queryClient: QueryClient): Promise<void> {
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: [...REPORTS_QUERY_KEY, "field", "history"] }),
+    queryClient.invalidateQueries({ queryKey: MY_AREAS_STATUS_QUERY_KEY, refetchType: "none" }),
+    queryClient.invalidateQueries({ queryKey: MY_REPORT_WORK_ITEMS_QUERY_KEY, refetchType: "all" }),
+  ]);
+}
 
 export function useArchivedReportsQuery(query: ListArchivedReportsQuery, enabled = true) {
   return useQuery({
@@ -50,9 +58,7 @@ export function useSubmitNewReportMutation() {
     mutationFn: (payload: SubmitReportPayload & { sessionId: string }) => reportApi.submitNew(payload),
     onSuccess: (report) => {
       queryClient.setQueryData([...REPORTS_QUERY_KEY, "field", "detail", report.id], report);
-      void queryClient.invalidateQueries({ queryKey: REPORTS_QUERY_KEY });
-      void queryClient.invalidateQueries({ queryKey: MY_AREAS_STATUS_QUERY_KEY });
-      void queryClient.invalidateQueries({ queryKey: MY_REPORT_WORK_ITEMS_QUERY_KEY });
+      void refreshSupervisorReportQueries(queryClient);
     },
   });
 }
