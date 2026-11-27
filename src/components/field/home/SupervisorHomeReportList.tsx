@@ -16,18 +16,25 @@ function formatReportDate(reportDate: string): string {
   }).format(date);
 }
 
-function ReportRow({ report, isLast }: { report: DailyReportListItem; isLast: boolean }) {
+function ReportCard({ report }: { report: DailyReportListItem }) {
   return (
     <Link
       href={`/field/reports/${report.id}`}
-      className={`flex min-h-[4.5rem] flex-col justify-center px-2 py-3 focus-visible:outline-2 focus-visible:outline-[var(--project-action)] ${isLast ? "" : "border-b border-[var(--project-border)]"}`}
+      className="block h-full rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--project-action)] focus-visible:ring-offset-2"
     >
-      <span className="line-clamp-2 text-lg font-bold leading-6 text-[var(--project-text-heading)]">
-        Area {report.area.name}
-      </span>
-      <span className="mt-1 text-base leading-5 text-[var(--project-text-secondary)]">
-        {formatReportDate(report.reportDate)}
-      </span>
+      <Card
+        size="sm"
+        className="h-full gap-1 rounded-xl border border-[var(--project-border)] bg-[var(--project-surface)] py-0 text-left shadow-none ring-0 transition-colors hover:border-[var(--project-action)] hover:bg-[var(--project-canvas)]"
+      >
+        <CardContent className="flex min-h-[3.25rem] flex-col justify-center gap-1 p-3">
+          <span className="text-xs leading-4 text-[var(--project-text-secondary)]">
+            {formatReportDate(report.reportDate)}
+          </span>
+          <span className="line-clamp-2 text-sm font-semibold leading-5 text-[var(--project-text-heading)]">
+            Area {report.area.name}
+          </span>
+        </CardContent>
+      </Card>
     </Link>
   );
 }
@@ -41,29 +48,35 @@ type ReportListProps = {
 
 function ReportRows({ reports }: { reports: DailyReportListItem[] }) {
   return (
-    <Card className="gap-0 overflow-hidden rounded-[1.125rem] border border-[var(--project-border)] bg-[var(--project-surface)] py-0 shadow-[var(--project-card-shadow)]">
-      <CardContent className="px-3 py-0">
-        {reports.map((report, index) => (
-          <ReportRow key={report.id} report={report} isLast={index === reports.length - 1} />
-        ))}
-        <Link href="/field/history" className="mx-auto flex min-h-12 w-fit items-center gap-1 px-3 font-semibold text-[var(--project-action)] focus-visible:outline-2 focus-visible:outline-[var(--project-action)]">
-          Lihat semua riwayat <ChevronRight className="size-5" />
-        </Link>
-      </CardContent>
-    </Card>
+    <div className="flex flex-col gap-2">
+      {reports.map((report) => (
+        <ReportCard key={report.id} report={report} />
+      ))}
+    </div>
   );
 }
 
 export function SupervisorHomeReportList({ reports, loading, failed, retry }: ReportListProps) {
   return (
     <section aria-labelledby="home-recent-title" className="space-y-3">
-      <div className="flex min-h-12 items-center justify-between">
-        <h2 id="home-recent-title" className="text-xl font-bold text-[var(--project-text-heading)]">Laporan Terakhir</h2>
+      <div className="flex min-h-10 items-center justify-between gap-1">
+        <h2 id="home-recent-title" className="text-xl font-bold text-[var(--project-text-heading)]">
+          Laporan Terakhir
+        </h2>
+        <Button
+          variant="ghost"
+          size="sm"
+          render={<Link href="/field/history" />}
+          className="min-h-10 shrink-0 px-2 text-xs font-semibold text-[var(--project-action)] hover:bg-[var(--project-action)]/10 sm:text-sm"
+        >
+          Lihat semua riwayat <ChevronRight className="size-4" />
+        </Button>
       </div>
       {loading ? (
-        <div className="space-y-2" aria-busy="true" aria-label="Memuat laporan terbaru">
-          <Skeleton className="h-20 w-full rounded-2xl" />
-          <Skeleton className="h-20 w-full rounded-2xl" />
+        <div className="flex flex-col gap-2" aria-busy="true" aria-label="Memuat laporan terbaru">
+          <Skeleton className="h-16 w-full rounded-xl" />
+          <Skeleton className="h-16 w-full rounded-xl" />
+          <Skeleton className="h-16 w-full rounded-xl" />
         </div>
       ) : failed ? (
         <Card className="gap-0 rounded-[1.125rem] border border-[var(--project-border)] bg-[var(--project-surface)] py-0">
