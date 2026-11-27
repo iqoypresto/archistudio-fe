@@ -6,10 +6,13 @@ import { ArrowLeft, Edit3, Info } from "lucide-react";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { useReportDetailQuery } from "@/hooks/report.hooks";
+import { ApiError } from "@/lib/api/api-error";
 import { cn } from "@/lib/utils";
 import { canOwnerReviseReport } from "@/lib/validation/report-revision.validation";
 import { useAuthStore } from "@/stores/auth.store";
 import { OwnerReviseReportModal } from "./OwnerReviseReportModal";
+import { FieldReportDetailView } from "./FieldReportDetailView";
+import { ReportDetailSkeleton } from "./ReportDetailSkeleton";
 import { ReportDetailView } from "./ReportDetailView";
 import type { ApiSurface } from "@/lib/api/api-surface";
 
@@ -30,13 +33,15 @@ export function ReportDetailContent({
     report && (report.project.status === "SELESAI" || Boolean(report.project.archivedAt)),
   );
   const canRevise = Boolean(
-    report && canOwnerReviseReport(userRole, report.status, report.project),
+    surface === "office" && report && canOwnerReviseReport(userRole, report.status, report.project),
   );
+  const isNotFound = detailQuery.error instanceof ApiError
+    && (detailQuery.error.statusCode === 404 || detailQuery.error.code === "RESOURCE_NOT_FOUND");
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        {surface !== "field" && (
+    <div className={cn("min-w-0", surface !== "field" && "space-y-5")}>
+      {surface !== "field" && (
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <Link
             href={backHref}
             className={cn(
@@ -47,20 +52,20 @@ export function ReportDetailContent({
             <ArrowLeft className="size-3.5" />
             Kembali ke Daftar
           </Link>
-        )}
 
-        {canRevise && (
-          <Button
-            type="button"
-            size="sm"
-            onClick={() => setReviseOpen(true)}
-            className="h-9 gap-1.5 px-3 text-xs"
-          >
-            <Edit3 className="size-3.5" />
-            Revisi Laporan
-          </Button>
-        )}
-      </div>
+          {canRevise && (
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => setReviseOpen(true)}
+              className="h-9 gap-1.5 px-3 text-xs"
+            >
+              <Edit3 className="size-3.5" />
+              Revisi Laporan
+            </Button>
+          )}
+        </div>
+      )}
 
       {userRole === "OWNER" && isProjectArchived && surface === "office" && (
         <div className="flex items-start gap-2.5 rounded-xl border border-border bg-surface px-4 py-3 text-xs text-text-secondary">
@@ -73,15 +78,21 @@ export function ReportDetailContent({
 
       <AsyncStateView
         isLoading={detailQuery.isLoading}
-        isError={detailQuery.isError}
+        isError={surface === "field" ? detailQuery.isError && !isNotFound : detailQuery.isError}
         error={detailQuery.error}
         data={detailQuery.data}
         onRetry={() => detailQuery.refetch()}
-        emptyTitle="Laporan tidak ditemukan"
+        emptyTitle={surface === "field" ? "Laporan tidak ditemukan" : undefined}
+        emptyDescription={surface === "field" ? "Data laporan ini tidak tersedia atau sudah tidak dapat diakses." : undefined}
+        loadingFallback={surface === "field" ? <ReportDetailSkeleton /> : undefined}
       >
         {(loadedReport) => (
           <>
-            <ReportDetailView report={loadedReport} surface={surface} />
+            {surface === "field" ? (
+              <FieldReportDetailView report={loadedReport} />
+            ) : (
+              <ReportDetailView report={loadedReport} surface={surface} />
+            )}
             {canRevise && (
               <OwnerReviseReportModal
                 key={`${loadedReport.id}:${loadedReport.revisionNo}`}
