@@ -66,6 +66,7 @@ export function SupervisorHomeReportList({ reports, loading, failed, retry }: Re
         <Button
           variant="ghost"
           size="sm"
+          nativeButton={false}
           render={<Link href="/field/history" />}
           className="min-h-10 shrink-0 px-2 text-xs font-semibold text-[var(--project-action)] hover:bg-[var(--project-action)]/10 sm:text-sm"
         >
