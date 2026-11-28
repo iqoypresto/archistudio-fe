@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { PageInfoDialog } from "@/components/ui/PageInfoDialog";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { UnderlineTabsBar } from "@/components/ui/UnderlineTabsNav";
 import { useArchivedProjectsQuery, useRestoreProjectMutation } from "@/hooks/project.hooks";
@@ -32,10 +33,7 @@ export function ProjectArchiveContent() {
   const [typeFilter, setTypeFilter] = useState<ArchiveTypeFilter>("ALL");
   const [projectToRestore, setProjectToRestore] = useState<ArchivedProjectItem | null>(null);
 
-  const archiveQuery = useArchivedProjectsQuery(
-    { search: search.trim() || undefined },
-    { enabled: canViewArchive },
-  );
+  const archiveQuery = useArchivedProjectsQuery({ search: search.trim() || undefined }, { enabled: canViewArchive });
   const restoreMutation = useRestoreProjectMutation(() => setProjectToRestore(null));
 
   const allItems = useMemo(() => archiveQuery.data ?? [], [archiveQuery.data]);
@@ -46,24 +44,23 @@ export function ProjectArchiveContent() {
   const visibleGroups = useMemo(() => {
     const byYear = selectedYear === "ALL" ? allGroups : allGroups.filter((g) => String(g.year) === selectedYear);
     if (typeFilter === "ALL") return byYear;
-    return byYear
-      .map((g) => ({ ...g, projects: g.projects.filter((p) => p.archiveType === typeFilter) }))
-      .filter((g) => g.projects.length > 0);
+    return byYear.map((g) => ({ ...g, projects: g.projects.filter((p) => p.archiveType === typeFilter) })).filter((g) => g.projects.length > 0);
   }, [allGroups, selectedYear, typeFilter]);
 
   if (!canViewArchive) {
-    return (
-      <div className="rounded-xl border border-border bg-surface p-6 text-sm text-text-secondary">
-        Halaman Archive Project hanya dapat diakses oleh Owner dan Admin.
-      </div>
-    );
+    return <div className="rounded-xl border border-border bg-surface p-6 text-sm text-text-secondary">Halaman Archive Project hanya dapat diakses oleh Owner dan Admin.</div>;
   }
 
   return (
     <div className="space-y-5">
       <PageHeader
         title="Archive Project"
-        description="Daftar proyek yang telah selesai atau diarsipkan manual per tahun tindakan. Bersifat baca saja hingga dipulihkan oleh Owner."
+        titleSuffix={
+          <PageInfoDialog
+            title="Tentang Archive Project"
+            description="Daftar proyek yang telah selesai atau diarsipkan manual per tahun tindakan. Bersifat baca saja hingga dipulihkan oleh Owner."
+          />
+        }
       />
 
       <section className="overflow-hidden rounded-xl border border-border bg-surface tabular-nums">
@@ -81,19 +78,9 @@ export function ProjectArchiveContent() {
         <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <div className="relative w-full sm:max-w-sm">
             <Search className="pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-text-muted" />
-            <Input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Cari kode, nama proyek, klien, atau lokasi..."
-              className="h-9 pl-8 text-xs"
-            />
+            <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Cari kode, nama proyek, klien, atau lokasi..." className="h-9 pl-8 text-xs" />
           </div>
-          <SegmentedControl
-            ariaLabel="Filter jenis arsip"
-            options={ARCHIVE_TYPE_OPTIONS}
-            value={typeFilter}
-            onChange={setTypeFilter}
-          />
+          <SegmentedControl ariaLabel="Filter jenis arsip" options={ARCHIVE_TYPE_OPTIONS} value={typeFilter} onChange={setTypeFilter} />
         </div>
 
         <AsyncStateView
@@ -109,13 +96,7 @@ export function ProjectArchiveContent() {
           {(groups) => (
             <div className="divide-y divide-border border-t border-border">
               {groups.map((group) => (
-                <ArchiveYearTable
-                  key={group.year}
-                  year={group.year}
-                  projects={group.projects}
-                  isOwner={isOwner}
-                  onRestore={setProjectToRestore}
-                />
+                <ArchiveYearTable key={group.year} year={group.year} projects={group.projects} isOwner={isOwner} onRestore={setProjectToRestore} />
               ))}
             </div>
           )}

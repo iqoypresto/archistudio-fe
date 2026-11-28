@@ -57,10 +57,10 @@ export function OfficeAppShell({ children, projectId: propProjectId }: { childre
           isLoggingOut={logoutMutation.isPending}
         />
         <SidebarInset>
-          <div className="px-4 pt-4 sm:px-6">
+          <div className="flex items-center px-4 pt-3 sm:px-6 lg:hidden">
             <SidebarTrigger />
           </div>
-          <main className="mx-auto w-full max-w-7xl flex-1 p-4 pb-24 sm:p-6 sm:pb-24">{content}</main>
+          <main className="mx-auto w-full max-w-7xl flex-1 p-4 pb-24 sm:p-6 sm:pb-24 lg:px-6 lg:pt-3 lg:pb-24">{content}</main>
         </SidebarInset>
       </div>
       <FloatingAddProjectButton role={user?.role} />

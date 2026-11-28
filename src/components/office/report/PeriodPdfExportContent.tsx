@@ -7,6 +7,7 @@ import { ErrorState } from "@/components/ui/ErrorState";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { PageInfoDialog } from "@/components/ui/PageInfoDialog";
 import { useProjectDetailQuery } from "@/hooks/project.hooks";
 import { pdfExportApi } from "@/lib/api/pdf-export.api";
 import { PeriodPdfSummaryCard } from "./PeriodPdfSummaryCard";
@@ -98,10 +99,15 @@ export function PeriodPdfExportContent({ projectId, mode }: { projectId: string;
       <PageHeader
         kicker={project ? `${project.code} · ${project.name}` : undefined}
         title={isMonthly ? "Laporan Bulanan" : "Laporan Harian Rentang Tanggal"}
-        description={
-          isMonthly
-            ? "Unduh rekap kepatuhan pelaporan bulanan per area untuk satu bulan kalender."
-            : "Unduh kompilasi laporan harian lengkap beserta dokumentasi foto hingga 7 hari kalender."
+        titleSuffix={
+          <PageInfoDialog
+            title={isMonthly ? "Tentang Laporan Bulanan" : "Tentang Laporan Harian Rentang Tanggal"}
+            description={
+              isMonthly
+                ? "Unduh rekap kepatuhan pelaporan bulanan per area untuk satu bulan kalender."
+                : "Unduh kompilasi laporan harian lengkap beserta dokumentasi foto hingga 7 hari kalender."
+            }
+          />
         }
       />
 

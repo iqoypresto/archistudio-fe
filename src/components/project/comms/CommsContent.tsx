@@ -5,6 +5,7 @@ import { Plus } from "lucide-react";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { PageInfoDialog } from "@/components/ui/PageInfoDialog";
 import { useCreateCommsMutation, useProjectCommsQuery, useUpdateCommsMutation } from "@/hooks/comms.hooks";
 import { useProjectDetailQuery } from "@/hooks/project.hooks";
 import { isFieldRole } from "@/lib/utils/role";
@@ -76,7 +77,12 @@ export function CommsContent({ projectId, fixedDirection, surface = "office" }: 
         kicker={project ? `${project.code} · ${project.name}` : undefined}
         title={pageTitle}
         hideTitle={surface === "field"}
-        description={pageDescription}
+        titleSuffix={
+          <PageInfoDialog
+            title={`Tentang ${pageTitle}`}
+            description={pageDescription}
+          />
+        }
         action={
           canMutate ? (
             <Button

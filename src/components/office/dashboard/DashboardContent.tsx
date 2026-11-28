@@ -90,7 +90,6 @@ export function DashboardContent() {
     <div className="space-y-5">
       <PageHeader
         title="Dashboard Monitoring"
-        description="Ringkasan operasional proyek berjalan, kelengkapan laporan harian, tim internal, dan indikator lintas sistem."
         titleSuffix={<DashboardInfoDialog />}
         action={
           <DashboardFilterBar

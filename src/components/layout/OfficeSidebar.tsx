@@ -2,13 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { LogOut, UserRound } from "lucide-react";
+import { LogOut, PanelLeftOpen, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { getRoleLabel, isFieldRole } from "@/lib/utils/role";
@@ -43,19 +44,11 @@ export function OfficeSidebar({
   return (
     <Sidebar>
       <SidebarHeader>
-        <div className="group-data-[collapsible=icon]/sidebar:justify-center flex min-w-0 items-center gap-2">
-          <Link
-            href={isFieldRole(role) ? "/field/home" : "/office/dashboard"}
-            aria-label="ArchiStudio beranda"
-            className="group-data-[collapsible=icon]/sidebar:size-9 group-data-[collapsible=icon]/sidebar:flex-none group-data-[collapsible=icon]/sidebar:justify-center group-data-[collapsible=icon]/sidebar:border-transparent group-data-[collapsible=icon]/sidebar:bg-transparent group-data-[collapsible=icon]/sidebar:p-0 flex min-w-0 flex-1 items-center gap-2.5 rounded-xl border border-border bg-surface-input/90 px-2.5 py-2 transition-colors hover:bg-surface-active/70"
-          >
-            <Image src="/brand/archistudio-logo.webp" alt="" width={36} height={36} className="size-9 shrink-0 object-contain" />
-            <div className="min-w-0 group-data-[collapsible=icon]/sidebar:hidden">
-              <p className="text-[13px] font-semibold leading-tight tracking-tight text-text-primary">ArchiStudio</p>
-              <p className="truncate text-[11px] leading-tight text-text-muted">{projectTitle}</p>
-            </div>
-          </Link>
-        </div>
+        <SidebarBrandHeader
+          role={role}
+          projectTitle={projectTitle}
+          onNavigate={closeOnNavigate}
+        />
       </SidebarHeader>
 
       <SidebarContent>
@@ -81,6 +74,65 @@ export function OfficeSidebar({
         </SidebarFooter>
       )}
     </Sidebar>
+  );
+}
+
+function SidebarBrandHeader({
+  role,
+  projectTitle,
+  onNavigate,
+}: {
+  role: UserRole;
+  projectTitle: string;
+  onNavigate: () => void;
+}) {
+  const { open, isMobile, setOpen } = useSidebar();
+  const isCollapsed = !open && !isMobile;
+
+  if (isCollapsed) {
+    return (
+      <div className="flex justify-center">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label="Buka sidebar"
+          title="Buka sidebar (⌘B / Ctrl+B)"
+          className="group/expand relative flex size-11 items-center justify-center rounded-xl border border-transparent bg-transparent transition-colors hover:border-border hover:bg-surface-active focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <Image
+            src="/brand/archistudio-logo.webp"
+            alt=""
+            width={36}
+            height={36}
+            className="size-9 shrink-0 object-contain transition-opacity duration-150 group-hover/expand:opacity-0 group-focus-visible/expand:opacity-0"
+          />
+          <PanelLeftOpen
+            aria-hidden="true"
+            className="pointer-events-none absolute size-5 text-text-primary opacity-0 transition-opacity duration-150 group-hover/expand:opacity-100 group-focus-visible/expand:opacity-100"
+          />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex min-w-0 items-center gap-1.5">
+      <Link
+        href={isFieldRole(role) ? "/field/home" : "/office/dashboard"}
+        onClick={onNavigate}
+        aria-label="ArchiStudio beranda"
+        className="flex min-w-0 flex-1 items-center gap-2.5 rounded-xl border border-border bg-surface-input/90 px-2.5 py-2 transition-colors hover:bg-surface-active/70"
+      >
+        <Image src="/brand/archistudio-logo.webp" alt="" width={36} height={36} className="size-9 shrink-0 object-contain" />
+        <div className="min-w-0">
+          <p className="text-[13px] font-semibold leading-tight tracking-tight text-text-primary">ArchiStudio</p>
+          <p className="truncate text-[11px] leading-tight text-text-muted">{projectTitle}</p>
+        </div>
+      </Link>
+      {!isMobile && (
+        <SidebarTrigger className="size-11 rounded-xl border border-border bg-surface-input/90 hover:bg-surface-active/70" />
+      )}
+    </div>
   );
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { PanelLeft } from "lucide-react";
+import { PanelLeft, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -47,6 +47,7 @@ export function Sidebar({ children, className }: { children: ReactNode; classNam
 export function SidebarTrigger({ className, ...props }: ComponentProps<typeof Button>) {
   const { open, isMobile, setOpen, setOpenMobile } = useSidebar();
   const label = isMobile ? "Buka menu navigasi" : open ? "Ciutkan sidebar" : "Buka sidebar";
+  const Icon = isMobile ? PanelLeft : open ? PanelLeftClose : PanelLeftOpen;
 
   return (
     <Button
@@ -54,12 +55,12 @@ export function SidebarTrigger({ className, ...props }: ComponentProps<typeof Bu
       variant="ghost"
       size="icon"
       aria-label={label}
-      title={label}
+      title={isMobile ? label : `${label} (⌘B / Ctrl+B)`}
       onClick={() => (isMobile ? setOpenMobile(true) : setOpen(!open))}
-      className={cn("size-9 shrink-0 text-text-secondary hover:bg-surface-active hover:text-text-primary", className)}
+      className={cn("size-10 shrink-0 text-text-secondary hover:bg-surface-active hover:text-text-primary", className)}
       {...props}
     >
-      <PanelLeft className="size-4" />
+      <Icon className="size-4" aria-hidden="true" />
     </Button>
   );
 }

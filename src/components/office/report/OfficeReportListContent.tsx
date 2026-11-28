@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { PageInfoDialog } from "@/components/ui/PageInfoDialog";
 import { UnderlineTabsBar } from "@/components/ui/UnderlineTabsNav";
 import { useArchivedReportsQuery, useOfficeReportsQuery } from "@/hooks/report.hooks";
 import { useAuthStore } from "@/stores/auth.store";
@@ -43,7 +44,12 @@ export function OfficeReportListContent({ view = "reports" }: { view?: "reports"
     <div className="space-y-5">
       <PageHeader
         title="Laporan Harian"
-        description="Daftar laporan harian lapangan seluruh proyek beserta dokumentasi foto dan riwayat revisi."
+        titleSuffix={
+          <PageInfoDialog
+            title="Tentang Laporan Harian"
+            description="Daftar laporan harian lapangan seluruh proyek beserta dokumentasi foto dan riwayat revisi."
+          />
+        }
         action={canArchive ? <ReportPdfExportControl /> : undefined}
       />
 

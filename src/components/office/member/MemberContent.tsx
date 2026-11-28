@@ -5,6 +5,7 @@ import { UserPlus } from "lucide-react";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { PageInfoDialog } from "@/components/ui/PageInfoDialog";
 import { UnderlineTabsBar } from "@/components/ui/UnderlineTabsNav";
 import {
   useCreateUserMutation,
@@ -71,7 +72,12 @@ export function MemberContent() {
     <div className="space-y-5">
       <PageHeader
         title="Anggota Tim"
-        description="Kelola akun internal, peran pengguna, pengaturan kata sandi, dan status aktif operasional."
+        titleSuffix={
+          <PageInfoDialog
+            title="Tentang Anggota Tim"
+            description="Kelola akun internal, peran pengguna, pengaturan kata sandi, dan status aktif operasional."
+          />
+        }
         action={
           <Button
             type="button"

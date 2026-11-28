@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StoredFileImage } from "@/components/ui/StoredFileImage";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { PageInfoDialog } from "@/components/ui/PageInfoDialog";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { StatusIndicator } from "@/components/ui/StatusIndicator";
 import { useArchiveDrawingMutation, useDrawingUpload, useProjectDrawingsQuery } from "@/hooks/drawing.hooks";
@@ -68,14 +69,19 @@ export function DrawingGalleryContent({ projectId, surface = "office" }: { proje
         kicker={project ? `${project.code} · ${project.name}` : undefined}
         title="Drawing"
         hideTitle={surface === "field"}
-        description={
-          canManage
-            ? "Galeri gambar desain arsitektur proyek. Unggah file JPG, PNG, atau WebP (maks. 4 MB)."
-            : isProjectReadOnly
-              ? "Proyek berada di Archive sehingga galeri Drawing bersifat baca saja."
-              : isFieldRole(role)
-                ? "Gambar desain acuan proyek yang dapat Anda lihat."
-                : "Galeri gambar desain arsitektur proyek dalam mode lihat saja."
+        titleSuffix={
+          <PageInfoDialog
+            title="Tentang Drawing"
+            description={
+              canManage
+                ? "Galeri gambar desain arsitektur proyek. Unggah file JPG, PNG, atau WebP (maks. 4 MB)."
+                : isProjectReadOnly
+                  ? "Proyek berada di Archive sehingga galeri Drawing bersifat baca saja."
+                  : isFieldRole(role)
+                    ? "Gambar desain acuan proyek yang dapat Anda lihat."
+                    : "Galeri gambar desain arsitektur proyek dalam mode lihat saja."
+            }
+          />
         }
         action={
           canManage ? (

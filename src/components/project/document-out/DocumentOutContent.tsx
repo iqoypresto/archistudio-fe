@@ -6,6 +6,7 @@ import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { PageInfoDialog } from "@/components/ui/PageInfoDialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { UnderlineTabsBar } from "@/components/ui/UnderlineTabsNav";
 import { useDeleteProjectDocumentMutation, useProjectDocumentsQuery, useProjectDocumentUpload } from "@/hooks/project-document.hooks";
@@ -72,10 +73,15 @@ export function DocumentOutContent({ projectId }: { projectId: string }) {
       <PageHeader
         kicker={project ? `${project.code} · ${project.name}` : undefined}
         title="Document Out"
-        description={
-          isProjectReadOnly
-            ? "Proyek berada di Archive sehingga dokumen keluar bersifat baca saja."
-            : "Kelola dokumen Quotation, BAST, dan Invoice dalam format PDF, Word, atau Excel (maks. 5 MB/file)."
+        titleSuffix={
+          <PageInfoDialog
+            title="Tentang Document Out"
+            description={
+              isProjectReadOnly
+                ? "Proyek berada di Archive sehingga dokumen keluar bersifat baca saja."
+                : "Kelola dokumen Quotation, BAST, dan Invoice dalam format PDF, Word, atau Excel (maks. 5 MB/file)."
+            }
+          />
         }
         action={
           canMutate ? (

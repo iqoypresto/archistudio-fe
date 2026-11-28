@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { PageInfoDialog } from "@/components/ui/PageInfoDialog";
 import {
   useCreatePayeeMutation, useCreatePaymentRecordMutation, usePayeeRecordsQuery,
   usePaymentPeopleQuery, useUpdatePaymentRecordMutation,
@@ -87,7 +88,12 @@ export function PaymentWorkspaceContent({ payeeType }: { payeeType: PayeeType })
     <div className="space-y-5 tabular-nums">
       <PageHeader
         title={`Pembayaran ${label}`}
-        description={`Catat dan pantau pembayaran ${label.toLowerCase()} global di luar proyek beserta bukti transfer.`}
+        titleSuffix={
+          <PageInfoDialog
+            title={`Tentang Pembayaran ${label}`}
+            description={`Catat dan pantau pembayaran ${label.toLowerCase()} global di luar proyek beserta bukti transfer.`}
+          />
+        }
         action={
           <Button type="button" onClick={() => setIsPayeeModalOpen(true)} className="h-9 gap-1.5 text-xs">
             <Plus className="size-3.5" />
