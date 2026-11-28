@@ -28,7 +28,7 @@ export function PageInfoDialog({ title, description, points }: PageInfoDialogPro
             size="icon"
             aria-label={title}
             title={title}
-            className="size-8 text-text-muted hover:text-text-primary"
+            className="size-11 text-text-muted hover:text-text-primary md:size-8"
           />
         }
       >

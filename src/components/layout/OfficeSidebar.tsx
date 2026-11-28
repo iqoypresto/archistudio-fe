@@ -183,7 +183,7 @@ function AccountFooter({
         disabled={isLoggingOut}
         aria-label="Keluar"
         title="Keluar"
-        className="shrink-0 gap-1.5 px-2.5 text-xs text-text-secondary hover:text-text-primary"
+        className="h-11 shrink-0 gap-1.5 px-3 text-xs text-text-secondary hover:text-text-primary md:h-8 md:px-2.5"
       >
         <LogOut className="size-3.5" />
         {!isCollapsed && <span>Keluar</span>}

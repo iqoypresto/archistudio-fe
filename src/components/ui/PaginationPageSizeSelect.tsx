@@ -34,7 +34,7 @@ export function PaginationPageSizeSelect({
           }
         }}
       >
-        <SelectTrigger aria-label="Jumlah baris per halaman" className="h-8 w-25 text-xs tabular-nums">
+        <SelectTrigger aria-label="Jumlah baris per halaman" className="h-10 w-28 text-xs tabular-nums md:h-8 md:w-25">
           <SelectValue>{value} / hal</SelectValue>
         </SelectTrigger>
         <SelectContent alignItemWithTrigger={false}>

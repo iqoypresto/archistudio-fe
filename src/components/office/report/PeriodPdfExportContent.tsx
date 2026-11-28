@@ -10,6 +10,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { PageInfoDialog } from "@/components/ui/PageInfoDialog";
 import { useProjectDetailQuery } from "@/hooks/project.hooks";
 import { pdfExportApi } from "@/lib/api/pdf-export.api";
+import { MonthYearSelect } from "./MonthYearSelect";
 import { PeriodPdfSummaryCard } from "./PeriodPdfSummaryCard";
 import { PeriodDailyPreviewPanel, PeriodMonthlyPreviewPanel } from "./PeriodReportPreviewPanel";
 
@@ -17,12 +18,7 @@ type ExportMode = "monthly" | "daily";
 
 function getTodayInTimeZone(timeZone = "Asia/Jakarta"): string {
   try {
-    return new Intl.DateTimeFormat("en-CA", {
-      timeZone,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(new Date());
+    return new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
   } catch {
     return new Date().toISOString().slice(0, 10);
   }
@@ -112,39 +108,39 @@ export function PeriodPdfExportContent({ projectId, mode }: { projectId: string;
       />
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start">
-        <form id="period-pdf-form" onSubmit={download} className="space-y-4 rounded-xl border border-border bg-surface p-5">
+        <form id="period-pdf-form" onSubmit={download} className="space-y-4 rounded-xl border border-border bg-surface p-4 sm:p-5">
           <div className="space-y-2">
             <p className="text-xs font-medium text-text-secondary">Pilih Cepat Periode</p>
             <div className="flex flex-wrap gap-2">
               {isMonthly ? (
                 <>
-                  <Button type="button" variant="outline" size="sm" className="h-8 text-xs" onClick={() => setMonth(getMonthPreset(0, projectTimeZone))}>Bulan Ini</Button>
-                  <Button type="button" variant="outline" size="sm" className="h-8 text-xs" onClick={() => setMonth(getMonthPreset(-1, projectTimeZone))}>Bulan Lalu</Button>
+                  <Button type="button" variant="outline" size="sm" className="h-10 text-xs sm:h-8" onClick={() => setMonth(getMonthPreset(0, projectTimeZone))}>Bulan Ini</Button>
+                  <Button type="button" variant="outline" size="sm" className="h-10 text-xs sm:h-8" onClick={() => setMonth(getMonthPreset(-1, projectTimeZone))}>Bulan Lalu</Button>
                 </>
               ) : (
                 <>
-                  <Button type="button" variant="outline" size="sm" className="h-8 text-xs" onClick={() => applyDailyPreset("last7")}>7 Hari Terakhir</Button>
-                  <Button type="button" variant="outline" size="sm" className="h-8 text-xs" onClick={() => applyDailyPreset("thisWeek")}>Minggu Ini</Button>
-                  <Button type="button" variant="outline" size="sm" className="h-8 text-xs" onClick={() => applyDailyPreset("lastWeek")}>Minggu Lalu</Button>
+                  <Button type="button" variant="outline" size="sm" className="h-10 text-xs sm:h-8" onClick={() => applyDailyPreset("last7")}>7 Hari Terakhir</Button>
+                  <Button type="button" variant="outline" size="sm" className="h-10 text-xs sm:h-8" onClick={() => applyDailyPreset("thisWeek")}>Minggu Ini</Button>
+                  <Button type="button" variant="outline" size="sm" className="h-10 text-xs sm:h-8" onClick={() => applyDailyPreset("lastWeek")}>Minggu Lalu</Button>
                 </>
               )}
             </div>
           </div>
 
           {isMonthly ? (
-            <div className="max-w-xs space-y-1.5">
-              <Label htmlFor="report-month" className="text-xs font-medium">Bulan Kalender</Label>
-              <Input id="report-month" type="month" required value={month} className="h-9 text-xs" onChange={(e) => setMonth(e.target.value)} />
+            <div className="max-w-sm space-y-1.5">
+              <Label className="text-xs font-medium">Bulan &amp; Tahun Kalender</Label>
+              <MonthYearSelect value={month} onChange={setMonth} />
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor="from-date" className="text-xs font-medium">Tanggal Awal</Label>
-                <Input id="from-date" type="date" required max={toDate || undefined} value={fromDate} className="h-9 text-xs" onChange={(e) => setFromDate(e.target.value)} />
+                <Input id="from-date" type="date" required max={toDate || undefined} value={fromDate} className="h-11 sm:h-9 sm:text-xs" onChange={(e) => setFromDate(e.target.value)} />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="to-date" className="text-xs font-medium">Tanggal Akhir</Label>
-                <Input id="to-date" type="date" required min={fromDate || undefined} value={toDate} className="h-9 text-xs" onChange={(e) => setToDate(e.target.value)} />
+                <Input id="to-date" type="date" required min={fromDate || undefined} value={toDate} className="h-11 sm:h-9 sm:text-xs" onChange={(e) => setToDate(e.target.value)} />
               </div>
             </div>
           )}
@@ -161,7 +157,7 @@ export function PeriodPdfExportContent({ projectId, mode }: { projectId: string;
           )}
 
           <div className="flex flex-wrap items-center gap-3 pt-1">
-            <Button type="submit" disabled={isPending || (isMonthly ? !month : !validRange)} className="h-9 gap-1.5 text-xs">
+            <Button type="submit" disabled={isPending || (isMonthly ? !month : !validRange)} className="h-11 w-full gap-1.5 text-xs sm:h-9 sm:w-auto">
               <Download className="size-3.5" />
               {isPending ? "Menyiapkan PDF..." : isMonthly ? "Unduh PDF Bulanan" : "Unduh PDF Rentang"}
             </Button>

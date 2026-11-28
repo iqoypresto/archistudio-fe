@@ -30,7 +30,7 @@ export function AssignmentHistoryDrawer({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="max-h-[88dvh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Riwayat Penugasan Area {targetArea.code}</DialogTitle>
           <DialogDescription className="text-xs">
@@ -61,7 +61,7 @@ export function AssignmentHistoryDrawer({
                           isActive ? "bg-status-success-fg" : "bg-text-muted"
                         }`}
                       />
-                      <div className="flex items-center justify-between gap-2">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
                         <p className="text-[13px] font-semibold text-text-primary">
                           {item.supervisor.name}{" "}
                           <span className="font-normal text-text-muted">

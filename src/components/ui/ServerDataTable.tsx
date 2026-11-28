@@ -24,6 +24,7 @@ interface ServerDataTableProps<T> {
   data: T[];
   getRowKey: (row: T) => string;
   getRowClassName?: (row: T) => string | undefined;
+  renderMobileCard?: (row: T) => ReactNode;
   meta?: PaginationMeta;
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (pageSize: number) => void;
@@ -38,6 +39,7 @@ export function ServerDataTable<T>({
   data,
   getRowKey,
   getRowClassName,
+  renderMobileCard,
   meta,
   onPageChange,
   onPageSizeChange,
@@ -55,7 +57,23 @@ export function ServerDataTable<T>({
         className,
       )}
     >
-      <div className={cn(bare && "border-t border-border")}>
+      {renderMobileCard && (
+        <div
+          className={cn(
+            "divide-y divide-border/70 md:hidden",
+            bare && "border-t border-border",
+            isUpdating && "opacity-65 transition-opacity",
+          )}
+        >
+          {data.map((row) => (
+            <div key={getRowKey(row)} className={cn("p-4 tabular-nums", getRowClassName?.(row))}>
+              {renderMobileCard(row)}
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className={cn(bare && "border-t border-border", renderMobileCard && "hidden md:block")}>
         <Table className="tabular-nums">
           <TableHeader className="bg-surface-input/50">
             <TableRow className="border-border/80 hover:bg-transparent">

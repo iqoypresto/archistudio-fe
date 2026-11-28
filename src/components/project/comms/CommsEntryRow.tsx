@@ -45,10 +45,10 @@ export function CommsEntryRow({ entry, showDirection, canEdit, onEdit }: CommsEn
             <button
               type="button"
               onClick={() => void fileApi.openContent(entry.attachmentContentPath!)}
-              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface-input px-2.5 py-1 text-xs text-text-secondary transition-colors hover:bg-surface-active hover:text-text-primary"
+              className="inline-flex min-h-10 max-w-full items-center gap-1.5 rounded-md border border-border bg-surface-input px-3 py-1.5 text-xs text-text-secondary transition-colors hover:bg-surface-active hover:text-text-primary md:min-h-0 md:px-2.5 md:py-1"
             >
-              <Paperclip className="size-3" />
-              <span>{entry.attachmentName ?? "Lampiran"}</span>
+              <Paperclip className="size-3.5 shrink-0" aria-hidden="true" />
+              <span className="truncate">{entry.attachmentName ?? "Lampiran"}</span>
             </button>
           </div>
         )}
@@ -59,7 +59,7 @@ export function CommsEntryRow({ entry, showDirection, canEdit, onEdit }: CommsEn
           type="button"
           variant="outline"
           size="sm"
-          className="h-8 shrink-0 self-start px-2.5 text-xs text-text-secondary hover:text-text-primary"
+          className="h-10 shrink-0 self-start px-3 text-xs text-text-secondary hover:text-text-primary md:h-8 md:px-2.5"
           onClick={() => onEdit(entry)}
         >
           Ubah

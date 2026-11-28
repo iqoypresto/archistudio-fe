@@ -49,57 +49,69 @@ export function CommsFiltersBar({
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Cari subjek atau isi catatan..."
-          className="h-9 pl-8 text-xs"
+          className="h-11 pl-8 lg:h-9 lg:text-xs"
         />
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 text-xs text-text-secondary">
-        <span>Periode:</span>
-        <Input
-          type="date"
-          aria-label="Dari tanggal"
-          value={dateFrom}
-          onChange={(event) => onDateFromChange(event.target.value)}
-          className="h-9 w-38 text-xs tabular-nums"
-        />
-        <span className="text-text-muted">—</span>
-        <Input
-          type="date"
-          aria-label="Sampai tanggal"
-          value={dateTo}
-          onChange={(event) => onDateToChange(event.target.value)}
-          className="h-9 w-38 text-xs tabular-nums"
-        />
+      <div className="flex flex-col gap-2.5 text-xs text-text-secondary sm:flex-row sm:flex-wrap sm:items-center">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
+          <span className="hidden sm:inline">Periode:</span>
+          <label className="space-y-1 sm:space-y-0">
+            <span className="block text-[11px] text-text-muted sm:hidden">Dari tanggal</span>
+            <Input
+              type="date"
+              aria-label="Dari tanggal"
+              value={dateFrom}
+              onChange={(event) => onDateFromChange(event.target.value)}
+              className="h-11 w-full tabular-nums sm:h-9 sm:w-38 sm:text-xs"
+            />
+          </label>
+          <span className="hidden text-text-muted sm:inline">—</span>
+          <label className="space-y-1 sm:space-y-0">
+            <span className="block text-[11px] text-text-muted sm:hidden">Sampai tanggal</span>
+            <Input
+              type="date"
+              aria-label="Sampai tanggal"
+              value={dateTo}
+              onChange={(event) => onDateToChange(event.target.value)}
+              className="h-11 w-full tabular-nums sm:h-9 sm:w-38 sm:text-xs"
+            />
+          </label>
+        </div>
 
-        {!hideDirectionFilter && (
-          <div className="w-36">
-            <Select
-              value={direction || "ALL"}
-              onValueChange={(val: string | null) =>
-                onDirectionChange((!val || val === "ALL" ? "" : val) as CommsDirection | "")
-              }
-            >
-              <SelectTrigger aria-label="Filter arah komunikasi" className="h-9 text-xs">
-                <SelectValue placeholder="Semua Arah">{directionLabel}</SelectValue>
-              </SelectTrigger>
-              <SelectContent alignItemWithTrigger={false}>
-                <SelectItem value="ALL">Semua Arah</SelectItem>
-                <SelectItem value="INBOUND">Masuk</SelectItem>
-                <SelectItem value="OUTBOUND">Keluar</SelectItem>
-              </SelectContent>
-            </Select>
+        {(!hideDirectionFilter || hasFilters) && (
+          <div className="flex w-full items-center gap-2 sm:w-auto">
+            {!hideDirectionFilter && (
+              <div className="min-w-0 flex-1 sm:w-36 sm:flex-none">
+                <Select
+                  value={direction || "ALL"}
+                  onValueChange={(val: string | null) =>
+                    onDirectionChange((!val || val === "ALL" ? "" : val) as CommsDirection | "")
+                  }
+                >
+                  <SelectTrigger aria-label="Filter arah komunikasi" className="h-11 text-sm sm:h-9 sm:text-xs">
+                    <SelectValue placeholder="Semua Arah">{directionLabel}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent alignItemWithTrigger={false}>
+                    <SelectItem value="ALL">Semua Arah</SelectItem>
+                    <SelectItem value="INBOUND">Masuk</SelectItem>
+                    <SelectItem value="OUTBOUND">Keluar</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {hasFilters && (
+              <Button
+                type="button"
+                variant="outline"
+                className="h-11 w-full gap-1.5 px-3 text-xs text-text-secondary sm:h-9 sm:w-auto"
+                onClick={onReset}
+              >
+                <RotateCcw className="size-3.5" /> Reset
+              </Button>
+            )}
           </div>
-        )}
-
-        {hasFilters && (
-          <Button
-            type="button"
-            variant="outline"
-            className="h-9 gap-1.5 px-3 text-xs text-text-secondary"
-            onClick={onReset}
-          >
-            <RotateCcw className="size-3.5" /> Reset
-          </Button>
         )}
       </div>
     </div>

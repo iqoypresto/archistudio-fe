@@ -82,7 +82,7 @@ export function AreaCard({
               type="button"
               size="sm"
               variant="outline"
-              className="h-8 flex-1 text-xs text-text-primary"
+              className="h-10 flex-1 text-xs text-text-primary md:h-8"
               onClick={() => onAssignSupervisor(area)}
             >
               {active ? "Ganti Pengawas" : "Tugaskan Pengawas"}
@@ -97,7 +97,7 @@ export function AreaCard({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-8 px-2 text-xs text-text-secondary hover:text-text-primary"
+                className="h-10 px-3 text-xs text-text-secondary hover:text-text-primary md:h-8 md:px-2"
                 onClick={() => onViewHistory(area)}
               >
                 Riwayat
@@ -108,7 +108,7 @@ export function AreaCard({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-8 px-2 text-xs text-text-secondary hover:text-text-primary"
+                className="h-10 px-3 text-xs text-text-secondary hover:text-text-primary md:h-8 md:px-2"
                 onClick={() => onEdit(area)}
               >
                 Ubah

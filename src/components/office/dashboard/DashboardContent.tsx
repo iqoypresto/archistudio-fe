@@ -174,7 +174,7 @@ export function DashboardContent() {
                   <button
                     type="button"
                     onClick={() => setActiveTab("system")}
-                    className="text-xs font-medium text-text-primary underline-offset-4 hover:underline"
+                    className="inline-flex min-h-10 items-center text-xs font-medium text-text-primary underline-offset-4 hover:underline sm:min-h-0"
                   >
                     {systemAlertCount > 0
                       ? `${systemAlertCount} perhatian sistem`

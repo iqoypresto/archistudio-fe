@@ -78,9 +78,15 @@ export function ProjectArchiveContent() {
         <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <div className="relative w-full sm:max-w-sm">
             <Search className="pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-text-muted" />
-            <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Cari kode, nama proyek, klien, atau lokasi..." className="h-9 pl-8 text-xs" />
+            <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Cari kode, nama proyek, klien, atau lokasi..." className="h-11 pl-8 sm:h-9 sm:text-xs" />
           </div>
-          <SegmentedControl ariaLabel="Filter jenis arsip" options={ARCHIVE_TYPE_OPTIONS} value={typeFilter} onChange={setTypeFilter} />
+          <SegmentedControl
+            ariaLabel="Filter jenis arsip"
+            options={ARCHIVE_TYPE_OPTIONS}
+            value={typeFilter}
+            onChange={setTypeFilter}
+            className="grid w-full auto-cols-fr grid-flow-col sm:inline-flex sm:w-auto"
+          />
         </div>
 
         <AsyncStateView

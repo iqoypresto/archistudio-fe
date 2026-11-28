@@ -62,18 +62,19 @@ export function PaymentProofField({
             type="button"
             variant="ghost"
             size="icon"
-            className="size-8 shrink-0 text-status-danger-fg"
+            aria-label="Hapus bukti pembayaran"
+            className="size-11 shrink-0 text-status-danger-fg md:size-8"
             onClick={onRemoveProof}
             title="Hapus bukti"
             disabled={isUploading}
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-4 w-4" aria-hidden="true" />
           </Button>
         </div>
       ) : (
         <Label
           htmlFor="payment-proof-input"
-          className="flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-surface-input/70 px-3 py-2.5 text-xs font-medium text-text-secondary transition-colors hover:border-white/25 hover:text-text-primary"
+          className="flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-surface-input/70 px-3 py-2.5 text-xs font-medium text-text-secondary transition-colors hover:border-white/25 hover:text-text-primary focus-within:ring-2 focus-within:ring-ring"
         >
           {isUploading ? (
             <>

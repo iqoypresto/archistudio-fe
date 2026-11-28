@@ -18,7 +18,7 @@ export function RoutineHolidaysField({ value, onChange }: RoutineHolidaysFieldPr
   return (
     <div className="space-y-1.5">
       <Label className="text-xs font-medium">Hari Libur Rutin Mingguan</Label>
-      <div className="grid grid-cols-7 gap-1.5">
+      <div className="grid grid-cols-4 gap-2 sm:grid-cols-7 sm:gap-1.5">
         {DAY_OF_WEEK_OPTIONS.map((day) => {
           const isSelected = value?.includes(day.value);
           return (
@@ -28,9 +28,9 @@ export function RoutineHolidaysField({ value, onChange }: RoutineHolidaysFieldPr
               aria-pressed={isSelected}
               onClick={() => toggleDay(day.value)}
               className={cn(
-                "h-8 rounded-lg border text-xs font-medium transition-colors",
+                "h-11 rounded-lg border text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-9",
                 isSelected
-                  ? "border-white/20 bg-primary text-text-primary"
+                  ? "border-white/25 bg-primary text-text-primary"
                   : "border-border bg-surface-input text-text-secondary hover:text-text-primary",
               )}
             >

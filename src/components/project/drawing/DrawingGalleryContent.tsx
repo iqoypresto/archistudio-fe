@@ -5,19 +5,19 @@ import { Loader2, Search, Upload } from "lucide-react";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { StoredFileImage } from "@/components/ui/StoredFileImage";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { PageInfoDialog } from "@/components/ui/PageInfoDialog";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { StatusIndicator } from "@/components/ui/StatusIndicator";
+import { StoredFileImage } from "@/components/ui/StoredFileImage";
 import { useArchiveDrawingMutation, useDrawingUpload, useProjectDrawingsQuery } from "@/hooks/drawing.hooks";
 import { useProjectDetailQuery } from "@/hooks/project.hooks";
+import type { ApiSurface } from "@/lib/api/api-surface";
 import { formatIdDate } from "@/lib/utils/office-format";
 import { isFieldRole } from "@/lib/utils/role";
 import { resolveDrawingPermissions } from "@/lib/validation/drawing.validation";
 import { useAuthStore } from "@/stores/auth.store";
 import type { DrawingItem } from "@/types/api/drawing.types";
-import type { ApiSurface } from "@/lib/api/api-surface";
 import { ConfirmArchiveDrawingDialog } from "./ConfirmArchiveDrawingDialog";
 import { DrawingPreviewModal } from "./DrawingPreviewModal";
 
@@ -33,11 +33,10 @@ export function DrawingGalleryContent({ projectId, surface = "office" }: { proje
   const isOwnerOffice = role === "OWNER" && surface === "office";
   const [viewMode, setViewMode] = useState<DrawingViewMode>("ACTIVE");
   const [search, setSearch] = useState("");
-  const [previewItem, setPreviewItem] = useState<DrawingItem | null>(null);
+  const [previewIndex, setPreviewIndex] = useState<number | null>(null);
   const [archiveTarget, setArchiveTarget] = useState<DrawingItem | null>(null);
 
-  const projectQuery = useProjectDetailQuery(projectId, surface);
-  const project = projectQuery.data;
+  const project = useProjectDetailQuery(projectId, surface).data;
   const { canView, canManage, isProjectReadOnly } = resolveDrawingPermissions(role, project);
 
   const drawingsQuery = useProjectDrawingsQuery(
@@ -85,18 +84,16 @@ export function DrawingGalleryContent({ projectId, surface = "office" }: { proje
         }
         action={
           canManage ? (
-            <div className="flex items-center gap-2">
-              <label className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-white/15 bg-primary px-3.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary-hover">
-                {isUploading ? <><Loader2 className="size-3.5 animate-spin" /> Mengunggah...</> : <><Upload className="size-3.5" /> Unggah Drawing</>}
-                <Input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={handleFileChange}
-                  disabled={isUploading}
-                  className="sr-only"
-                />
-              </label>
-            </div>
+            <label className="inline-flex h-11 w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-white/15 bg-primary px-3.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary-hover focus-within:ring-2 focus-within:ring-ring sm:h-9 sm:w-auto">
+              {isUploading ? <><Loader2 className="size-3.5 animate-spin" /> Mengunggah...</> : <><Upload className="size-3.5" /> Unggah Drawing</>}
+              <Input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleFileChange}
+                disabled={isUploading}
+                className="sr-only"
+              />
+            </label>
           ) : undefined
         }
       />
@@ -109,25 +106,26 @@ export function DrawingGalleryContent({ projectId, surface = "office" }: { proje
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Cari nama file drawing..."
-              className="h-9 pl-8 text-xs"
+              className="h-11 pl-8 sm:h-9 sm:text-xs"
             />
           </div>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
             {isOwnerOffice && (
               <SegmentedControl
                 ariaLabel="Filter status drawing"
                 options={DRAWING_VIEW_OPTIONS}
                 value={viewMode}
                 onChange={setViewMode}
+                className="grid w-full auto-cols-fr grid-flow-col sm:inline-flex sm:w-auto"
               />
             )}
             <span className="text-xs text-text-muted">
-              {filteredItems.length} gambar · Klik gambar untuk pratinjau penuh
+              {filteredItems.length} gambar · Ketuk gambar untuk pratinjau penuh
             </span>
           </div>
         </div>
 
-        <div className="p-5">
+        <div className="p-4 sm:p-5">
           <AsyncStateView
             isLoading={drawingsQuery.isLoading}
             isError={drawingsQuery.isError}
@@ -146,46 +144,25 @@ export function DrawingGalleryContent({ projectId, surface = "office" }: { proje
           >
             {(items) => (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {items.map((item) => (
-                  <article
-                    key={item.id}
-                    className="flex flex-col overflow-hidden rounded-xl border border-border bg-surface-input/40 transition-colors hover:border-white/15"
-                  >
+                {items.map((item, index) => (
+                  <article key={item.id} className="flex flex-col overflow-hidden rounded-xl border border-border bg-surface-input/40 transition-colors hover:border-white/20">
                     <button
                       type="button"
                       aria-label={`Pratinjau ${item.fileName}`}
-                      onClick={() => setPreviewItem(item)}
-                      className="group relative aspect-4/3 w-full overflow-hidden bg-canvas"
+                      onClick={() => setPreviewIndex(index)}
+                      className="group relative aspect-4/3 w-full overflow-hidden bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      <StoredFileImage
-                        contentPath={item.contentPath}
-                        alt={item.fileName}
-                        variant="thumb"
-                        className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
-                        fallbackClassName="h-full w-full"
-                      />
+                      <StoredFileImage contentPath={item.contentPath} alt={item.fileName} variant="thumb" className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]" fallbackClassName="h-full w-full" />
                     </button>
-
                     <div className="flex items-center justify-between gap-2 p-3.5">
                       <div className="min-w-0 space-y-0.5">
                         <p className="truncate text-[13px] font-medium text-text-primary">{item.fileName}</p>
-                        <p className="text-xs text-text-muted">
-                          {formatIdDate(item.uploadedAt)} · {Math.max(1, Math.round(item.sizeBytes / 1024))} KB
-                        </p>
+                        <p className="text-xs text-text-muted">{formatIdDate(item.uploadedAt)} · {Math.max(1, Math.round(item.sizeBytes / 1024))} KB</p>
                       </div>
                       {item.archivedAt ? (
-                        <StatusIndicator tone="muted" className="shrink-0 text-[11px]">
-                          Diarsipkan
-                        </StatusIndicator>
+                        <StatusIndicator tone="muted" className="shrink-0 text-[11px]">Diarsipkan</StatusIndicator>
                       ) : canManage ? (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="h-8 shrink-0 px-2.5 text-xs text-text-secondary hover:text-text-primary"
-                          onClick={() => setArchiveTarget(item)}
-                          disabled={archiveMutation.isPending}
-                        >
+                        <Button type="button" variant="outline" size="sm" className="h-10 shrink-0 px-3 text-xs text-text-secondary hover:text-text-primary md:h-8 md:px-2.5" onClick={() => setArchiveTarget(item)} disabled={archiveMutation.isPending}>
                           Arsipkan
                         </Button>
                       ) : null}
@@ -198,7 +175,7 @@ export function DrawingGalleryContent({ projectId, surface = "office" }: { proje
         </div>
       </section>
 
-      <DrawingPreviewModal drawing={previewItem} onClose={() => setPreviewItem(null)} />
+      <DrawingPreviewModal drawings={filteredItems} activeIndex={previewIndex} onChangeIndex={setPreviewIndex} />
       <ConfirmArchiveDrawingDialog
         drawing={archiveTarget}
         onClose={() => setArchiveTarget(null)}

@@ -3,7 +3,7 @@
 import { Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { SidebarProvider, useSidebar } from "./sidebar-context";
 
@@ -19,10 +19,14 @@ export function Sidebar({ children, className }: { children: ReactNode; classNam
           side="left"
           showCloseButton={false}
           className={cn(
-            "sidebar-scrollable data-[side=left]:inset-y-4 data-[side=left]:left-4 data-[side=left]:h-[calc(100dvh-2rem)] data-[side=left]:w-[min(18rem,calc(100vw-2rem))] gap-0 overflow-y-auto rounded-3xl border border-sidebar-border bg-sidebar p-0 shadow-2xl",
+            "sidebar-scrollable data-[side=left]:top-[max(1rem,env(safe-area-inset-top))] data-[side=left]:bottom-[max(1rem,env(safe-area-inset-bottom))] data-[side=left]:left-4 data-[side=left]:h-auto data-[side=left]:w-[min(18rem,calc(100vw-2rem))] gap-0 overflow-y-auto rounded-3xl border border-sidebar-border bg-sidebar p-0 shadow-2xl",
             className,
           )}
         >
+          <SheetTitle className="sr-only">Menu Navigasi Office</SheetTitle>
+          <SheetDescription className="sr-only">
+            Navigasi halaman utama, daftar project, dan informasi akun.
+          </SheetDescription>
           <div data-slot="sidebar" data-mobile="true" className="flex h-full flex-col">{children}</div>
         </SheetContent>
       </Sheet>

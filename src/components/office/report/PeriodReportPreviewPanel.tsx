@@ -30,7 +30,7 @@ export function PeriodMonthlyPreviewPanel({
 
   return (
     <section className="overflow-hidden rounded-xl border border-border bg-surface tabular-nums">
-      <div className="flex items-center justify-between gap-2 border-b border-border px-5 py-3.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3.5 sm:px-5">
         <h2 className="text-sm font-semibold text-text-primary">
           Pratinjau Rekap Kepatuhan Bulanan ({month})
         </h2>
@@ -50,52 +50,66 @@ export function PeriodMonthlyPreviewPanel({
         emptyDescription="Tambahkan area dan penugasan pengawas untuk melihat rekap bulanan."
       >
         {(res) => (
-          <Table>
-            <TableHeader className="bg-surface-input/50">
-              <TableRow className="border-border/80 hover:bg-transparent">
-                <TableHead className="h-10 px-4 text-[11px] font-medium tracking-wider text-text-muted uppercase">
-                  Area
-                </TableHead>
-                <TableHead className="h-10 px-4 text-right text-[11px] font-medium tracking-wider text-text-muted uppercase">
-                  Hari Wajib
-                </TableHead>
-                <TableHead className="h-10 px-4 text-right text-[11px] font-medium tracking-wider text-text-muted uppercase">
-                  Tepat Waktu
-                </TableHead>
-                <TableHead className="h-10 px-4 text-right text-[11px] font-medium tracking-wider text-text-muted uppercase">
-                  Terlambat
-                </TableHead>
-                <TableHead className="h-10 px-4 text-right text-[11px] font-medium tracking-wider text-text-muted uppercase">
-                  Belum Lapor
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+          <>
+            <div className="divide-y divide-border/70 md:hidden">
               {res.areas.map((area) => (
-                <TableRow key={area.areaCode} className="border-border/60 hover:bg-surface-input/40">
-                  <TableCell className="px-4 py-3 text-[13px] font-medium text-text-primary">
+                <div key={area.areaCode} className="space-y-2 p-4">
+                  <p className="text-[13px] font-semibold text-text-primary">
                     <span className="text-text-muted">{area.areaCode}</span> {area.areaName}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-right text-[13px] text-text-primary">
-                    {area.requiredDays}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-right text-[13px] font-medium text-status-success-fg">
-                    {area.onTime}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-right text-[13px] font-medium text-status-warning-fg">
-                    {area.late}
-                  </TableCell>
-                  <TableCell
-                    className={`px-4 py-3 text-right text-[13px] font-medium ${
-                      area.missing > 0 ? "text-status-danger-fg" : "text-text-muted"
-                    }`}
-                  >
-                    {area.missing}
-                  </TableCell>
-                </TableRow>
+                  </p>
+                  <div className="grid grid-cols-4 gap-1.5 rounded-lg border border-border/70 bg-canvas/50 p-2 text-center text-xs">
+                    <div>
+                      <p className="text-[10px] text-text-muted">Wajib</p>
+                      <p className="mt-0.5 font-semibold text-text-primary">{area.requiredDays}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-text-muted">Tepat</p>
+                      <p className="mt-0.5 font-semibold text-status-success-fg">{area.onTime}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-text-muted">Telat</p>
+                      <p className="mt-0.5 font-semibold text-status-warning-fg">{area.late}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-text-muted">Belum</p>
+                      <p className={`mt-0.5 font-semibold ${area.missing > 0 ? "text-status-danger-fg" : "text-text-muted"}`}>
+                        {area.missing}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               ))}
-            </TableBody>
-          </Table>
+            </div>
+
+            <div className="hidden md:block">
+              <Table>
+                <TableHeader className="bg-surface-input/50">
+                  <TableRow className="border-border/80 hover:bg-transparent">
+                    <TableHead className="h-10 px-4 text-[11px] font-medium tracking-wider text-text-muted uppercase">Area</TableHead>
+                    <TableHead className="h-10 px-4 text-right text-[11px] font-medium tracking-wider text-text-muted uppercase">Hari Wajib</TableHead>
+                    <TableHead className="h-10 px-4 text-right text-[11px] font-medium tracking-wider text-text-muted uppercase">Tepat Waktu</TableHead>
+                    <TableHead className="h-10 px-4 text-right text-[11px] font-medium tracking-wider text-text-muted uppercase">Terlambat</TableHead>
+                    <TableHead className="h-10 px-4 text-right text-[11px] font-medium tracking-wider text-text-muted uppercase">Belum Lapor</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {res.areas.map((area) => (
+                    <TableRow key={area.areaCode} className="border-border/60 hover:bg-surface-input/40">
+                      <TableCell className="px-4 py-3 text-[13px] font-medium text-text-primary">
+                        <span className="text-text-muted">{area.areaCode}</span> {area.areaName}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-right text-[13px] text-text-primary">{area.requiredDays}</TableCell>
+                      <TableCell className="px-4 py-3 text-right text-[13px] font-medium text-status-success-fg">{area.onTime}</TableCell>
+                      <TableCell className="px-4 py-3 text-right text-[13px] font-medium text-status-warning-fg">{area.late}</TableCell>
+                      <TableCell className={`px-4 py-3 text-right text-[13px] font-medium ${area.missing > 0 ? "text-status-danger-fg" : "text-text-muted"}`}>
+                        {area.missing}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </>
         )}
       </AsyncStateView>
     </section>
@@ -135,7 +149,7 @@ export function PeriodDailyPreviewPanel({
 
   return (
     <section className="overflow-hidden rounded-xl border border-border bg-surface tabular-nums">
-      <div className="flex items-center justify-between gap-2 border-b border-border px-5 py-3.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3.5 sm:px-5">
         <h2 className="text-sm font-semibold text-text-primary">
           Laporan Masuk pada Rentang Terpilih
         </h2>

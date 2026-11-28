@@ -36,30 +36,25 @@ function resolveStatus(project: ProjectDetail): { tone: "success" | "warning" | 
   return map[project.status];
 }
 
+const quickLinkClass =
+  "inline-flex min-h-10 items-center gap-1 rounded-lg border border-border bg-surface-input px-3 text-xs text-text-secondary transition-colors hover:bg-surface-active hover:text-text-primary sm:min-h-0 sm:border-0 sm:bg-transparent sm:px-0 sm:underline-offset-4 sm:hover:bg-transparent sm:hover:underline";
+
 export function ProjectDetailHeader({
-  project,
-  canEditProject,
-  canCompleteProject,
-  canArchiveProject,
-  canRestoreProject,
-  isSupervisorReadOnly,
-  isProjectReadOnly,
-  onEditProject,
-  onCompleteProject,
-  onArchiveProject,
-  onRestoreProject,
+  project, canEditProject, canCompleteProject, canArchiveProject, canRestoreProject,
+  isSupervisorReadOnly, isProjectReadOnly,
+  onEditProject, onCompleteProject, onArchiveProject, onRestoreProject,
 }: ProjectDetailHeaderProps) {
   const statusInfo = project ? resolveStatus(project) : null;
   const holidays = project?.routineHolidays?.map((d) => DAY_NAMES[d] ?? d).join(", ") || "-";
 
   return (
     <div className="space-y-4 tabular-nums">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <Link
           href={isProjectReadOnly ? "/office/archive" : "/office/projects"}
           className={cn(
             buttonVariants({ variant: "outline", size: "sm" }),
-            "h-9 gap-1.5 border-border bg-surface px-3 text-xs text-text-secondary hover:bg-surface-active hover:text-text-primary",
+            "h-10 w-fit gap-1.5 border-border bg-surface px-3 text-xs text-text-secondary hover:bg-surface-active hover:text-text-primary sm:h-9",
           )}
         >
           <ArrowLeft className="size-3.5" />
@@ -68,22 +63,22 @@ export function ProjectDetailHeader({
 
         <div className="flex flex-wrap items-center gap-2">
           {canEditProject && (
-            <Button type="button" variant="outline" size="sm" onClick={onEditProject} className="h-9 px-3 text-xs">
+            <Button type="button" variant="outline" size="sm" onClick={onEditProject} className="h-10 flex-1 px-3 text-xs sm:h-9 sm:flex-none">
               Ubah Proyek
             </Button>
           )}
           {canCompleteProject && (
-            <Button type="button" variant="outline" size="sm" onClick={onCompleteProject} className="h-9 px-3 text-xs">
+            <Button type="button" variant="outline" size="sm" onClick={onCompleteProject} className="h-10 flex-1 px-3 text-xs sm:h-9 sm:flex-none">
               Tandai Selesai
             </Button>
           )}
           {canArchiveProject && (
-            <Button type="button" variant="destructive" size="sm" onClick={onArchiveProject} className="h-9 px-3 text-xs">
+            <Button type="button" variant="destructive" size="sm" onClick={onArchiveProject} className="h-10 px-3 text-xs sm:h-9">
               Arsipkan
             </Button>
           )}
           {canRestoreProject && (
-            <Button type="button" size="sm" onClick={onRestoreProject} className="h-9 px-3 text-xs">
+            <Button type="button" size="sm" onClick={onRestoreProject} className="h-10 w-full px-3 text-xs sm:h-9 sm:w-auto">
               Pulihkan Project
             </Button>
           )}
@@ -96,9 +91,7 @@ export function ProjectDetailHeader({
           {statusInfo && (
             <>
               <span>·</span>
-              <StatusIndicator tone={statusInfo.tone} className="text-xs">
-                {statusInfo.label}
-              </StatusIndicator>
+              <StatusIndicator tone={statusInfo.tone} className="text-xs">{statusInfo.label}</StatusIndicator>
             </>
           )}
         </div>
@@ -109,77 +102,51 @@ export function ProjectDetailHeader({
 
       {project && (
         <>
-          <div className="grid grid-cols-1 divide-y divide-border rounded-xl border border-border bg-surface sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 lg:divide-x">
-            <div className="p-4">
-              <p className="text-[11px] font-medium tracking-wider text-text-muted uppercase">
-                Klien &amp; Lokasi
-              </p>
+          <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border lg:grid-cols-4">
+            <div className="bg-surface p-3.5 sm:p-4">
+              <p className="text-[11px] font-medium tracking-wider text-text-muted uppercase">Klien &amp; Lokasi</p>
               <p className="mt-1 text-[13px] font-medium text-text-primary">{project.clientName}</p>
               <p className="mt-0.5 text-xs text-text-secondary">{project.location}</p>
             </div>
-            <div className="p-4">
-              <p className="text-[11px] font-medium tracking-wider text-text-muted uppercase">
-                Site Manager
-              </p>
-              <p className="mt-1 text-[13px] font-medium text-text-primary">
-                {project.siteManager?.name ?? "Belum ditetapkan"}
-              </p>
+            <div className="bg-surface p-3.5 sm:p-4">
+              <p className="text-[11px] font-medium tracking-wider text-text-muted uppercase">Site Manager</p>
+              <p className="mt-1 text-[13px] font-medium text-text-primary">{project.siteManager?.name ?? "Belum ditetapkan"}</p>
+              <p className="mt-0.5 text-xs text-text-secondary">{project.siteManager?.phone ?? "Penanggung jawab proyek"}</p>
+            </div>
+            <div className="bg-surface p-3.5 sm:p-4">
+              <p className="text-[11px] font-medium tracking-wider text-text-muted uppercase">Jadwal Pelaksanaan</p>
+              <p className="mt-1 text-[13px] font-medium text-text-primary">{formatIdDate(project.startDate)}</p>
               <p className="mt-0.5 text-xs text-text-secondary">
-                {project.siteManager?.phone ?? "Penanggung jawab proyek"}
+                Target: {project.endDate ? formatIdDate(project.endDate) : "Fleksibel"}
               </p>
             </div>
-            <div className="p-4">
-              <p className="text-[11px] font-medium tracking-wider text-text-muted uppercase">
-                Jadwal Pelaksanaan
-              </p>
-              <p className="mt-1 text-[13px] font-medium text-text-primary">
-                {formatIdDate(project.startDate)}
-              </p>
-              <p className="mt-0.5 text-xs text-text-secondary">
-                Target selesai: {project.endDate ? formatIdDate(project.endDate) : "Fleksibel"}
-              </p>
-            </div>
-            <div className="p-4">
-              <p className="text-[11px] font-medium tracking-wider text-text-muted uppercase">
-                Zona &amp; Hari Libur
-              </p>
+            <div className="bg-surface p-3.5 sm:p-4">
+              <p className="text-[11px] font-medium tracking-wider text-text-muted uppercase">Zona &amp; Libur</p>
               <p className="mt-1 text-[13px] font-medium text-text-primary">
                 {formatShortTimezone(project.timezone)} ({project.timezone})
               </p>
-              <p className="mt-0.5 text-xs text-text-secondary">Libur rutin: {holidays}</p>
+              <p className="mt-0.5 text-xs text-text-secondary">Libur: {holidays}</p>
             </div>
           </div>
 
           {project._count && (
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-xs text-text-secondary">
-              <span>
-                Area: <strong className="font-semibold text-text-primary">{project._count.areas}</strong>
+            <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-surface p-3 text-xs text-text-secondary sm:gap-x-5 sm:gap-y-2 sm:px-4 sm:py-2.5">
+              <span className="inline-flex min-h-10 items-center px-1 sm:min-h-0 sm:px-0">
+                Area: <strong className="ml-1 font-semibold text-text-primary">{project._count.areas}</strong>
               </span>
               {project._count.drawings !== undefined && (
-                <Link
-                  href={`/office/projects/${project.id}/drawings`}
-                  className="underline-offset-4 hover:text-text-primary hover:underline"
-                >
-                  Drawing aktif:{" "}
-                  <strong className="font-semibold text-text-primary">{project._count.drawings}</strong>
+                <Link href={`/office/projects/${project.id}/drawings`} className={quickLinkClass}>
+                  Drawing aktif: <strong className="font-semibold text-text-primary">{project._count.drawings}</strong>
                 </Link>
               )}
               {project._count.commsEntries !== undefined && (
-                <Link
-                  href={`/office/projects/${project.id}/comms/in`}
-                  className="underline-offset-4 hover:text-text-primary hover:underline"
-                >
-                  Catatan Comms:{" "}
-                  <strong className="font-semibold text-text-primary">{project._count.commsEntries}</strong>
+                <Link href={`/office/projects/${project.id}/comms/in`} className={quickLinkClass}>
+                  Catatan Comms: <strong className="font-semibold text-text-primary">{project._count.commsEntries}</strong>
                 </Link>
               )}
               {project._count.documents !== undefined && (canCompleteProject || canRestoreProject) && (
-                <Link
-                  href={`/office/projects/${project.id}/document-out`}
-                  className="underline-offset-4 hover:text-text-primary hover:underline"
-                >
-                  Document Out:{" "}
-                  <strong className="font-semibold text-text-primary">{project._count.documents}</strong>
+                <Link href={`/office/projects/${project.id}/document-out`} className={quickLinkClass}>
+                  Document Out: <strong className="font-semibold text-text-primary">{project._count.documents}</strong>
                 </Link>
               )}
             </div>

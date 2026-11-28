@@ -79,7 +79,7 @@ export function ServerPagination({
         dari <span className="font-semibold text-text-primary">{meta.totalItems}</span> data
       </p>
 
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 sm:justify-end">
         {onPageSizeChange && (
           <PaginationPageSizeSelect
             value={meta.pageSize}
@@ -109,7 +109,7 @@ function PaginationControls({
   onSelectPage: (event: MouseEvent<HTMLAnchorElement>, page: number) => void;
 }) {
   const sizeClass = compact
-    ? "size-8 min-h-8 min-w-8 text-xs"
+    ? "relative size-10 min-h-10 min-w-10 text-xs after:absolute after:-inset-0.5 after:content-[''] md:size-8 md:min-h-8 md:min-w-8 md:after:hidden"
     : "relative size-9 min-h-9 min-w-9 text-sm after:absolute after:-inset-1.5 after:rounded-lg after:content-['']";
 
   return (

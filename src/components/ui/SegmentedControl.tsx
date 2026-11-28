@@ -32,15 +32,10 @@ export function SegmentedControl<T extends string>({
       role="radiogroup"
       aria-label={ariaLabel}
       className={cn(
-        "inline-flex items-center gap-0.5 rounded-lg border border-border bg-surface-input p-0.5",
-        fullWidth && "grid w-full",
+        "inline-flex max-w-full items-center gap-0.5 overflow-x-auto sidebar-scrollable rounded-lg border border-border bg-surface-input p-0.5",
+        fullWidth && "grid w-full auto-cols-fr grid-flow-col overflow-x-visible",
         className,
       )}
-      style={
-        fullWidth
-          ? { gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }
-          : undefined
-      }
     >
       {options.map((option) => {
         const active = option.value === value;
@@ -53,10 +48,10 @@ export function SegmentedControl<T extends string>({
             disabled={disabled}
             onClick={() => onChange(option.value)}
             className={cn(
-              "inline-flex h-8 items-center justify-center gap-1.5 rounded-md px-2.5 text-xs font-medium whitespace-nowrap transition-colors tabular-nums",
+              "inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-md px-3 text-xs font-medium whitespace-nowrap transition-colors tabular-nums md:h-8 md:px-2.5",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50",
               active
-                ? "bg-primary text-text-primary shadow-2xs ring-1 ring-white/10"
+                ? "bg-primary text-text-primary shadow-2xs ring-1 ring-white/15"
                 : "text-text-secondary hover:text-text-primary",
             )}
           >

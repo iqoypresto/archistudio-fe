@@ -19,6 +19,28 @@ const WEATHER_LABEL: Record<WeatherType, string> = {
   HUJAN: "Hujan",
 };
 
+function FieldConditionCard({
+  weatherText, workerCount, className,
+}: { weatherText: string; workerCount: number; className?: string }) {
+  return (
+    <section className={`rounded-xl border border-border bg-surface ${className ?? ""}`}>
+      <div className="border-b border-border px-4 py-3">
+        <h2 className="text-xs font-semibold tracking-wider text-text-muted uppercase">Kondisi Lapangan</h2>
+      </div>
+      <div className="grid grid-cols-2 divide-x divide-border">
+        <div className="px-4 py-3.5">
+          <p className="text-xs text-text-muted">Cuaca</p>
+          <p className="mt-1 text-sm font-semibold text-text-primary">{weatherText}</p>
+        </div>
+        <div className="px-4 py-3.5">
+          <p className="text-xs text-text-muted">Pekerja Hadir</p>
+          <p className="mt-1 text-sm font-semibold text-text-primary">{workerCount} orang</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function ReportDetailView({
   report,
   surface = "office",
@@ -85,6 +107,14 @@ export function ReportDetailView({
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.85fr)_minmax(0,1fr)] lg:items-start">
         <div className="space-y-5">
+          {report.reportType === "WORK" && (
+            <FieldConditionCard
+              weatherText={weatherText}
+              workerCount={report.workerCount ?? 0}
+              className="lg:hidden"
+            />
+          )}
+
           <section className="rounded-xl border border-border bg-surface">
             <div className="border-b border-border px-5 py-3.5">
               <h2 className="text-sm font-semibold text-text-primary">Ringkasan Pekerjaan</h2>
@@ -126,25 +156,11 @@ export function ReportDetailView({
 
         <aside className="space-y-5">
           {report.reportType === "WORK" && (
-            <section className="rounded-xl border border-border bg-surface">
-              <div className="border-b border-border px-4 py-3">
-                <h2 className="text-xs font-semibold tracking-wider text-text-muted uppercase">
-                  Kondisi Lapangan
-                </h2>
-              </div>
-              <div className="grid grid-cols-2 divide-x divide-border">
-                <div className="px-4 py-3.5">
-                  <p className="text-xs text-text-muted">Cuaca</p>
-                  <p className="mt-1 text-sm font-semibold text-text-primary">{weatherText}</p>
-                </div>
-                <div className="px-4 py-3.5">
-                  <p className="text-xs text-text-muted">Pekerja Hadir</p>
-                  <p className="mt-1 text-sm font-semibold text-text-primary">
-                    {report.workerCount ?? 0} orang
-                  </p>
-                </div>
-              </div>
-            </section>
+            <FieldConditionCard
+              weatherText={weatherText}
+              workerCount={report.workerCount ?? 0}
+              className="hidden lg:block"
+            />
           )}
 
           <section className="rounded-xl border border-border bg-surface">

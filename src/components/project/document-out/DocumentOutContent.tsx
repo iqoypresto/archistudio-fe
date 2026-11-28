@@ -1,22 +1,19 @@
 "use client";
 
 import { useMemo, useState, type ChangeEvent } from "react";
-import { ExternalLink, FileText, Loader2, Upload } from "lucide-react";
+import { Loader2, Upload } from "lucide-react";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { PageInfoDialog } from "@/components/ui/PageInfoDialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { UnderlineTabsBar } from "@/components/ui/UnderlineTabsNav";
 import { useDeleteProjectDocumentMutation, useProjectDocumentsQuery, useProjectDocumentUpload } from "@/hooks/project-document.hooks";
 import { useProjectDetailQuery } from "@/hooks/project.hooks";
-import { formatIdDate } from "@/lib/utils/office-format";
 import { getDocumentTypeLabel, PROJECT_DOCUMENT_ACCEPT, resolveProjectDocumentPermissions } from "@/lib/validation/project-document.validation";
 import { useAuthStore } from "@/stores/auth.store";
 import type { ProjectDocumentItem, ProjectDocumentType } from "@/types/api/project-document.types";
 import { ConfirmDeleteDocumentDialog } from "./ConfirmDeleteDocumentDialog";
-import { fileApi } from "@/lib/api/file.api";
+import { DocumentOutList } from "./DocumentOutList";
 
 const DOC_TABS: readonly { value: ProjectDocumentType; label: string }[] = [
   { value: "QUOTATION", label: "Quotation" },
@@ -85,7 +82,7 @@ export function DocumentOutContent({ projectId }: { projectId: string }) {
         }
         action={
           canMutate ? (
-            <label className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-white/15 bg-primary px-3.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary-hover">
+            <label className="inline-flex h-11 w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-white/15 bg-primary px-3.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary-hover focus-within:ring-2 focus-within:ring-ring sm:h-9 sm:w-auto">
               {isUploading ? (
                 <>
                   <Loader2 className="size-3.5 animate-spin" /> Mengunggah...
@@ -135,61 +132,7 @@ export function DocumentOutContent({ projectId }: { projectId: string }) {
           }
         >
           {(items) => (
-            <Table>
-              <TableHeader className="bg-surface-input/50">
-                <TableRow className="border-border/80 hover:bg-transparent">
-                  <TableHead className="h-10 px-4 text-[11px] font-medium tracking-wider text-text-muted uppercase">
-                    Nama Dokumen
-                  </TableHead>
-                  <TableHead className="h-10 px-4 text-[11px] font-medium tracking-wider text-text-muted uppercase">
-                    Diunggah &amp; Ukuran
-                  </TableHead>
-                  <TableHead className="h-10 px-4 text-right text-[11px] font-medium tracking-wider text-text-muted uppercase">
-                    Aksi
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {items.map((doc) => (
-                  <TableRow key={doc.id} className="border-border/60 hover:bg-surface-input/40">
-                    <TableCell className="px-4 py-3">
-                      <div className="flex items-center gap-2.5">
-                        <FileText className="size-4 shrink-0 text-text-muted" />
-                        <span className="truncate text-[13px] font-medium text-text-primary">
-                          {doc.fileName}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-xs text-text-secondary">
-                      {formatIdDate(doc.uploadedAt)} · {Math.max(1, Math.round(doc.sizeBytes / 1024))} KB
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => void fileApi.openContent(doc.contentPath)}
-                          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-surface-input px-2.5 text-xs font-medium text-text-secondary transition-colors hover:bg-surface-active hover:text-text-primary"
-                        >
-                          <ExternalLink className="size-3.5" />
-                          Buka / Unduh
-                        </button>
-                        {canMutate && (
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="sm"
-                            className="h-8 px-2.5 text-xs"
-                            onClick={() => setDocToDelete(doc)}
-                          >
-                            Hapus
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <DocumentOutList items={items} canMutate={canMutate} onDelete={setDocToDelete} />
           )}
         </AsyncStateView>
       </section>

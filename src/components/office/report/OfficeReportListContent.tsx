@@ -74,6 +74,7 @@ export function OfficeReportListContent({ view = "reports" }: { view?: "reports"
                 count: archiveCountQuery.data?.meta.totalItems,
               },
             ]}
+            hideRightSlotOnMobile
             rightSlot={
               showArchive
                 ? "Laporan terkirim yang telah melewati tanggal laporan"

@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Search } from "lucide-react";
+import { ChevronRight, Plus, Search } from "lucide-react";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,7 @@ interface PaymentPayeeListProps {
   onRetry: () => void;
   onSelectPerson: (id: string) => void;
   onAddPerson: () => void;
+  className?: string;
 }
 
 export function PaymentPayeeList({
@@ -34,9 +35,10 @@ export function PaymentPayeeList({
   onRetry,
   onSelectPerson,
   onAddPerson,
+  className,
 }: PaymentPayeeListProps) {
   return (
-    <section className="overflow-hidden rounded-xl border border-border bg-surface lg:col-span-4">
+    <section className={cn("overflow-hidden rounded-xl border border-border bg-surface lg:col-span-4", className)}>
       <div className="flex items-center justify-between border-b border-border px-4 py-3.5">
         <h2 className="text-sm font-semibold text-text-primary">Daftar {label}</h2>
         <span className="text-xs text-text-muted">{people?.length ?? 0} orang</span>
@@ -49,7 +51,7 @@ export function PaymentPayeeList({
             value={search}
             onChange={(event) => onSearchChange(event.target.value)}
             placeholder={`Cari nama atau HP ${label.toLowerCase()}...`}
-            className="h-9 pl-8 text-xs"
+            className="h-11 pl-8 lg:h-9 lg:text-xs"
           />
         </div>
       </div>
@@ -99,22 +101,25 @@ export function PaymentPayeeList({
                     <span className="truncate text-[13px] font-semibold text-text-primary">
                       {person.name}
                     </span>
-                    <span
-                      className={cn(
-                        "shrink-0 text-[11px] font-medium",
-                        overdueCount > 0
-                          ? "text-status-danger-fg"
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      <span
+                        className={cn(
+                          "text-[11px] font-medium",
+                          overdueCount > 0
+                            ? "text-status-danger-fg"
+                            : hasUnpaid
+                              ? "text-status-warning-fg"
+                              : "text-text-muted",
+                        )}
+                      >
+                        {overdueCount > 0
+                          ? `${overdueCount} jatuh tempo`
                           : hasUnpaid
-                            ? "text-status-warning-fg"
-                            : "text-text-muted",
-                      )}
-                    >
-                      {overdueCount > 0
-                        ? `${overdueCount} jatuh tempo`
-                        : hasUnpaid
-                          ? `${person.summary.unpaidCount} belum lunas`
-                          : `${person.summary.recordCount} lunas`}
-                    </span>
+                            ? `${person.summary.unpaidCount} belum lunas`
+                            : `${person.summary.recordCount} lunas`}
+                      </span>
+                      <ChevronRight className="size-4 text-text-muted lg:hidden" aria-hidden="true" />
+                    </div>
                   </div>
                   <p className="text-xs text-text-muted">{person.phone ?? "Tanpa nomor HP"}</p>
                   <p className="pt-0.5 text-xs text-text-secondary">

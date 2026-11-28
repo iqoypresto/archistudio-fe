@@ -42,7 +42,12 @@ export function WorkspaceBreadcrumbs({
             <li key={`${item.label}-${index}`} className="flex min-w-0 items-center gap-1.5">
               {index > 0 && <ChevronRight className="size-3 shrink-0 text-text-muted/70" aria-hidden="true" />}
               {item.href && !isCurrent ? (
-                <Link href={item.href} className="truncate transition-colors hover:text-text-primary">{item.label}</Link>
+                <Link
+                  href={item.href}
+                  className="inline-flex min-h-8 items-center truncate rounded px-0.5 transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {item.label}
+                </Link>
               ) : (
                 <span aria-current={isCurrent ? "page" : undefined} className="truncate font-medium text-text-secondary">{item.label}</span>
               )}

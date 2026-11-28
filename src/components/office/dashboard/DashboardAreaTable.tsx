@@ -14,6 +14,7 @@ import { formatIdDate, formatTimeInTimezone } from "@/lib/utils/office-format";
 import { getRoleLabel } from "@/lib/utils/role";
 import { resolveAreaStatusBadgeTone } from "@/lib/validation/dashboard.validation";
 import type { AreaDailyStatusType, DashboardAreaStatusItem } from "@/types/api/dashboard.types";
+import { DashboardAreaMobileList } from "./DashboardAreaMobileList";
 
 interface DashboardAreaTableProps {
   areas: DashboardAreaStatusItem[];
@@ -62,7 +63,14 @@ export function DashboardAreaTable({ areas, onOpenUnlockModal }: DashboardAreaTa
 
   return (
     <div className="border-t border-border">
-      <Table className="tabular-nums">
+      <DashboardAreaMobileList
+        areas={sortedAreas}
+        statusLabels={STATUS_LABEL}
+        onOpenUnlockModal={onOpenUnlockModal}
+      />
+
+      <div className="hidden md:block">
+        <Table className="tabular-nums">
         <TableHeader className="bg-surface-input/50">
           <TableRow className="border-border/80 hover:bg-transparent">
             <TableHead className="h-10 px-4 text-[11px] font-medium tracking-wider text-text-muted uppercase">
@@ -178,6 +186,7 @@ export function DashboardAreaTable({ areas, onOpenUnlockModal }: DashboardAreaTa
           })}
         </TableBody>
       </Table>
+      </div>
     </div>
   );
 }

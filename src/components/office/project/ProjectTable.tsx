@@ -8,6 +8,7 @@ import { StatusIndicator } from "@/components/ui/StatusIndicator";
 import { formatIdDate, formatShortTimezone } from "@/lib/utils/office-format";
 import type { PaginationMeta } from "@/types/api";
 import type { ProjectListItem, ProjectStatus } from "@/types/api/project.types";
+import { ProjectMobileCard } from "./ProjectMobileCard";
 
 interface ProjectTableProps {
   projects: ProjectListItem[];
@@ -140,6 +141,15 @@ export function ProjectTable({
       columns={columns}
       data={projects}
       getRowKey={(row) => row.id}
+      renderMobileCard={(row) => (
+        <ProjectMobileCard
+          row={row}
+          canManage={canManage}
+          canArchive={canArchive}
+          onEdit={onEdit}
+          onArchive={onArchive}
+        />
+      )}
       meta={meta}
       bare
       onPageChange={onPageChange}

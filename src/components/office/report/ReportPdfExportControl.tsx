@@ -11,7 +11,7 @@ export function ReportPdfExportControl() {
     <Button
       variant="outline"
       size="sm"
-      className="h-9 gap-1.5 border-border bg-surface px-3 text-xs text-text-primary hover:bg-surface-active"
+      className="h-11 w-full gap-1.5 border-border bg-surface px-3 text-xs text-text-primary hover:bg-surface-active sm:h-9 sm:w-auto"
       onClick={() => setOpen(true)}
     >
       <FileDown className="size-3.5" /> Export PDF Harian

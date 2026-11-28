@@ -92,6 +92,59 @@ function buildColumns(showArchivedAt: boolean): DataColumn<DailyReportListItem>[
   ];
 }
 
+function ReportMobileCard({
+  row,
+  showArchivedAt,
+}: {
+  row: DailyReportListItem;
+  showArchivedAt: boolean;
+}) {
+  const sentTime = formatTimeInTimezone(row.submittedAt, row.project.timezone);
+  return (
+    <div className="space-y-2.5">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="truncate text-[13px] font-semibold text-text-primary">{row.reportNumber}</p>
+          <p className="mt-0.5 text-xs text-text-muted">
+            {formatIdDate(row.reportDate)}
+            {sentTime ? ` · ${sentTime}` : ""}
+          </p>
+        </div>
+        <StatusIndicator tone={row.isLate ? "warning" : "success"} className="shrink-0 text-xs">
+          {row.isLate ? row.lateLabel ?? "Terlambat" : "Tepat Waktu"}
+        </StatusIndicator>
+      </div>
+
+      <div className="space-y-0.5 text-xs">
+        <p className="font-medium text-text-primary">
+          {row.project.name} · <span className="text-text-secondary">{row.area.code} {row.area.name}</span>
+        </p>
+        <p className="text-text-muted">
+          {row.supervisor.name}
+          {row.supervisor.role === "SITE_MANAGER" ? ` (${getRoleLabel(row.supervisor.role)})` : ""} ·{" "}
+          {row.reportType === "WORK" ? "Ada Pekerjaan" : "Tanpa Pekerjaan"} · {row.photoCount} foto
+        </p>
+        {(row.isRevised || (showArchivedAt && row.archivedAt)) && (
+          <p className="text-[11px] text-text-muted">
+            {[
+              row.isRevised ? "Direvisi Owner" : null,
+              showArchivedAt && row.archivedAt ? `Diarsipkan ${formatIdDate(row.archivedAt)}` : null,
+            ].filter(Boolean).join(" · ")}
+          </p>
+        )}
+      </div>
+
+      <Link
+        href={`/office/reports/${row.id}`}
+        className="inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-lg border border-border bg-surface-input px-3 text-xs font-medium text-text-primary transition-colors hover:bg-surface-active"
+      >
+        Lihat Detail Laporan
+        <ArrowRight className="size-3.5" />
+      </Link>
+    </div>
+  );
+}
+
 export function OfficeReportTable({
   data,
   meta,
@@ -114,6 +167,7 @@ export function OfficeReportTable({
       columns={buildColumns(showArchivedAt)}
       data={data}
       getRowKey={(row) => row.id}
+      renderMobileCard={(row) => <ReportMobileCard row={row} showArchivedAt={showArchivedAt} />}
       meta={meta}
       bare={bare}
       onPageChange={onPageChange}

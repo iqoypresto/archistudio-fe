@@ -65,11 +65,11 @@ export function MemberFilters({ filters, onFilterChange, onReset }: MemberFilter
           value={filters.search ?? ""}
           onChange={(e) => onFilterChange({ search: e.target.value || undefined, page: 1 })}
           placeholder="Cari nama, username, atau nomor HP..."
-          className="h-9 pl-8 text-xs"
+          className="h-11 pl-8 lg:h-9 lg:text-xs"
         />
       </div>
 
-      <div className="flex flex-wrap items-center gap-2.5">
+      <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center">
         <SegmentedControl
           ariaLabel="Filter status anggota"
           options={STATUS_OPTIONS}
@@ -80,32 +80,35 @@ export function MemberFilters({ filters, onFilterChange, onReset }: MemberFilter
               page: 1,
             })
           }
+          className="grid w-full auto-cols-fr grid-flow-col sm:inline-flex sm:w-auto"
         />
 
-        <div className="w-44">
-          <Select value={sortPreset} onValueChange={handleSortChange}>
-            <SelectTrigger aria-label="Urutkan anggota" className="h-9 text-xs">
-              <SelectValue>{SORT_LABELS[sortPreset]}</SelectValue>
-            </SelectTrigger>
-            <SelectContent alignItemWithTrigger={false}>
-              <SelectItem value="name_asc">Nama A–Z</SelectItem>
-              <SelectItem value="createdAt_desc">Terbaru ditambahkan</SelectItem>
-              <SelectItem value="username_asc">Username A–Z</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <div className="flex w-full items-center gap-2 sm:w-auto">
+          <div className="min-w-0 flex-1 sm:w-44 sm:flex-none">
+            <Select value={sortPreset} onValueChange={handleSortChange}>
+              <SelectTrigger aria-label="Urutkan anggota" className="h-11 text-sm sm:h-9 sm:text-xs">
+                <SelectValue>{SORT_LABELS[sortPreset]}</SelectValue>
+              </SelectTrigger>
+              <SelectContent alignItemWithTrigger={false}>
+                <SelectItem value="name_asc">Nama A–Z</SelectItem>
+                <SelectItem value="createdAt_desc">Terbaru ditambahkan</SelectItem>
+                <SelectItem value="username_asc">Username A–Z</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-        {hasActiveFilters && (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onReset}
-            className="h-9 gap-1.5 px-3 text-xs text-text-secondary"
-          >
-            <RotateCcw className="size-3.5" />
-            Reset
-          </Button>
-        )}
+          {hasActiveFilters && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onReset}
+              className="h-11 shrink-0 gap-1.5 px-3 text-xs text-text-secondary sm:h-9"
+            >
+              <RotateCcw className="size-3.5" />
+              Reset
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
