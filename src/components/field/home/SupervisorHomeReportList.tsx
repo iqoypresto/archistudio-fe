@@ -20,17 +20,17 @@ function ReportCard({ report }: { report: DailyReportListItem }) {
   return (
     <Link
       href={`/field/reports/${report.id}`}
-      className="block h-full rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--project-action)] focus-visible:ring-offset-2"
+      className="block h-full rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--project-action) focus-visible:ring-offset-2"
     >
       <Card
         size="sm"
-        className="h-full gap-1 rounded-xl border border-[var(--project-border)] bg-[var(--project-surface)] py-0 text-left shadow-none ring-0 transition-colors hover:border-[var(--project-action)] hover:bg-[var(--project-canvas)]"
+        className="h-full gap-1 rounded-xl border border-(--project-border) bg-(--project-surface) py-0 text-left shadow-none ring-0 transition-colors hover:border-(--project-action) hover:bg-(--project-canvas)"
       >
-        <CardContent className="flex min-h-[3.25rem] flex-col justify-center gap-1 p-3">
-          <span className="text-xs leading-4 text-[var(--project-text-secondary)]">
+        <CardContent className="flex min-h-13 flex-col justify-center gap-1 p-3">
+          <span className="text-xs leading-4 text-(--project-text-secondary)">
             {formatReportDate(report.reportDate)}
           </span>
-          <span className="line-clamp-2 text-sm font-semibold leading-5 text-[var(--project-text-heading)]">
+          <span className="line-clamp-2 text-sm font-semibold leading-5 text-(--project-text-heading)">
             Area {report.area.name}
           </span>
         </CardContent>
@@ -60,7 +60,7 @@ export function SupervisorHomeReportList({ reports, loading, failed, retry }: Re
   return (
     <section aria-labelledby="home-recent-title" className="space-y-3">
       <div className="flex min-h-10 items-center justify-between gap-1">
-        <h2 id="home-recent-title" className="text-xl font-bold text-[var(--project-text-heading)]">
+        <h2 id="home-recent-title" className="text-xl font-bold text-(--project-text-heading)">
           Laporan Terakhir
         </h2>
         <Button
@@ -68,7 +68,7 @@ export function SupervisorHomeReportList({ reports, loading, failed, retry }: Re
           size="sm"
           nativeButton={false}
           render={<Link href="/field/history" />}
-          className="min-h-10 shrink-0 px-2 text-xs font-semibold text-[var(--project-action)] hover:bg-[var(--project-action)]/10 sm:text-sm"
+          className="min-h-10 shrink-0 px-2 text-xs font-semibold text-(--project-action) hover:bg-(--project-action)/10 sm:text-sm"
         >
           Lihat semua riwayat <ChevronRight className="size-4" />
         </Button>
@@ -80,17 +80,17 @@ export function SupervisorHomeReportList({ reports, loading, failed, retry }: Re
           <Skeleton className="h-16 w-full rounded-xl" />
         </div>
       ) : failed ? (
-        <Card className="gap-0 rounded-[1.125rem] border border-[var(--project-border)] bg-[var(--project-surface)] py-0">
+        <Card className="gap-0 rounded-[1.125rem] border border-(--project-border) bg-(--project-surface) py-0">
           <CardContent className="p-5">
-            <p className="text-base text-[var(--project-text-secondary)]">Laporan terbaru belum dapat dimuat.</p>
+            <p className="text-base text-(--project-text-secondary)">Laporan terbaru belum dapat dimuat.</p>
             <Button type="button" variant="outline" onClick={retry} className="mt-3 min-h-12">Coba lagi</Button>
           </CardContent>
         </Card>
       ) : reports?.length ? (
         <ReportRows reports={reports} />
       ) : (
-        <Card className="gap-0 rounded-[1.125rem] border border-dashed border-[var(--project-border)] bg-[var(--project-surface)] py-0 shadow-none">
-          <CardContent className="p-5 text-base text-[var(--project-text-secondary)]">
+        <Card className="gap-0 rounded-[1.125rem] border border-dashed border-(--project-border) bg-(--project-surface) py-0 shadow-none">
+          <CardContent className="p-5 text-base text-(--project-text-secondary)">
             Belum ada laporan terkirim. Laporan yang berhasil dikirim akan muncul di sini.
           </CardContent>
         </Card>
