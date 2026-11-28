@@ -4,17 +4,20 @@ import { useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { PageInfoDialog } from "@/components/ui/PageInfoDialog";
 import {
   useCreatePayeeMutation, useCreatePaymentRecordMutation, usePayeeRecordsQuery,
   usePaymentPeopleQuery, useUpdatePaymentRecordMutation,
 } from "@/hooks/payment.hooks";
-import { canAccessPayments, formatCurrencyIdr, getPayeeTypeLabel } from "@/lib/validation/payment.validation";
+import { cn } from "@/lib/utils";
+import { canAccessPayments, getPayeeTypeLabel } from "@/lib/validation/payment.validation";
 import { useAuthStore } from "@/stores/auth.store";
 import type { PayeeType, PaymentRecordItem, PaymentStatus } from "@/types/api/payment.types";
 import { PaymentPayeeFormModal } from "./PaymentPayeeFormModal";
 import { PaymentPayeeList } from "./PaymentPayeeList";
 import { PaymentRecordFormModal } from "./PaymentRecordFormModal";
 import { PaymentRecordList } from "./PaymentRecordList";
+import { PaymentSummaryCards } from "./PaymentSummaryCards";
 
 export function PaymentWorkspaceContent({ payeeType }: { payeeType: PayeeType }) {
   const role = useAuthStore((state) => state.user?.role);
@@ -23,6 +26,7 @@ export function PaymentWorkspaceContent({ payeeType }: { payeeType: PayeeType })
 
   const [search, setSearch] = useState("");
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
+  const [mobileView, setMobileView] = useState<"list" | "detail">("list");
   const [statusFilter, setStatusFilter] = useState<PaymentStatus | "">("");
   const [isPayeeModalOpen, setIsPayeeModalOpen] = useState(false);
   const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
@@ -65,11 +69,10 @@ export function PaymentWorkspaceContent({ payeeType }: { payeeType: PayeeType })
 
   const createPayee = useCreatePayeeMutation((createdId) => {
     setSelectedPersonId(createdId);
+    setMobileView("detail");
     setIsPayeeModalOpen(false);
   });
-  const createRecord = useCreatePaymentRecordMutation(activePersonId, () => {
-    setIsRecordModalOpen(false);
-  });
+  const createRecord = useCreatePaymentRecordMutation(activePersonId, () => setIsRecordModalOpen(false));
   const updateRecord = useUpdatePaymentRecordMutation(() => {
     setIsRecordModalOpen(false);
     setRecordToEdit(null);
@@ -83,57 +86,35 @@ export function PaymentWorkspaceContent({ payeeType }: { payeeType: PayeeType })
     );
   }
 
+  const showMobileDetail = mobileView === "detail" && Boolean(selectedPayee);
+
   return (
     <div className="space-y-5 tabular-nums">
       <PageHeader
         title={`Pembayaran ${label}`}
-        description={`Catat dan pantau pembayaran ${label.toLowerCase()} global di luar proyek beserta bukti transfer.`}
+        titleSuffix={
+          <PageInfoDialog
+            title={`Tentang Pembayaran ${label}`}
+            description={`Catat dan pantau pembayaran ${label.toLowerCase()} global di luar proyek beserta bukti transfer.`}
+          />
+        }
         action={
-          <Button type="button" onClick={() => setIsPayeeModalOpen(true)} className="h-9 gap-1.5 text-xs">
+          <Button type="button" onClick={() => setIsPayeeModalOpen(true)} className="h-11 w-full gap-1.5 text-xs sm:h-9 sm:w-auto">
             <Plus className="size-3.5" />
             Tambah {label}
           </Button>
         }
       />
 
-      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-3">
-        <div className="rounded-xl border border-border bg-surface p-4">
-          <p className="text-xs text-text-secondary">Total {label} Tercatat</p>
-          <p className="mt-2 text-2xl font-semibold tracking-tight text-text-primary">
-            {allPeople.length}
-          </p>
-          <p className="mt-1 text-xs text-text-muted">
-            {globalTotals.paidCount + globalTotals.unpaidCount} catatan pembayaran
-          </p>
-        </div>
-        <div className="rounded-xl border border-border bg-surface p-4">
-          <p className="text-xs text-text-secondary">Total Belum Dibayar</p>
-          <p
-            className={`mt-2 text-2xl font-semibold tracking-tight ${
-              globalTotals.overdueUnpaidCount > 0
-                ? "text-status-danger-fg"
-                : globalTotals.totalUnpaid > 0
-                  ? "text-status-warning-fg"
-                  : "text-text-primary"
-            }`}
-          >
-            {formatCurrencyIdr(globalTotals.totalUnpaid)}
-          </p>
-          <p className="mt-1 text-xs text-text-muted">
-            {globalTotals.unpaidCount} tagihan menunggu
-            {globalTotals.overdueUnpaidCount > 0
-              ? ` · ${globalTotals.overdueUnpaidCount} melewati jatuh tempo`
-              : ""}
-          </p>
-        </div>
-        <div className="rounded-xl border border-border bg-surface p-4">
-          <p className="text-xs text-text-secondary">Total Sudah Dibayar</p>
-          <p className="mt-2 text-2xl font-semibold tracking-tight text-text-primary">
-            {formatCurrencyIdr(globalTotals.totalPaid)}
-          </p>
-          <p className="mt-1 text-xs text-text-muted">{globalTotals.paidCount} pembayaran lunas</p>
-        </div>
-      </div>
+      <PaymentSummaryCards
+        label={label}
+        peopleCount={allPeople.length}
+        totalPaid={globalTotals.totalPaid}
+        totalUnpaid={globalTotals.totalUnpaid}
+        paidCount={globalTotals.paidCount}
+        unpaidCount={globalTotals.unpaidCount}
+        overdueUnpaidCount={globalTotals.overdueUnpaidCount}
+      />
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-12 lg:items-start">
         <PaymentPayeeList
@@ -149,12 +130,18 @@ export function PaymentWorkspaceContent({ payeeType }: { payeeType: PayeeType })
           onSelectPerson={(id) => {
             setSelectedPersonId(id);
             setStatusFilter("");
+            setMobileView("detail");
+            if (typeof window !== "undefined" && window.innerWidth < 1024) {
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }
           }}
           onAddPerson={() => setIsPayeeModalOpen(true)}
+          className={showMobileDetail ? "hidden lg:block" : undefined}
         />
 
-        <section className="lg:col-span-8">
+        <section className={cn("lg:col-span-8", !showMobileDetail && "hidden lg:block")}>
           <PaymentRecordList
+            payeeLabel={label}
             selectedPayee={selectedPayee}
             records={recordsQuery.data}
             isLoading={recordsQuery.isLoading}
@@ -163,6 +150,7 @@ export function PaymentWorkspaceContent({ payeeType }: { payeeType: PayeeType })
             statusFilter={statusFilter}
             onStatusFilterChange={setStatusFilter}
             onRetry={() => recordsQuery.refetch()}
+            onBackToList={() => setMobileView("list")}
             onAddRecord={() => {
               setRecordToEdit(null);
               setIsRecordModalOpen(true);

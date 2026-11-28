@@ -7,8 +7,8 @@ import { ArchivedReportFilters } from "./ArchivedReportFilters";
 import { OfficeReportTable } from "./OfficeReportTable";
 
 export function ArchivedReportList() {
-  const { filters, patch, reset, setPage } = useArchiveFilters();
-  const reports = useArchivedReportsQuery(filters);
+  const { filters, patch, reset, setPage, setPageSize } = useArchiveFilters();
+  const reports = useArchivedReportsQuery(filters, true, { keepPreviousData: true });
 
   return (
     <div>
@@ -32,6 +32,8 @@ export function ArchivedReportList() {
             bare
             showArchivedAt
             onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            isUpdating={reports.isPlaceholderData}
           />
         )}
       </AsyncStateView>

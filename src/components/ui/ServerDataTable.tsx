@@ -24,8 +24,12 @@ interface ServerDataTableProps<T> {
   data: T[];
   getRowKey: (row: T) => string;
   getRowClassName?: (row: T) => string | undefined;
+  renderMobileCard?: (row: T) => ReactNode;
   meta?: PaginationMeta;
   onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
+  pageSizeOptions?: readonly number[];
+  isUpdating?: boolean;
   bare?: boolean;
   className?: string;
 }
@@ -35,19 +39,41 @@ export function ServerDataTable<T>({
   data,
   getRowKey,
   getRowClassName,
+  renderMobileCard,
   meta,
   onPageChange,
+  onPageSizeChange,
+  pageSizeOptions,
+  isUpdating = false,
   bare = false,
   className,
 }: ServerDataTableProps<T>) {
+  const hasFooter = Boolean(meta && onPageChange && meta.totalItems > 0);
+
   return (
-    <div className={cn("space-y-4", className)}>
-      <div
-        className={cn(
-          "overflow-hidden",
-          bare ? "border-t border-border" : "rounded-xl border border-border bg-surface",
-        )}
-      >
+    <div
+      className={cn(
+        bare ? "overflow-hidden" : "overflow-hidden rounded-xl border border-border bg-surface",
+        className,
+      )}
+    >
+      {renderMobileCard && (
+        <div
+          className={cn(
+            "divide-y divide-border/70 md:hidden",
+            bare && "border-t border-border",
+            isUpdating && "opacity-65 transition-opacity",
+          )}
+        >
+          {data.map((row) => (
+            <div key={getRowKey(row)} className={cn("p-4 tabular-nums", getRowClassName?.(row))}>
+              {renderMobileCard(row)}
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className={cn(bare && "border-t border-border", renderMobileCard && "hidden md:block")}>
         <Table className="tabular-nums">
           <TableHeader className="bg-surface-input/50">
             <TableRow className="border-border/80 hover:bg-transparent">
@@ -64,7 +90,7 @@ export function ServerDataTable<T>({
               ))}
             </TableRow>
           </TableHeader>
-          <TableBody>
+          <TableBody className={cn(isUpdating && "opacity-65 transition-opacity")}>
             {data.map((row) => (
               <TableRow
                 key={getRowKey(row)}
@@ -90,8 +116,17 @@ export function ServerDataTable<T>({
         </Table>
       </div>
 
-      {meta && onPageChange && (
-        <ServerPagination meta={meta} onPageChange={onPageChange} />
+      {hasFooter && meta && onPageChange && (
+        <div className="border-t border-border bg-canvas/30 px-4 py-3 sm:px-5">
+          <ServerPagination
+            meta={meta}
+            onPageChange={onPageChange}
+            onPageSizeChange={onPageSizeChange}
+            pageSizeOptions={pageSizeOptions}
+            showSummary
+            isUpdating={isUpdating}
+          />
+        </div>
       )}
     </div>
   );

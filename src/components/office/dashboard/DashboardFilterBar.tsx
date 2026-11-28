@@ -34,15 +34,15 @@ export function DashboardFilterBar({
     : "Semua Proyek";
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <div className="w-52">
+    <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center">
+      <div className="col-span-2 w-full sm:w-52">
         <Select
           value={projectId || "ALL"}
           onValueChange={(val: string | null) =>
             onProjectChange(!val || val === "ALL" ? "" : val)
           }
         >
-          <SelectTrigger className="h-9 bg-surface text-xs" aria-label="Filter proyek">
+          <SelectTrigger className="h-11 bg-surface text-sm sm:h-9 sm:text-xs" aria-label="Filter proyek">
             <SelectValue placeholder="Semua Proyek">{selectedProjectLabel}</SelectValue>
           </SelectTrigger>
           <SelectContent alignItemWithTrigger={false}>
@@ -56,7 +56,7 @@ export function DashboardFilterBar({
         </Select>
       </div>
 
-      <div className="relative">
+      <div className="relative col-span-1 w-full sm:w-auto">
         <Calendar
           className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-text-muted"
           aria-hidden="true"
@@ -66,7 +66,7 @@ export function DashboardFilterBar({
           aria-label="Tanggal bisnis"
           value={targetDate}
           onChange={(e) => onTargetDateChange(e.target.value)}
-          className="h-9 w-40 bg-surface pl-8 text-xs tabular-nums"
+          className="h-11 w-full bg-surface pl-8 tabular-nums sm:h-9 sm:w-40 sm:text-xs"
         />
       </div>
 
@@ -74,10 +74,11 @@ export function DashboardFilterBar({
         type="button"
         size="sm"
         onClick={onOpenExportDialog}
-        className="h-9 gap-1.5 px-3 text-xs"
+        className="col-span-1 h-11 w-full gap-1.5 px-3 text-xs sm:h-9 sm:w-auto"
       >
-        <FileDown className="size-3.5" />
-        Export PDF Harian
+        <FileDown className="size-3.5 shrink-0" />
+        <span className="sm:hidden">Export PDF</span>
+        <span className="hidden sm:inline">Export PDF Harian</span>
       </Button>
     </div>
   );

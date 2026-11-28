@@ -7,11 +7,14 @@ import { getRoleLabel } from "@/lib/utils/role";
 import { useAuthStore } from "@/stores/auth.store";
 import type { PaginationMeta } from "@/types/api";
 import type { UserListItem } from "@/types/api/user.types";
+import { MemberMobileCard } from "./MemberMobileCard";
 
 interface MemberTableProps {
   users: UserListItem[];
   meta?: PaginationMeta;
   onPageChange: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
+  isUpdating?: boolean;
   onEdit: (user: UserListItem) => void;
   onResetPassword: (user: UserListItem) => void;
   onToggleStatus: (user: UserListItem) => void;
@@ -21,6 +24,8 @@ export function MemberTable({
   users,
   meta,
   onPageChange,
+  onPageSizeChange,
+  isUpdating = false,
   onEdit,
   onResetPassword,
   onToggleStatus,
@@ -133,10 +138,21 @@ export function MemberTable({
       data={users}
       getRowKey={(row) => row.id}
       getRowClassName={(row) => (!row.isActive ? "opacity-60" : undefined)}
+      renderMobileCard={(row) => (
+        <MemberMobileCard
+          row={row}
+          isSelf={row.id === currentActor?.id}
+          isProtectedFromAdmin={isAdminActor && row.role !== "SUPERVISOR"}
+          onEdit={onEdit}
+          onResetPassword={onResetPassword}
+          onToggleStatus={onToggleStatus}
+        />
+      )}
       meta={meta}
       bare
       onPageChange={onPageChange}
-      className="space-y-0 [&>div:last-child]:border-t [&>div:last-child]:border-border [&>div:last-child]:px-4 [&>div:last-child]:py-3"
+      onPageSizeChange={onPageSizeChange}
+      isUpdating={isUpdating}
     />
   );
 }

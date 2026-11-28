@@ -116,7 +116,7 @@ export function ProjectNavigation({
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       nativeButton={false}
-                      render={<Link href="/projects" prefetch={false} onClick={onNavigate} aria-current={isProjectList ? "page" : undefined} />}
+                      render={<Link href={projectRoot} prefetch={false} onClick={onNavigate} aria-current={isProjectList ? "page" : undefined} />}
                       isActive={isProjectList}
                       className={cn(largeTouchTarget && "min-h-12", isProjectList && "bg-primary-soft")}
                     >
@@ -134,6 +134,7 @@ export function ProjectNavigation({
                         largeTouchTarget={largeTouchTarget}
                         layoutGroupId={`${layoutGroupId}-details`}
                         resetKey={projectId}
+                        navLabel="Navigasi project"
                       />
                     </div>
                   ) : (

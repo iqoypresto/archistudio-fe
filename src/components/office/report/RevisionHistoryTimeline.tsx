@@ -37,14 +37,14 @@ function SnapshotPreviewBody({ raw }: { raw: unknown }) {
   }
   return (
     <div className="space-y-3.5 text-xs tabular-nums">
-      <div className="grid grid-cols-3 divide-x divide-border rounded-lg border border-border bg-canvas/70">
-        <div className="px-3 py-2.5">
+      <div className="grid grid-cols-2 divide-y divide-border rounded-lg border border-border bg-canvas/70 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+        <div className="col-span-2 px-3 py-2.5 sm:col-span-1">
           <p className="text-[11px] text-text-muted">Tipe Laporan</p>
           <p className="mt-0.5 font-medium text-text-primary">
             {snapshot.reportType === "WORK" ? "Ada Pekerjaan" : "Tanpa Pekerjaan"}
           </p>
         </div>
-        <div className="px-3 py-2.5">
+        <div className="border-r border-border px-3 py-2.5 sm:border-r-0">
           <p className="text-[11px] text-text-muted">Cuaca</p>
           <p className="mt-0.5 font-medium text-text-primary">
             {snapshot.weather ? WEATHER_TEXT[snapshot.weather] : "-"}
@@ -136,7 +136,7 @@ export function RevisionHistoryTimeline({
                   variant="outline"
                   size="sm"
                   onClick={() => setSelectedRev(rev)}
-                  className="h-7 px-2.5 text-[11px] text-text-secondary"
+                  className="h-10 px-3 text-xs text-text-secondary md:h-7 md:px-2.5 md:text-[11px]"
                 >
                   Lihat Versi Sebelumnya
                 </Button>

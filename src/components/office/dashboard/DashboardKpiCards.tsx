@@ -40,13 +40,13 @@ export function DashboardKpiCards({
     : 0;
 
   return (
-    <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4 tabular-nums">
-      <div className="rounded-xl border border-border bg-surface p-4">
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-3.5 tabular-nums">
+      <div className="rounded-xl border border-border bg-surface p-3.5 sm:p-4">
         <p className="text-xs text-text-secondary">Proyek Berjalan</p>
-        <p className="mt-2.5 text-[28px] leading-none font-semibold tracking-tight text-text-primary">
+        <p className="mt-2 text-2xl leading-none font-semibold tracking-tight text-text-primary sm:mt-2.5 sm:text-[28px]">
           {metrics.totalProjects}
         </p>
-        <p className="mt-2 text-xs text-text-muted">
+        <p className="mt-2 text-[11px] leading-relaxed text-text-muted sm:text-xs">
           {metrics.activeAreas} area terpantau
           {systemOverview
             ? ` · ${systemOverview.projects.preparing} persiapan · ${archivedTotal} arsip`
@@ -54,16 +54,16 @@ export function DashboardKpiCards({
         </p>
       </div>
 
-      <div className="rounded-xl border border-border bg-surface p-4">
+      <div className="rounded-xl border border-border bg-surface p-3.5 sm:p-4">
         <div className="flex items-center justify-between gap-2">
           <p className="text-xs text-text-secondary">Laporan Masuk</p>
           <span className="text-xs font-medium text-text-secondary">{progressPct}%</span>
         </div>
-        <div className="mt-2.5 flex items-baseline gap-1.5">
-          <span className="text-[28px] leading-none font-semibold tracking-tight text-text-primary">
+        <div className="mt-2 flex items-baseline gap-1.5 sm:mt-2.5">
+          <span className="text-2xl leading-none font-semibold tracking-tight text-text-primary sm:text-[28px]">
             {metrics.reportsSubmittedToday}
           </span>
-          <span className="text-sm text-text-muted">/ {requiredToday}</span>
+          <span className="text-xs text-text-muted sm:text-sm">/ {requiredToday}</span>
         </div>
         <div className="mt-2.5 h-1 w-full overflow-hidden rounded-full bg-white/10">
           <div
@@ -76,42 +76,42 @@ export function DashboardKpiCards({
         </p>
       </div>
 
-      <div className="rounded-xl border border-border bg-surface p-4">
+      <div className="rounded-xl border border-border bg-surface p-3.5 sm:p-4">
         <p className="text-xs text-text-secondary">Belum Lapor</p>
-        <p className="mt-2.5 text-[28px] leading-none font-semibold tracking-tight text-text-primary">
+        <p className="mt-2 text-2xl leading-none font-semibold tracking-tight text-text-primary sm:mt-2.5 sm:text-[28px]">
           {unreportedCount}
         </p>
-        <p className="mt-2 text-xs text-text-muted">
+        <p className="mt-2 text-[11px] leading-relaxed text-text-muted sm:text-xs">
           {unassignedCount > 0 ? `${unassignedCount} belum di-plot · ` : ""}
           {holidayCount > 0 ? `${holidayCount} libur rutin · ` : ""}Batas normal 17:00
         </p>
       </div>
 
       <div
-        className={`rounded-xl border bg-surface p-4 ${
+        className={`rounded-xl border bg-surface p-3.5 sm:p-4 ${
           hasOverdue ? "border-status-danger-fg/30" : "border-border"
         }`}
       >
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-1">
           <p className="text-xs text-text-secondary">Tertunggak &gt; 3 Hari</p>
           {hasOverdue && onClickOverdue && (
             <button
               type="button"
               onClick={onClickOverdue}
-              className="inline-flex items-center gap-1 text-xs font-medium text-status-danger-fg transition-opacity hover:opacity-80"
+              className="-mr-2 inline-flex min-h-9 items-center gap-1 rounded-md px-2 text-xs font-medium text-status-danger-fg transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:mr-0 sm:min-h-0 sm:px-0"
             >
               Lihat <ArrowRight className="size-3" />
             </button>
           )}
         </div>
         <p
-          className={`mt-2.5 text-[28px] leading-none font-semibold tracking-tight ${
+          className={`mt-2 text-2xl leading-none font-semibold tracking-tight sm:mt-2.5 sm:text-[28px] ${
             hasOverdue ? "text-status-danger-fg" : "text-text-primary"
           }`}
         >
           {metrics.areasOverdueMoreThan3Days}
         </p>
-        <p className="mt-2 text-xs text-text-muted">
+        <p className="mt-2 text-[11px] leading-relaxed text-text-muted sm:text-xs">
           {hasOverdue ? "Area terkunci · perlu buka kunci" : "Tidak ada area terkunci"}
         </p>
       </div>

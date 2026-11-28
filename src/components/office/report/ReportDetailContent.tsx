@@ -41,12 +41,12 @@ export function ReportDetailContent({
   return (
     <div className={cn("min-w-0", surface !== "field" && "space-y-5")}>
       {surface !== "field" && (
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-2.5">
           <Link
             href={backHref}
             className={cn(
               buttonVariants({ variant: "outline", size: "sm" }),
-              "h-9 gap-1.5 border-border bg-surface px-3 text-xs text-text-secondary hover:bg-surface-active hover:text-text-primary",
+              "h-10 gap-1.5 border-border bg-surface px-3 text-xs text-text-secondary hover:bg-surface-active hover:text-text-primary sm:h-9",
             )}
           >
             <ArrowLeft className="size-3.5" />
@@ -58,7 +58,7 @@ export function ReportDetailContent({
               type="button"
               size="sm"
               onClick={() => setReviseOpen(true)}
-              className="h-9 gap-1.5 px-3 text-xs"
+              className="h-10 gap-1.5 px-3 text-xs sm:h-9"
             >
               <Edit3 className="size-3.5" />
               Revisi Laporan

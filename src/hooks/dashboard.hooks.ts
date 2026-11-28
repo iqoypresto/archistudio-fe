@@ -5,7 +5,12 @@ import {
   type DashboardSummaryParams,
   type SupervisorLatenessParams,
 } from "@/lib/api/dashboard.api";
-import { pdfExportApi, type ExportPdfParams } from "@/lib/api/pdf-export.api";
+import {
+  pdfExportApi,
+  type DailyRangePdfParams,
+  type ExportPdfParams,
+  type MonthlyPdfParams,
+} from "@/lib/api/pdf-export.api";
 import type { UnlockAreaPayload } from "@/types/api/dashboard.types";
 
 export const DASHBOARD_QUERY_KEYS = {
@@ -49,6 +54,36 @@ export function useUnlockAreaMutation() {
     },
     onError: (err: unknown) => {
       const message = err instanceof Error ? err.message : "Gagal membuka kunci laporan area.";
+      toast.error(message);
+    },
+  });
+}
+
+export function useFetchDailyReportPdfMutation() {
+  return useMutation({
+    mutationFn: (params: ExportPdfParams) => pdfExportApi.fetchDailyReportPdf(params),
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : "Gagal menyiapkan pratinjau PDF laporan.";
+      toast.error(message);
+    },
+  });
+}
+
+export function useFetchMonthlyReportPdfMutation() {
+  return useMutation({
+    mutationFn: (params: MonthlyPdfParams) => pdfExportApi.fetchMonthlyReportPdf(params),
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : "Gagal menyiapkan pratinjau PDF bulanan.";
+      toast.error(message);
+    },
+  });
+}
+
+export function useFetchDailyReportRangePdfMutation() {
+  return useMutation({
+    mutationFn: (params: DailyRangePdfParams) => pdfExportApi.fetchDailyReportRangePdf(params),
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : "Gagal menyiapkan pratinjau PDF rentang tanggal.";
       toast.error(message);
     },
   });

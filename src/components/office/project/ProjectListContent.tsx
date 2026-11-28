@@ -8,6 +8,7 @@ import { getOfficeProjectDetailHref } from "@/components/layout/floating-add-pro
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { PageInfoDialog } from "@/components/ui/PageInfoDialog";
 import { UnderlineTabsBar } from "@/components/ui/UnderlineTabsNav";
 import {
   useArchiveProjectMutation,
@@ -49,7 +50,7 @@ export function ProjectListContent() {
   const [projectToEdit, setProjectToEdit] = useState<ProjectListItem | null>(null);
   const [projectToArchive, setProjectToArchive] = useState<ProjectListItem | null>(null);
 
-  const projectsQuery = useProjectsQuery(filters);
+  const projectsQuery = useProjectsQuery(filters, { keepPreviousData: true });
   const createMutation = useCreateProjectMutation((createdProject) => {
     setIsFormModalOpen(false);
     router.push(getOfficeProjectDetailHref(createdProject.id));
@@ -71,7 +72,12 @@ export function ProjectListContent() {
     <div className="space-y-5">
       <PageHeader
         title="Semua Project"
-        description="Kelola proyek aktif, tim penanggung jawab, jadwal pelaksanaan, zona waktu, dan area lapangan."
+        titleSuffix={
+          <PageInfoDialog
+            title="Tentang Semua Project"
+            description="Kelola proyek aktif, tim penanggung jawab, jadwal pelaksanaan, zona waktu, dan area lapangan."
+          />
+        }
         action={
           canManage ? (
             <Button
@@ -146,6 +152,8 @@ export function ProjectListContent() {
               canManage={canManage}
               canArchive={canArchive}
               onPageChange={(page) => handleFilterChange({ page })}
+              onPageSizeChange={(pageSize) => handleFilterChange({ pageSize, page: 1 })}
+              isUpdating={projectsQuery.isPlaceholderData}
               onEdit={(project) => {
                 setProjectToEdit(project);
                 setIsFormModalOpen(true);

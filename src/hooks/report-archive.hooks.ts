@@ -14,6 +14,7 @@ export function useArchiveFilters() {
     patch: (patch: Partial<ListArchivedReportsQuery>) => setFilters((previous) => patchArchiveFilters(previous, patch)),
     reset: () => setFilters(INITIAL),
     setPage: (page: number) => setFilters((previous) => ({ ...previous, page })),
+    setPageSize: (pageSize: number) => setFilters((previous) => ({ ...previous, pageSize, page: 1 })),
   };
 }
 

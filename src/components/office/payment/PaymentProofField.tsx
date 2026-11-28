@@ -1,12 +1,13 @@
 "use client";
 
 import type { ChangeEvent } from "react";
-import { ImageIcon, Loader2, Trash2, Upload } from "lucide-react";
+import { Eye, ImageIcon, Loader2, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { openProjectFile } from "@/lib/utils/project-file";
 import type { PaymentProofPayload } from "@/types/api/payment.types";
-import { fileApi } from "@/lib/api/file.api";
+import type { ProjectFilePreviewItem } from "@/types/project-file.types";
 
 interface PaymentProofFieldProps {
   proof: PaymentProofPayload | null;
@@ -15,6 +16,7 @@ interface PaymentProofFieldProps {
   errorMessage: string | null;
   onSelectFile: (file: File) => void;
   onRemoveProof: () => void;
+  onPreviewFile: (item: ProjectFilePreviewItem) => void;
 }
 
 export function PaymentProofField({
@@ -24,11 +26,27 @@ export function PaymentProofField({
   errorMessage,
   onSelectFile,
   onRemoveProof,
+  onPreviewFile,
 }: PaymentProofFieldProps) {
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (file) onSelectFile(file);
+  };
+
+  const handleOpenExisting = () => {
+    if (!proof || !existingContentPath) return;
+    openProjectFile(
+      {
+        id: proof.storedFileId,
+        fileName: proof.fileName,
+        mimeType: proof.mimeType,
+        sizeBytes: proof.sizeBytes,
+        uploadedAt: null,
+        contentPath: existingContentPath,
+      },
+      onPreviewFile,
+    );
   };
 
   return (
@@ -43,37 +61,36 @@ export function PaymentProofField({
               <p className="truncate font-medium text-text-primary">{proof.fileName}</p>
               <p className="text-text-secondary">
                 {Math.max(1, Math.round(proof.sizeBytes / 1024))} KB
-                {existingContentPath && (
-                  <>
-                    {" · "}
-                    <button
-                      type="button"
-                      onClick={() => void fileApi.openContent(existingContentPath)}
-                      className="text-text-primary underline"
-                    >
-                      Lihat bukti
-                    </button>
-                  </>
-                )}
               </p>
+              {existingContentPath && (
+                <button
+                  type="button"
+                  onClick={handleOpenExisting}
+                  className="mt-1.5 inline-flex min-h-10 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-xs font-medium text-text-primary transition-colors hover:bg-surface-active md:mt-1 md:min-h-7 md:px-2"
+                >
+                  <Eye className="size-3.5" aria-hidden="true" />
+                  Lihat bukti
+                </button>
+              )}
             </div>
           </div>
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="size-8 shrink-0 text-status-danger-fg"
+            aria-label="Hapus bukti pembayaran"
+            className="size-11 shrink-0 text-status-danger-fg md:size-8"
             onClick={onRemoveProof}
             title="Hapus bukti"
             disabled={isUploading}
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-4 w-4" aria-hidden="true" />
           </Button>
         </div>
       ) : (
         <Label
           htmlFor="payment-proof-input"
-          className="flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-surface-input/70 px-3 py-2.5 text-xs font-medium text-text-secondary transition-colors hover:border-white/25 hover:text-text-primary"
+          className="flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-surface-input/70 px-3 py-2.5 text-xs font-medium text-text-secondary transition-colors hover:border-white/25 hover:text-text-primary focus-within:ring-2 focus-within:ring-ring"
         >
           {isUploading ? (
             <>

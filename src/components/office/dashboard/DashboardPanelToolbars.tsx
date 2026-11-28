@@ -37,7 +37,7 @@ export function DashboardAreaToolbar({
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Cari kode area, proyek, atau supervisor..."
-          className="h-9 pl-8 text-xs"
+          className="h-11 pl-8 sm:h-9 sm:text-xs"
         />
       </div>
       <SegmentedControl
@@ -45,6 +45,7 @@ export function DashboardAreaToolbar({
         options={AREA_STATUS_OPTIONS}
         value={statusFilter}
         onChange={onStatusFilterChange}
+        className="w-full sm:w-auto"
       />
     </div>
   );
@@ -67,29 +68,36 @@ export function DashboardSupervisorToolbar({
 }) {
   return (
     <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-      <div className="flex flex-wrap items-center gap-2 text-xs text-text-secondary">
-        <span>Periode:</span>
-        <Input
-          type="date"
-          aria-label="Dari tanggal"
-          value={dateFrom}
-          onChange={(e) => onDateFromChange(e.target.value)}
-          className="h-9 w-38 text-xs tabular-nums"
-        />
-        <span className="text-text-muted">—</span>
-        <Input
-          type="date"
-          aria-label="Sampai tanggal"
-          value={dateTo}
-          onChange={(e) => onDateToChange(e.target.value)}
-          className="h-9 w-38 text-xs tabular-nums"
-        />
+      <div className="grid grid-cols-2 gap-2 text-xs text-text-secondary sm:flex sm:items-center">
+        <span className="hidden sm:inline">Periode:</span>
+        <label className="space-y-1 sm:space-y-0">
+          <span className="block text-[11px] text-text-muted sm:hidden">Dari tanggal</span>
+          <Input
+            type="date"
+            aria-label="Dari tanggal"
+            value={dateFrom}
+            onChange={(e) => onDateFromChange(e.target.value)}
+            className="h-11 w-full tabular-nums sm:h-9 sm:w-38 sm:text-xs"
+          />
+        </label>
+        <span className="hidden text-text-muted sm:inline">—</span>
+        <label className="space-y-1 sm:space-y-0">
+          <span className="block text-[11px] text-text-muted sm:hidden">Sampai tanggal</span>
+          <Input
+            type="date"
+            aria-label="Sampai tanggal"
+            value={dateTo}
+            onChange={(e) => onDateToChange(e.target.value)}
+            className="h-11 w-full tabular-nums sm:h-9 sm:w-38 sm:text-xs"
+          />
+        </label>
       </div>
       <SegmentedControl
         ariaLabel="Filter tingkat disiplin"
         options={TIER_OPTIONS}
         value={tierFilter}
         onChange={onTierFilterChange}
+        className="grid w-full auto-cols-fr grid-flow-col sm:inline-flex sm:w-auto"
       />
     </div>
   );

@@ -3,7 +3,6 @@ import { cn } from "@/lib/utils";
 
 interface PageHeaderProps {
   title: string;
-  description?: string;
   kicker?: ReactNode;
   titleSuffix?: ReactNode;
   action?: ReactNode;
@@ -13,40 +12,40 @@ interface PageHeaderProps {
 
 export function PageHeader({
   title,
-  description,
   kicker,
   titleSuffix,
   action,
   className,
   hideTitle = false,
 }: PageHeaderProps) {
+  const showHeadingBlock = Boolean(kicker) || !hideTitle;
+  if (!showHeadingBlock && !action) return null;
+
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between",
-        className
+        "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between",
+        !showHeadingBlock && "sm:justify-end",
+        className,
       )}
     >
-      <div className="space-y-1">
-        {kicker && (
-          <div className="text-xs font-medium text-text-muted tabular-nums">{kicker}</div>
-        )}
-        {!hideTitle && (
-          <div className="flex items-center gap-2">
-            <h1 className="font-heading text-xl font-semibold tracking-tight text-text-primary sm:text-[22px]">
-              {title}
-            </h1>
-            {titleSuffix}
-          </div>
-        )}
-        {description && (
-          <p className="text-xs leading-relaxed text-text-secondary sm:text-[13px]">
-            {description}
-          </p>
-        )}
-      </div>
+      {showHeadingBlock && (
+        <div className="space-y-1">
+          {kicker && (
+            <div className="text-xs font-medium text-text-muted tabular-nums">{kicker}</div>
+          )}
+          {!hideTitle && (
+            <div className="flex items-center gap-1.5">
+              <h1 className="font-heading text-xl font-semibold tracking-tight text-text-primary sm:text-[22px]">
+                {title}
+              </h1>
+              {titleSuffix}
+            </div>
+          )}
+        </div>
+      )}
       {action && (
-        <div className="flex flex-wrap shrink-0 items-center gap-2">{action}</div>
+        <div className="flex w-full shrink-0 flex-wrap items-center gap-2 sm:w-auto">{action}</div>
       )}
     </div>
   );

@@ -58,14 +58,14 @@ export function ProjectFilters({ filters, onFilterChange, onReset }: ProjectFilt
           value={filters.search ?? ""}
           onChange={(e) => onFilterChange({ search: e.target.value || undefined, page: 1 })}
           placeholder="Cari kode, nama proyek, klien, atau lokasi..."
-          className="h-9 pl-8 text-xs"
+          className="h-11 pl-8 sm:h-9 sm:text-xs"
         />
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="w-48">
+      <div className="flex w-full items-center gap-2 sm:w-auto">
+        <div className="min-w-0 flex-1 sm:w-48 sm:flex-none">
           <Select value={sortPreset} onValueChange={handleSortChange}>
-            <SelectTrigger aria-label="Urutkan proyek" className="h-9 text-xs">
+            <SelectTrigger aria-label="Urutkan proyek" className="h-11 text-sm sm:h-9 sm:text-xs">
               <SelectValue>{SORT_LABELS[sortPreset]}</SelectValue>
             </SelectTrigger>
             <SelectContent alignItemWithTrigger={false}>
@@ -82,7 +82,7 @@ export function ProjectFilters({ filters, onFilterChange, onReset }: ProjectFilt
             type="button"
             variant="outline"
             onClick={onReset}
-            className="h-9 gap-1.5 px-3 text-xs text-text-secondary"
+            className="h-11 shrink-0 gap-1.5 px-3 text-xs text-text-secondary sm:h-9"
           >
             <RotateCcw className="size-3.5" />
             Reset

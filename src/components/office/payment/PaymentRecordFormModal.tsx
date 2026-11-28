@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm, useWatch } from "react-hook-form";
+import { ProjectFilePreviewDialog } from "@/components/field/project/ProjectFilePreviewDialog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,7 @@ import type {
   CreatePaymentRecordPayload, PaymentProofMime, PaymentProofPayload,
   PaymentRecordItem, PaymentStatus, UpdatePaymentRecordPayload,
 } from "@/types/api/payment.types";
+import type { ProjectFilePreviewItem } from "@/types/project-file.types";
 import { PaymentProofField } from "./PaymentProofField";
 
 const STATUS_OPTIONS: readonly { value: PaymentStatus; label: string }[] = [
@@ -46,6 +48,7 @@ export function PaymentRecordFormModal({
 }: PaymentRecordFormModalProps) {
   const isEditing = Boolean(recordToEdit);
   const [proof, setProof] = useState<PaymentProofPayload | null>(() => toInitialProof(recordToEdit));
+  const [previewFile, setPreviewFile] = useState<ProjectFilePreviewItem | null>(null);
   const { uploadFile, isUploading, errorMessage, clearError } = usePaymentProofUpload(payeeId);
 
   const { register, control, handleSubmit, formState: { errors } } = useForm<PaymentRecordFormValues>({
@@ -77,7 +80,8 @@ export function PaymentRecordFormModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <>
+      <Dialog open={isOpen && !previewFile} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{isEditing ? "Ubah Catatan Pembayaran" : "Tambah Catatan Pembayaran"}</DialogTitle>
@@ -134,6 +138,7 @@ export function PaymentRecordFormModal({
             errorMessage={errorMessage}
             onSelectFile={handleSelectFile}
             onRemoveProof={() => { setProof(null); clearError(); }}
+            onPreviewFile={setPreviewFile}
           />
 
           <DialogFooter className="gap-2 pt-2">
@@ -147,5 +152,8 @@ export function PaymentRecordFormModal({
         </form>
       </DialogContent>
     </Dialog>
+
+      <ProjectFilePreviewDialog file={previewFile} onClose={() => setPreviewFile(null)} />
+    </>
   );
 }

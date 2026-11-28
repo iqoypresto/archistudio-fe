@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { FileDown } from "lucide-react";
+import { Eye } from "lucide-react";
+import { ProjectFilePreviewDialog } from "@/components/field/project/ProjectFilePreviewDialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,9 +20,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useExportDailyReportPdfMutation } from "@/hooks/dashboard.hooks";
+import { useFetchDailyReportPdfMutation } from "@/hooks/dashboard.hooks";
 import { useProjectsQuery } from "@/hooks/project.hooks";
 import { ApiError } from "@/lib/api/api-error";
+import type { ProjectFilePreviewItem } from "@/types/project-file.types";
 import { PdfExportReadinessPanel } from "./PdfExportReadinessPanel";
 
 interface PdfExportDialogProps {
@@ -39,8 +41,9 @@ export function PdfExportDialog({
 }: PdfExportDialogProps) {
   const [selectedProjectId, setSelectedProjectId] = useState(defaultProjectId);
   const [selectedDate, setSelectedDate] = useState(defaultDate);
+  const [previewFile, setPreviewFile] = useState<ProjectFilePreviewItem | null>(null);
   const { data: projectsRes } = useProjectsQuery({ page: 1, pageSize: 100 });
-  const exportMutation = useExportDailyReportPdfMutation();
+  const exportMutation = useFetchDailyReportPdfMutation();
   const projects = projectsRes?.data ?? [];
   const selectedProject = projects.find((p) => p.id === selectedProjectId);
   const selectedProjectLabel = selectedProject
@@ -55,7 +58,7 @@ export function PdfExportDialog({
       ? exportMutation.error.message
       : "Gagal membuat PDF laporan.";
 
-  const handleDownload = (e: React.FormEvent) => {
+  const handlePreview = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedProjectId || !selectedDate) return;
     exportMutation.mutate(
@@ -65,21 +68,32 @@ export function PdfExportDialog({
         projectCode: selectedProject?.code,
       },
       {
-        onSuccess: () => onClose(),
+        onSuccess: (generated) => {
+          setPreviewFile({
+            id: `daily-pdf:${selectedProjectId}:${selectedDate}:${Date.now()}`,
+            fileName: generated.fileName,
+            mimeType: "application/pdf",
+            sizeBytes: generated.blob.size,
+            uploadedAt: null,
+            contentPath: "",
+            blob: generated.blob,
+          });
+        },
       },
     );
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md">
-        <form onSubmit={handleDownload} className="space-y-4">
-          <DialogHeader>
-            <DialogTitle>Export PDF Laporan Harian</DialogTitle>
-            <DialogDescription className="text-xs">
-              Unduh rekap laporan harian satu proyek beserta foto 2 kolom dan paraf pengirim.
-            </DialogDescription>
-          </DialogHeader>
+    <>
+      <Dialog open={isOpen && !previewFile} onOpenChange={(open) => !open && onClose()}>
+        <DialogContent className="sm:max-w-md">
+          <form onSubmit={handlePreview} className="space-y-4">
+            <DialogHeader>
+              <DialogTitle>Export PDF Laporan Harian</DialogTitle>
+              <DialogDescription className="text-xs">
+                Lihat pratinjau rekap laporan harian beserta foto 2 kolom dan paraf pengirim sebelum mengunduh.
+              </DialogDescription>
+            </DialogHeader>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
@@ -88,9 +102,12 @@ export function PdfExportDialog({
               </Label>
               <Select
                 value={selectedProjectId}
-                onValueChange={(val: string | null) => setSelectedProjectId(val ?? "")}
+                onValueChange={(val: string | null) => {
+                  setSelectedProjectId(val ?? "");
+                  exportMutation.reset();
+                }}
               >
-                <SelectTrigger id="pdfProjectId" className="h-9 text-xs">
+                <SelectTrigger id="pdfProjectId" className="h-11 sm:h-9 sm:text-xs">
                   <SelectValue placeholder="Pilih proyek">{selectedProjectLabel}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
@@ -112,8 +129,11 @@ export function PdfExportDialog({
                 type="date"
                 required
                 value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="h-9 text-xs tabular-nums"
+                onChange={(e) => {
+                  setSelectedDate(e.target.value);
+                  exportMutation.reset();
+                }}
+                className="h-11 tabular-nums sm:h-9 sm:text-xs"
               />
             </div>
           </div>
@@ -133,22 +153,25 @@ export function PdfExportDialog({
             </ModalNoteBox>
           )}
 
-          <DialogFooter className="gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={onClose} className="h-9">
-              Batal
-            </Button>
-            <Button
-              type="submit"
-              size="sm"
-              disabled={exportMutation.isPending || !selectedProjectId || !selectedDate}
-              className="h-9 gap-1.5"
-            >
-              <FileDown className="size-3.5" />
-              {exportMutation.isPending ? "Memproses PDF..." : "Unduh PDF"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <DialogFooter className="gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={onClose} className="h-11 sm:h-9">
+                Batal
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={exportMutation.isPending || !selectedProjectId || !selectedDate}
+                className="h-11 gap-1.5 sm:h-9"
+              >
+                <Eye className="size-3.5" />
+                {exportMutation.isPending ? "Menyiapkan PDF..." : "Pratinjau & Unduh PDF"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <ProjectFilePreviewDialog file={previewFile} onClose={() => setPreviewFile(null)} />
+    </>
   );
 }

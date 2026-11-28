@@ -1,19 +1,16 @@
 "use client";
 
-import { RotateCcw, Search } from "lucide-react";
+import { useState } from "react";
+import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useProjectAreasQuery } from "@/hooks/area.hooks";
 import { useArchiveProjectOptions } from "@/hooks/report-archive.hooks";
-import type { ListArchivedReportsQuery, ReportType } from "@/types/api/report.types";
+import { cn } from "@/lib/utils";
+import type { ListArchivedReportsQuery } from "@/types/api/report.types";
+import { ReportMobileSearchBar, ReportSecondaryFilterRow } from "./ReportFilterControls";
 
 type LateFilterValue = "ALL" | "ON_TIME" | "LATE";
 
@@ -23,196 +20,125 @@ const LATE_OPTIONS = [
   { value: "LATE", label: "Terlambat" },
 ] as const;
 
-const TYPE_LABELS: Record<string, string> = {
-  ALL: "Semua Tipe",
-  WORK: "Ada Pekerjaan",
-  NO_WORK: "Tanpa Pekerjaan",
-};
+function countActiveArchiveFilters(filters: ListArchivedReportsQuery): number {
+  return [
+    Boolean(filters.projectId),
+    Boolean(filters.areaId),
+    filters.isLate !== undefined,
+    Boolean(filters.dateFrom || filters.dateTo),
+    Boolean(filters.reportType),
+    filters.sortOrder === "asc",
+  ].filter(Boolean).length;
+}
 
 export function ArchivedReportFilters({
-  filters,
-  onChange,
-  onReset,
+  filters, onChange, onReset,
 }: {
   filters: ListArchivedReportsQuery;
   onChange: (patch: Partial<ListArchivedReportsQuery>) => void;
   onReset: () => void;
 }) {
+  const [mobileOpen, setMobileOpen] = useState(false);
   const projects = useArchiveProjectOptions();
   const areas = useProjectAreasQuery(filters.projectId ?? "");
   const selectedProject = projects.data?.find((p) => p.id === filters.projectId);
   const selectedArea = areas.data?.find((a) => a.id === filters.areaId);
-  const typeVal = filters.reportType ?? "ALL";
   const lateVal: LateFilterValue =
     filters.isLate === undefined ? "ALL" : filters.isLate ? "LATE" : "ON_TIME";
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-1 flex-wrap items-center gap-2">
-          <div className="relative min-w-56 flex-1 sm:max-w-xs">
-            <Search className="pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-text-muted" />
-            <Input
-              type="text"
-              value={filters.search ?? ""}
-              onChange={(event) => onChange({ search: event.target.value || undefined })}
-              placeholder="Cari nomor laporan, proyek, area, atau pengawas..."
-              className="h-9 pl-8 text-xs"
-            />
+      <ReportMobileSearchBar
+        value={filters.search ?? ""}
+        placeholder="Cari nomor, proyek, area, pengawas..."
+        panelId="archived-report-filter-panel"
+        mobileOpen={mobileOpen}
+        activeCount={countActiveArchiveFilters(filters)}
+        onSearchChange={(val) => onChange({ search: val || undefined })}
+        onToggleOpen={() => setMobileOpen((prev) => !prev)}
+      />
+
+      <div id="archived-report-filter-panel" className={cn("space-y-3", !mobileOpen && "hidden lg:block")}>
+        <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:flex lg:flex-1 lg:flex-wrap lg:items-center lg:gap-2">
+            <div className="relative hidden min-w-56 flex-1 lg:block lg:max-w-xs">
+              <Search className="pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-text-muted" />
+              <Input
+                type="text"
+                value={filters.search ?? ""}
+                onChange={(event) => onChange({ search: event.target.value || undefined })}
+                placeholder="Cari nomor laporan, proyek, area, atau pengawas..."
+                className="h-9 pl-8 text-xs"
+              />
+            </div>
+
+            <div className="w-full lg:w-48">
+              <Select
+                value={filters.projectId ?? "ALL"}
+                disabled={projects.isLoading}
+                onValueChange={(val: string | null) =>
+                  onChange({ projectId: !val || val === "ALL" ? undefined : val, areaId: undefined })
+                }
+              >
+                <SelectTrigger aria-label="Filter proyek arsip" className="h-11 text-sm lg:h-9 lg:text-xs">
+                  <SelectValue placeholder="Semua Proyek">
+                    {projects.isLoading ? "Memuat proyek..." : selectedProject ? `${selectedProject.code} · ${selectedProject.name}` : "Semua Proyek"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent alignItemWithTrigger={false}>
+                  <SelectItem value="ALL">Semua Proyek</SelectItem>
+                  {projects.data?.map((project) => <SelectItem key={project.id} value={project.id}>{project.code} · {project.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="w-full lg:w-44">
+              <Select
+                value={filters.areaId ?? "ALL"}
+                disabled={!filters.projectId || areas.isLoading}
+                onValueChange={(val: string | null) => onChange({ areaId: !val || val === "ALL" ? undefined : val })}
+              >
+                <SelectTrigger aria-label="Filter area arsip" className="h-11 text-sm lg:h-9 lg:text-xs">
+                  <SelectValue placeholder="Semua Area">
+                    {areas.isLoading ? "Memuat area..." : selectedArea ? `${selectedArea.code} · ${selectedArea.name}` : "Semua Area"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent alignItemWithTrigger={false}>
+                  <SelectItem value="ALL">Semua Area</SelectItem>
+                  {areas.data?.map((area) => <SelectItem key={area.id} value={area.id}>{area.code} · {area.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div className="w-48">
-            <Select
-              value={filters.projectId ?? "ALL"}
-              disabled={projects.isLoading}
-              onValueChange={(val: string | null) =>
-                onChange({
-                  projectId: !val || val === "ALL" ? undefined : val,
-                  areaId: undefined,
-                })
-              }
-            >
-              <SelectTrigger aria-label="Filter proyek arsip" className="h-9 text-xs">
-                <SelectValue placeholder="Semua Proyek">
-                  {projects.isLoading
-                    ? "Memuat proyek..."
-                    : selectedProject
-                      ? `${selectedProject.code} · ${selectedProject.name}`
-                      : "Semua Proyek"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent alignItemWithTrigger={false}>
-                <SelectItem value="ALL">Semua Proyek</SelectItem>
-                {projects.data?.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
-                    {project.code} · {project.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="w-44">
-            <Select
-              value={filters.areaId ?? "ALL"}
-              disabled={!filters.projectId || areas.isLoading}
-              onValueChange={(val: string | null) =>
-                onChange({ areaId: !val || val === "ALL" ? undefined : val })
-              }
-            >
-              <SelectTrigger aria-label="Filter area arsip" className="h-9 text-xs">
-                <SelectValue placeholder="Semua Area">
-                  {areas.isLoading
-                    ? "Memuat area..."
-                    : selectedArea
-                      ? `${selectedArea.code} · ${selectedArea.name}`
-                      : "Semua Area"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent alignItemWithTrigger={false}>
-                <SelectItem value="ALL">Semua Area</SelectItem>
-                {areas.data?.map((area) => (
-                  <SelectItem key={area.id} value={area.id}>
-                    {area.code} · {area.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <SegmentedControl
+            ariaLabel="Filter keterlambatan arsip"
+            options={LATE_OPTIONS}
+            value={lateVal}
+            onChange={(val) => onChange({ isLate: val === "ALL" ? undefined : val === "LATE" })}
+            className="grid w-full auto-cols-fr grid-flow-col lg:inline-flex lg:w-auto"
+          />
         </div>
 
-        <SegmentedControl
-          ariaLabel="Filter keterlambatan arsip"
-          options={LATE_OPTIONS}
-          value={lateVal}
-          onChange={(val) => onChange({ isLate: val === "ALL" ? undefined : val === "LATE" })}
+        <ReportSecondaryFilterRow
+          dateFrom={filters.dateFrom}
+          dateTo={filters.dateTo}
+          reportType={filters.reportType}
+          sortOrder={filters.sortOrder ?? "desc"}
+          typeAriaLabel="Filter tipe laporan arsip"
+          sortAriaLabel="Urutan tanggal arsip"
+          onDateFromChange={(dateFrom) => onChange({ dateFrom })}
+          onDateToChange={(dateTo) => onChange({ dateTo })}
+          onReportTypeChange={(reportType) => onChange({ reportType })}
+          onSortOrderChange={(nextOrder) => onChange({ sortOrder: nextOrder })}
+          onReset={onReset}
         />
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2.5 border-t border-border/60 pt-3">
-        <div className="flex flex-wrap items-center gap-2 text-xs text-text-secondary">
-          <span>Periode:</span>
-          <Input
-            type="date"
-            aria-label="Dari tanggal"
-            value={filters.dateFrom ?? ""}
-            max={filters.dateTo}
-            onChange={(event) => onChange({ dateFrom: event.target.value || undefined })}
-            className="h-9 w-38 text-xs tabular-nums"
-          />
-          <span className="text-text-muted">—</span>
-          <Input
-            type="date"
-            aria-label="Sampai tanggal"
-            value={filters.dateTo ?? ""}
-            min={filters.dateFrom}
-            onChange={(event) => onChange({ dateTo: event.target.value || undefined })}
-            className="h-9 w-38 text-xs tabular-nums"
-          />
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="w-40">
-            <Select
-              value={typeVal}
-              onValueChange={(val: string | null) =>
-                onChange({ reportType: !val || val === "ALL" ? undefined : (val as ReportType) })
-              }
-            >
-              <SelectTrigger aria-label="Filter tipe laporan arsip" className="h-9 text-xs">
-                <SelectValue placeholder="Semua Tipe">{TYPE_LABELS[typeVal]}</SelectValue>
-              </SelectTrigger>
-              <SelectContent alignItemWithTrigger={false}>
-                <SelectItem value="ALL">Semua Tipe</SelectItem>
-                <SelectItem value="WORK">Ada Pekerjaan</SelectItem>
-                <SelectItem value="NO_WORK">Tanpa Pekerjaan</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="w-40">
-            <Select
-              value={filters.sortOrder ?? "desc"}
-              onValueChange={(val: string | null) =>
-                onChange({ sortOrder: val === "asc" ? "asc" : "desc" })
-              }
-            >
-              <SelectTrigger aria-label="Urutan tanggal arsip" className="h-9 text-xs">
-                <SelectValue>
-                  {filters.sortOrder === "asc" ? "Terlama dahulu" : "Terbaru dahulu"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent alignItemWithTrigger={false}>
-                <SelectItem value="desc">Terbaru dahulu</SelectItem>
-                <SelectItem value="asc">Terlama dahulu</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onReset}
-            className="h-9 gap-1.5 px-3 text-xs text-text-secondary"
-          >
-            <RotateCcw className="size-3.5" />
-            Reset
-          </Button>
-        </div>
-      </div>
-
       {(projects.isError || areas.isError) && (
-        <div role="alert" className="text-xs text-status-danger-fg">
-          Pilihan filter gagal dimuat.{" "}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              if (projects.isError) void projects.refetch();
-              if (areas.isError) void areas.refetch();
-            }}
-          >
+        <div role="alert" className="flex flex-wrap items-center gap-2 text-xs text-status-danger-fg">
+          <span>Pilihan filter gagal dimuat.</span>
+          <Button type="button" variant="outline" size="sm" onClick={() => { if (projects.isError) void projects.refetch(); if (areas.isError) void areas.refetch(); }}>
             Coba lagi
           </Button>
         </div>

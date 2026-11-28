@@ -8,11 +8,14 @@ import { StatusIndicator } from "@/components/ui/StatusIndicator";
 import { formatIdDate, formatShortTimezone } from "@/lib/utils/office-format";
 import type { PaginationMeta } from "@/types/api";
 import type { ProjectListItem, ProjectStatus } from "@/types/api/project.types";
+import { ProjectMobileCard } from "./ProjectMobileCard";
 
 interface ProjectTableProps {
   projects: ProjectListItem[];
   meta?: PaginationMeta;
   onPageChange: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
+  isUpdating?: boolean;
   onEdit: (project: ProjectListItem) => void;
   onArchive: (project: ProjectListItem) => void;
   canManage: boolean;
@@ -31,6 +34,8 @@ export function ProjectTable({
   projects,
   meta,
   onPageChange,
+  onPageSizeChange,
+  isUpdating = false,
   onEdit,
   onArchive,
   canManage,
@@ -136,10 +141,20 @@ export function ProjectTable({
       columns={columns}
       data={projects}
       getRowKey={(row) => row.id}
+      renderMobileCard={(row) => (
+        <ProjectMobileCard
+          row={row}
+          canManage={canManage}
+          canArchive={canArchive}
+          onEdit={onEdit}
+          onArchive={onArchive}
+        />
+      )}
       meta={meta}
       bare
       onPageChange={onPageChange}
-      className="space-y-0 [&>div:last-child]:border-t [&>div:last-child]:border-border [&>div:last-child]:px-4 [&>div:last-child]:py-3"
+      onPageSizeChange={onPageSizeChange}
+      isUpdating={isUpdating}
     />
   );
 }

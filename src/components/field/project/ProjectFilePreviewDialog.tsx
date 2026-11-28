@@ -5,6 +5,7 @@ import { Download, Maximize, Minus, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { fileApi } from "@/lib/api/file.api";
+import { savePdfBlob } from "@/lib/api/pdf-export.api";
 import type { ProjectFilePreviewItem } from "@/types/project-file.types";
 import { ImageDocumentCanvas } from "./ImageDocumentCanvas";
 import { PdfDocumentCanvas } from "./PdfDocumentCanvas";
@@ -27,9 +28,9 @@ export function ProjectFilePreviewDialog({ file, onClose }: {
   return (
     <Dialog open={Boolean(file)} onOpenChange={(open) => !open && onClose()}>
       <DialogContent showCloseButton={false} overlayClassName="bg-black/85 backdrop-blur-none"
-        className="fixed inset-0 left-0 top-0 z-50 flex h-dvh w-full max-w-none translate-x-0 translate-y-0 flex-col gap-0 overflow-hidden rounded-none border-0 bg-[#202124] p-0 text-white shadow-none ring-0 sm:max-w-none">
+        className="fixed inset-0 left-0 top-0 z-50 flex h-dvh max-h-dvh w-full max-w-none translate-x-0 translate-y-0 flex-col gap-0 overflow-hidden rounded-none border-0 bg-[#202124] p-0 text-white shadow-none ring-0 sm:max-w-none">
         {file && <>
-          <header className="flex h-16 shrink-0 items-center justify-between gap-3 border-b border-white/10 bg-[#1d1e20] px-4">
+          <header className="flex min-h-16 shrink-0 items-center justify-between gap-3 border-b border-white/10 bg-[#1d1e20] px-4 pt-[env(safe-area-inset-top)]">
             <DialogTitle className="min-w-0 flex-1 truncate text-base font-semibold text-white">{file.fileName}</DialogTitle>
             <Button type="button" variant="ghost" size="icon-lg" onClick={onClose} aria-label="Tutup pratinjau"
               className="size-12 shrink-0 rounded-full text-white hover:bg-white/10 hover:text-white">
@@ -42,7 +43,7 @@ export function ProjectFilePreviewDialog({ file, onClose }: {
                 fitRevision={fitRevision} onPageInfo={reportPage} />
               : <ImageDocumentCanvas key={file.id} file={file} zoom={zoom} />}
           </main>
-          <footer className="flex min-h-20 shrink-0 items-center justify-between gap-2 border-t border-white/10 bg-[#191a1c] px-3 py-3">
+          <footer className="flex min-h-20 shrink-0 items-center justify-between gap-2 border-t border-white/10 bg-[#191a1c] px-3 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
             <div className="flex min-w-0 items-center gap-1.5">
               <ZoomButton label="Perkecil" onClick={() => setScale(zoom - 0.25)}><Minus /></ZoomButton>
               <ZoomButton label="Perbesar" onClick={() => setScale(zoom + 0.25)}><Plus /></ZoomButton>
@@ -61,8 +62,15 @@ export function ProjectFilePreviewDialog({ file, onClose }: {
                 </select>
               </label>
             )}
-            <Button type="button" onClick={() => void fileApi.downloadContent(file.contentPath, file.fileName)}
-              aria-label="Unduh file" className="min-h-12 shrink-0 gap-2 rounded-xl bg-white/10 px-3 text-sm text-white hover:bg-white/15 sm:px-4">
+            <Button
+              type="button"
+              onClick={() => {
+                if (file.blob) savePdfBlob(file.blob, file.fileName);
+                else void fileApi.downloadContent(file.contentPath, file.fileName);
+              }}
+              aria-label="Unduh file"
+              className="min-h-12 shrink-0 gap-2 rounded-xl bg-white/10 px-3 text-sm text-white hover:bg-white/15 sm:px-4"
+            >
               <Download className="size-5" /><span className="hidden min-[360px]:inline">Unduh</span><span className="sr-only min-[360px]:hidden">Unduh</span>
             </Button>
           </footer>

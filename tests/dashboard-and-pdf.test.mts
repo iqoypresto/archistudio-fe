@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { api } from "@/lib/api/axios";
 import { pdfExportApi } from "@/lib/api/pdf-export.api";
+import { canPreviewProjectFile } from "@/lib/utils/project-file";
 import {
   calculateOnTimePercentage,
   resolveAreaStatusBadgeTone,
@@ -66,5 +67,41 @@ describe("TASK-08 Frontend Dashboard Monitoring, Buka Kunci & Export PDF", () =>
     } finally {
       api.defaults.adapter = previous;
     }
+  });
+
+  it("[AC-27.1] fetchDailyReportPdf mengembalikan Blob PDF dan nama file dari Content-Disposition atau fallback", async () => {
+    const previous = api.defaults.adapter;
+    api.defaults.adapter = async (config) => ({
+      config,
+      status: 200,
+      statusText: "OK",
+      headers: { "content-disposition": 'attachment; filename="LH-PRJ1-20261116.pdf"' },
+      data: new Blob(["%PDF-1.4"], { type: "application/pdf" }),
+    });
+    try {
+      const generated = await pdfExportApi.fetchDailyReportPdf({
+        projectId: "project-1", date: "2026-11-16", projectCode: "PRJ1",
+      });
+      assert.equal(generated.fileName, "LH-PRJ1-20261116.pdf");
+      assert.equal(generated.blob.type, "application/pdf");
+      assert.ok(generated.blob.size > 0);
+    } finally {
+      api.defaults.adapter = previous;
+    }
+  });
+
+  it("canPreviewProjectFile hanya mengizinkan PDF dan gambar yang didukung viewer", () => {
+    const base = { id: "f1", fileName: "doc", sizeBytes: 100, uploadedAt: null, contentPath: "/files/1" };
+    assert.equal(canPreviewProjectFile({ ...base, mimeType: "application/pdf" }), true);
+    assert.equal(canPreviewProjectFile({ ...base, mimeType: "image/jpeg" }), true);
+    assert.equal(canPreviewProjectFile({ ...base, mimeType: "image/png" }), true);
+    assert.equal(canPreviewProjectFile({ ...base, mimeType: "image/webp" }), true);
+    assert.equal(
+      canPreviewProjectFile({
+        ...base,
+        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      }),
+      false,
+    );
   });
 });

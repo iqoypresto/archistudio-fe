@@ -1,15 +1,31 @@
 "use client";
 
+import { useEffect, useState, type ReactNode } from "react";
 import { LoaderCircle } from "lucide-react";
-import type { ReactNode } from "react";
 import { useStoredFileUrl } from "@/hooks/use-stored-file-url.hooks";
 import type { ProjectFilePreviewItem } from "@/types/project-file.types";
 
 export function ImageDocumentCanvas({ file, zoom }: { file: ProjectFilePreviewItem; zoom: number }) {
-  const { src, isLoading, isError } = useStoredFileUrl(file.contentPath, { enabled: true });
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const { src: storedSrc, isLoading, isError } = useStoredFileUrl(file.contentPath, {
+    enabled: !file.blob && Boolean(file.contentPath),
+  });
 
-  if (isLoading) return <ViewerMessage><LoaderCircle className="size-5 animate-spin" /> Memuat gambar…</ViewerMessage>;
-  if (isError || !src) return <ViewerMessage role="alert">Gambar tidak dapat dimuat. Periksa koneksi lalu coba lagi.</ViewerMessage>;
+  useEffect(() => {
+    if (!file.blob) return;
+    const url = URL.createObjectURL(file.blob);
+    const frame = requestAnimationFrame(() => setBlobUrl(url));
+    return () => {
+      cancelAnimationFrame(frame);
+      URL.revokeObjectURL(url);
+    };
+  }, [file.blob]);
+
+  const src = file.blob ? blobUrl : storedSrc;
+  const loading = file.blob ? !blobUrl : isLoading;
+
+  if (loading) return <ViewerMessage><LoaderCircle className="size-5 animate-spin" /> Memuat gambar…</ViewerMessage>;
+  if ((!file.blob && isError) || !src) return <ViewerMessage role="alert">Gambar tidak dapat dimuat. Periksa koneksi lalu coba lagi.</ViewerMessage>;
 
   return (
     <div className="flex h-full w-full items-center justify-center overflow-auto p-4">

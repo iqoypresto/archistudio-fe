@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { PageInfoDialog } from "@/components/ui/PageInfoDialog";
 import { UnderlineTabsBar } from "@/components/ui/UnderlineTabsNav";
 import { useArchivedReportsQuery, useOfficeReportsQuery } from "@/hooks/report.hooks";
 import { useAuthStore } from "@/stores/auth.store";
@@ -25,7 +26,7 @@ export function OfficeReportListContent({ view = "reports" }: { view?: "reports"
   const canArchive = role === "OWNER" || role === "ADMIN";
   const showArchive = canArchive && view === "archive";
   const [filters, setFilters] = useState<ListReportsQuery>(INITIAL_FILTERS);
-  const reportsQuery = useOfficeReportsQuery(filters, !showArchive);
+  const reportsQuery = useOfficeReportsQuery(filters, !showArchive, { keepPreviousData: true });
   const activeCountQuery = useOfficeReportsQuery(
     { page: 1, pageSize: 1, archiveState: "active" },
     canArchive && showArchive,
@@ -43,7 +44,12 @@ export function OfficeReportListContent({ view = "reports" }: { view?: "reports"
     <div className="space-y-5">
       <PageHeader
         title="Laporan Harian"
-        description="Daftar laporan harian lapangan seluruh proyek beserta dokumentasi foto dan riwayat revisi."
+        titleSuffix={
+          <PageInfoDialog
+            title="Tentang Laporan Harian"
+            description="Daftar laporan harian lapangan seluruh proyek beserta dokumentasi foto dan riwayat revisi."
+          />
+        }
         action={canArchive ? <ReportPdfExportControl /> : undefined}
       />
 
@@ -68,6 +74,7 @@ export function OfficeReportListContent({ view = "reports" }: { view?: "reports"
                 count: archiveCountQuery.data?.meta.totalItems,
               },
             ]}
+            hideRightSlotOnMobile
             rightSlot={
               showArchive
                 ? "Laporan terkirim yang telah melewati tanggal laporan"
@@ -104,6 +111,8 @@ export function OfficeReportListContent({ view = "reports" }: { view?: "reports"
                   meta={res.meta}
                   bare
                   onPageChange={(page) => setFilters((prev) => ({ ...prev, page }))}
+                  onPageSizeChange={(pageSize) => setFilters((prev) => ({ ...prev, pageSize, page: 1 }))}
+                  isUpdating={reportsQuery.isPlaceholderData}
                 />
               )}
             </AsyncStateView>

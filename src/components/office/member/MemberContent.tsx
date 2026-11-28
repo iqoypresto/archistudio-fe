@@ -5,6 +5,7 @@ import { UserPlus } from "lucide-react";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { PageInfoDialog } from "@/components/ui/PageInfoDialog";
 import { UnderlineTabsBar } from "@/components/ui/UnderlineTabsNav";
 import {
   useCreateUserMutation,
@@ -43,7 +44,7 @@ export function MemberContent() {
   const [userToResetPassword, setUserToResetPassword] = useState<UserListItem | null>(null);
   const [userToToggleStatus, setUserToToggleStatus] = useState<UserListItem | null>(null);
 
-  const usersQuery = useUsersQuery(filters);
+  const usersQuery = useUsersQuery(filters, { keepPreviousData: true });
   const summary = usersQuery.data?.summary;
   const activeCount = summary?.active ?? usersQuery.data?.data.filter((u) => u.isActive).length ?? 0;
   const inactiveCount =
@@ -71,7 +72,12 @@ export function MemberContent() {
     <div className="space-y-5">
       <PageHeader
         title="Anggota Tim"
-        description="Kelola akun internal, peran pengguna, pengaturan kata sandi, dan status aktif operasional."
+        titleSuffix={
+          <PageInfoDialog
+            title="Tentang Anggota Tim"
+            description="Kelola akun internal, peran pengguna, pengaturan kata sandi, dan status aktif operasional."
+          />
+        }
         action={
           <Button
             type="button"
@@ -137,6 +143,8 @@ export function MemberContent() {
               users={result.data}
               meta={result.meta}
               onPageChange={(page) => handleFilterChange({ page })}
+              onPageSizeChange={(pageSize) => handleFilterChange({ pageSize, page: 1 })}
+              isUpdating={usersQuery.isPlaceholderData}
               onEdit={(user) => {
                 setUserToEdit(user);
                 setIsFormModalOpen(true);

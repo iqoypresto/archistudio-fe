@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
+import { ProjectFilePreviewDialog } from "@/components/field/project/ProjectFilePreviewDialog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,7 @@ import type {
   CommsAttachmentPayload, CommsDirection, CommsEntryItem, CreateCommsPayload, UpdateCommsPayload,
 } from "@/types/api/comms.types";
 import type { ApiSurface } from "@/lib/api/api-surface";
+import type { ProjectFilePreviewItem } from "@/types/project-file.types";
 import { CommsAttachmentField } from "./CommsAttachmentField";
 
 const DIRECTION_OPTIONS: readonly { value: CommsDirection; label: string }[] = [
@@ -47,6 +49,7 @@ export function CommsFormModal({
 }: CommsFormModalProps) {
   const isEditing = Boolean(entryToEdit);
   const [attachment, setAttachment] = useState<CommsAttachmentPayload | null>(() => toInitialAttachment(entryToEdit));
+  const [previewFile, setPreviewFile] = useState<ProjectFilePreviewItem | null>(null);
   const { uploadFile, isUploading, errorMessage, clearError } = useCommsAttachmentUpload(projectId, surface);
 
   const { register, control, handleSubmit, formState: { errors } } = useForm<CommsFormValues>({
@@ -77,7 +80,8 @@ export function CommsFormModal({
   const dirDesc = fixedDirection === "INBOUND" ? "masuk" : fixedDirection === "OUTBOUND" ? "keluar" : "masuk atau keluar";
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <>
+      <Dialog open={isOpen && !previewFile} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{isEditing ? `Ubah Catatan ${pageTitle}` : `Tambah Catatan ${pageTitle}`}</DialogTitle>
@@ -135,6 +139,7 @@ export function CommsFormModal({
             errorMessage={errorMessage}
             onSelectFile={handleSelectFile}
             onRemoveAttachment={() => { setAttachment(null); clearError(); }}
+            onPreviewFile={setPreviewFile}
           />
 
           <DialogFooter className="gap-2 pt-2">
@@ -148,5 +153,8 @@ export function CommsFormModal({
         </form>
       </DialogContent>
     </Dialog>
+
+      <ProjectFilePreviewDialog file={previewFile} onClose={() => setPreviewFile(null)} />
+    </>
   );
 }

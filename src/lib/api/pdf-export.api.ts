@@ -34,11 +34,16 @@ export interface DailyRangePdfParams {
   toDate: string;
 }
 
+export interface GeneratedPdfFile {
+  blob: Blob;
+  fileName: string;
+}
+
 function extractFilename(contentDisposition?: string, fallback = "laporan.pdf"): string {
   return contentDisposition?.match(/filename="?([^";]+)"?/)?.[1] ?? fallback;
 }
 
-function savePdf(blob: Blob, filename: string): void {
+export function savePdfBlob(blob: Blob, filename: string): void {
   const url = window.URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
@@ -49,11 +54,22 @@ function savePdf(blob: Blob, filename: string): void {
   window.URL.revokeObjectURL(url);
 }
 
-async function requestPdf(path: string, params: Record<string, string>, fallback: string): Promise<void> {
+async function requestPdfFile(
+  path: string,
+  params: Record<string, string>,
+  fallback: string,
+): Promise<GeneratedPdfFile> {
   const response = await api.get(path, { params, responseType: "blob", validateStatus: () => true });
   if (response.status >= 400) await throwPdfError(response.data as Blob, response.status);
-  savePdf(new Blob([response.data as BlobPart], { type: "application/pdf" }),
-    extractFilename(response.headers["content-disposition"] as string | undefined, fallback));
+  return {
+    blob: new Blob([response.data as BlobPart], { type: "application/pdf" }),
+    fileName: extractFilename(response.headers["content-disposition"] as string | undefined, fallback),
+  };
+}
+
+async function requestPdf(path: string, params: Record<string, string>, fallback: string): Promise<void> {
+  const generated = await requestPdfFile(path, params, fallback);
+  savePdfBlob(generated.blob, generated.fileName);
 }
 
 async function throwPdfError(blob: Blob, status: number): Promise<never> {
@@ -67,9 +83,17 @@ async function throwPdfError(blob: Blob, status: number): Promise<never> {
 }
 
 export const pdfExportApi = {
+  async fetchDailyReportPdf(params: ExportPdfParams): Promise<GeneratedPdfFile> {
+    return requestPdfFile("/office/exports/daily-report-pdf", { projectId: params.projectId, date: params.date },
+      `LH-${params.projectCode ?? "PROJ"}-${params.date.replace(/-/g, "")}.pdf`);
+  },
   async downloadDailyReportPdf(params: ExportPdfParams): Promise<void> {
     await requestPdf("/office/exports/daily-report-pdf", { projectId: params.projectId, date: params.date },
       `LH-${params.projectCode ?? "PROJ"}-${params.date.replace(/-/g, "")}.pdf`);
+  },
+  async fetchMonthlyReportPdf(params: MonthlyPdfParams): Promise<GeneratedPdfFile> {
+    return requestPdfFile("/office/exports/monthly-report-pdf", { projectId: params.projectId, month: params.month },
+      `laporan-bulanan-${params.month}.pdf`);
   },
   async downloadMonthlyReportPdf(params: MonthlyPdfParams): Promise<void> {
     await requestPdf("/office/exports/monthly-report-pdf", { projectId: params.projectId, month: params.month },
@@ -81,6 +105,11 @@ export const pdfExportApi = {
       { params: { projectId: params.projectId, month: params.month } },
     );
     return response.data.data;
+  },
+  async fetchDailyReportRangePdf(params: DailyRangePdfParams): Promise<GeneratedPdfFile> {
+    return requestPdfFile("/office/exports/daily-report-range-pdf", {
+      projectId: params.projectId, fromDate: params.fromDate, toDate: params.toDate,
+    }, `laporan-harian-${params.fromDate}-${params.toDate}.pdf`);
   },
   async downloadDailyReportRangePdf(params: DailyRangePdfParams): Promise<void> {
     await requestPdf("/office/exports/daily-report-range-pdf", {

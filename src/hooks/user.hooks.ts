@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { userApi } from "@/lib/api/user.api";
 import type {
@@ -13,12 +13,13 @@ export const USERS_QUERY_KEY = ["users"] as const;
 
 export function useUsersQuery(
   params: UserFilterParams,
-  options?: { enabled?: boolean },
+  options?: { enabled?: boolean; keepPreviousData?: boolean },
 ) {
   return useQuery({
     queryKey: [...USERS_QUERY_KEY, params],
     queryFn: () => userApi.getUsers(params),
     enabled: options?.enabled ?? true,
+    placeholderData: options?.keepPreviousData ? keepPreviousData : undefined,
   });
 }
 

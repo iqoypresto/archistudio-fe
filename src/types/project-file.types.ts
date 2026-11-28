@@ -5,5 +5,6 @@ export interface ProjectFilePreviewItem {
   sizeBytes: number;
   uploadedAt: string | null;
   contentPath: string;
+  blob?: Blob;
   secondaryLabel?: string;
 }

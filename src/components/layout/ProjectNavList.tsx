@@ -23,12 +23,14 @@ export function ProjectNavList({
   largeTouchTarget = false,
   layoutGroupId = "workspace-sidebar",
   resetKey,
+  navLabel = "Navigasi utama",
 }: {
   groups: WorkspaceNavGroup[];
   onNavigate?: () => void;
   largeTouchTarget?: boolean;
   layoutGroupId?: string;
   resetKey?: string;
+  navLabel?: string;
 }) {
   const pathname = usePathname();
   const reduceMotion = useReducedMotion();
@@ -39,7 +41,7 @@ export function ProjectNavList({
   return (
     <MotionConfig reducedMotion="user">
       <LayoutGroup id={layoutGroupId}>
-        <nav className="space-y-2" aria-label="Navigasi utama">
+        <nav className="space-y-2" aria-label={navLabel}>
           {groups.map((group, groupIndex) => {
             const groupKey = `${resetKey ?? "global"}:${group.label}:${groupIndex}`;
             const activeItem = group.items.find((item) => isItemActive(pathname, item.href, item.exact));
