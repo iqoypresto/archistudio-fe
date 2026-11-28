@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { MY_AREAS_STATUS_QUERY_KEY, MY_REPORT_WORK_ITEMS_QUERY_KEY } from "@/hooks/report-lock.hooks";
 import { reportApi } from "@/lib/api/report.api";
@@ -20,11 +20,16 @@ export async function refreshSupervisorReportQueries(queryClient: QueryClient): 
   ]);
 }
 
-export function useArchivedReportsQuery(query: ListArchivedReportsQuery, enabled = true) {
+export function useArchivedReportsQuery(
+  query: ListArchivedReportsQuery,
+  enabled = true,
+  options?: { keepPreviousData?: boolean },
+) {
   return useQuery({
     queryKey: [...REPORTS_QUERY_KEY, "office", "archive", query],
     enabled,
     queryFn: () => reportApi.listArchive(query),
+    placeholderData: options?.keepPreviousData ? keepPreviousData : undefined,
   });
 }
 
@@ -44,11 +49,16 @@ export function useMyReportHistoryQuery(query: ListReportsQuery, enabled = true)
   });
 }
 
-export function useOfficeReportsQuery(query: ListReportsQuery, enabled = true) {
+export function useOfficeReportsQuery(
+  query: ListReportsQuery,
+  enabled = true,
+  options?: { keepPreviousData?: boolean },
+) {
   return useQuery({
     queryKey: [...REPORTS_QUERY_KEY, "office", "list", query],
     enabled,
     queryFn: () => reportApi.listReports(query, "office"),
+    placeholderData: options?.keepPreviousData ? keepPreviousData : undefined,
   });
 }
 

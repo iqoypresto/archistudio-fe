@@ -26,7 +26,7 @@ export function OfficeReportListContent({ view = "reports" }: { view?: "reports"
   const canArchive = role === "OWNER" || role === "ADMIN";
   const showArchive = canArchive && view === "archive";
   const [filters, setFilters] = useState<ListReportsQuery>(INITIAL_FILTERS);
-  const reportsQuery = useOfficeReportsQuery(filters, !showArchive);
+  const reportsQuery = useOfficeReportsQuery(filters, !showArchive, { keepPreviousData: true });
   const activeCountQuery = useOfficeReportsQuery(
     { page: 1, pageSize: 1, archiveState: "active" },
     canArchive && showArchive,
@@ -110,6 +110,8 @@ export function OfficeReportListContent({ view = "reports" }: { view?: "reports"
                   meta={res.meta}
                   bare
                   onPageChange={(page) => setFilters((prev) => ({ ...prev, page }))}
+                  onPageSizeChange={(pageSize) => setFilters((prev) => ({ ...prev, pageSize, page: 1 }))}
+                  isUpdating={reportsQuery.isPlaceholderData}
                 />
               )}
             </AsyncStateView>

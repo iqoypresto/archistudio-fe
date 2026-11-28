@@ -113,7 +113,11 @@ export function PeriodDailyPreviewPanel({
   toDate: string;
   validRange: boolean;
 }) {
-  const [page, setPage] = useState(1);
+  const rangeKey = `${projectId}:${fromDate}:${toDate}`;
+  const [pagination, setPagination] = useState({ rangeKey, page: 1, pageSize: 10 });
+  const page = pagination.rangeKey === rangeKey ? pagination.page : 1;
+  const pageSize = pagination.pageSize;
+
   const reportsQuery = useOfficeReportsQuery(
     {
       projectId,
@@ -121,11 +125,12 @@ export function PeriodDailyPreviewPanel({
       dateTo: toDate,
       archiveState: "all",
       page,
-      pageSize: 10,
+      pageSize,
       sortBy: "reportDate",
       sortOrder: "desc",
     },
     Boolean(projectId && fromDate && toDate && validRange),
+    { keepPreviousData: true },
   );
 
   return (
@@ -154,7 +159,9 @@ export function PeriodDailyPreviewPanel({
             data={res.data}
             meta={res.meta}
             bare
-            onPageChange={setPage}
+            onPageChange={(nextPage) => setPagination((prev) => ({ ...prev, rangeKey, page: nextPage }))}
+            onPageSizeChange={(nextSize) => setPagination({ rangeKey, page: 1, pageSize: nextSize })}
+            isUpdating={reportsQuery.isPlaceholderData}
           />
         )}
       </AsyncStateView>

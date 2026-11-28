@@ -44,7 +44,7 @@ export function MemberContent() {
   const [userToResetPassword, setUserToResetPassword] = useState<UserListItem | null>(null);
   const [userToToggleStatus, setUserToToggleStatus] = useState<UserListItem | null>(null);
 
-  const usersQuery = useUsersQuery(filters);
+  const usersQuery = useUsersQuery(filters, { keepPreviousData: true });
   const summary = usersQuery.data?.summary;
   const activeCount = summary?.active ?? usersQuery.data?.data.filter((u) => u.isActive).length ?? 0;
   const inactiveCount =
@@ -143,6 +143,8 @@ export function MemberContent() {
               users={result.data}
               meta={result.meta}
               onPageChange={(page) => handleFilterChange({ page })}
+              onPageSizeChange={(pageSize) => handleFilterChange({ pageSize, page: 1 })}
+              isUpdating={usersQuery.isPlaceholderData}
               onEdit={(user) => {
                 setUserToEdit(user);
                 setIsFormModalOpen(true);

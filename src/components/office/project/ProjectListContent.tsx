@@ -50,7 +50,7 @@ export function ProjectListContent() {
   const [projectToEdit, setProjectToEdit] = useState<ProjectListItem | null>(null);
   const [projectToArchive, setProjectToArchive] = useState<ProjectListItem | null>(null);
 
-  const projectsQuery = useProjectsQuery(filters);
+  const projectsQuery = useProjectsQuery(filters, { keepPreviousData: true });
   const createMutation = useCreateProjectMutation((createdProject) => {
     setIsFormModalOpen(false);
     router.push(getOfficeProjectDetailHref(createdProject.id));
@@ -152,6 +152,8 @@ export function ProjectListContent() {
               canManage={canManage}
               canArchive={canArchive}
               onPageChange={(page) => handleFilterChange({ page })}
+              onPageSizeChange={(pageSize) => handleFilterChange({ pageSize, page: 1 })}
+              isUpdating={projectsQuery.isPlaceholderData}
               onEdit={(project) => {
                 setProjectToEdit(project);
                 setIsFormModalOpen(true);

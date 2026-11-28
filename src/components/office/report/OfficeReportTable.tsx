@@ -98,12 +98,16 @@ export function OfficeReportTable({
   bare = false,
   showArchivedAt = false,
   onPageChange,
+  onPageSizeChange,
+  isUpdating = false,
 }: {
   data: DailyReportListItem[];
   meta: PaginationMeta;
   bare?: boolean;
   showArchivedAt?: boolean;
   onPageChange: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
+  isUpdating?: boolean;
 }) {
   return (
     <ServerDataTable
@@ -113,7 +117,8 @@ export function OfficeReportTable({
       meta={meta}
       bare={bare}
       onPageChange={onPageChange}
-      className={bare ? "space-y-0 [&>div:last-child]:border-t [&>div:last-child]:border-border [&>div:last-child]:px-4 [&>div:last-child]:py-3" : undefined}
+      onPageSizeChange={onPageSizeChange}
+      isUpdating={isUpdating}
     />
   );
 }

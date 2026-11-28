@@ -12,6 +12,8 @@ interface MemberTableProps {
   users: UserListItem[];
   meta?: PaginationMeta;
   onPageChange: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
+  isUpdating?: boolean;
   onEdit: (user: UserListItem) => void;
   onResetPassword: (user: UserListItem) => void;
   onToggleStatus: (user: UserListItem) => void;
@@ -21,6 +23,8 @@ export function MemberTable({
   users,
   meta,
   onPageChange,
+  onPageSizeChange,
+  isUpdating = false,
   onEdit,
   onResetPassword,
   onToggleStatus,
@@ -136,7 +140,8 @@ export function MemberTable({
       meta={meta}
       bare
       onPageChange={onPageChange}
-      className="space-y-0 [&>div:last-child]:border-t [&>div:last-child]:border-border [&>div:last-child]:px-4 [&>div:last-child]:py-3"
+      onPageSizeChange={onPageSizeChange}
+      isUpdating={isUpdating}
     />
   );
 }

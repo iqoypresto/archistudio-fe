@@ -13,6 +13,8 @@ interface ProjectTableProps {
   projects: ProjectListItem[];
   meta?: PaginationMeta;
   onPageChange: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
+  isUpdating?: boolean;
   onEdit: (project: ProjectListItem) => void;
   onArchive: (project: ProjectListItem) => void;
   canManage: boolean;
@@ -31,6 +33,8 @@ export function ProjectTable({
   projects,
   meta,
   onPageChange,
+  onPageSizeChange,
+  isUpdating = false,
   onEdit,
   onArchive,
   canManage,
@@ -139,7 +143,8 @@ export function ProjectTable({
       meta={meta}
       bare
       onPageChange={onPageChange}
-      className="space-y-0 [&>div:last-child]:border-t [&>div:last-child]:border-border [&>div:last-child]:px-4 [&>div:last-child]:py-3"
+      onPageSizeChange={onPageSizeChange}
+      isUpdating={isUpdating}
     />
   );
 }
