@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, type ChangeEvent } from "react";
-import { FileText, Loader2, Trash2, Upload } from "lucide-react";
-import { ProjectFilePreviewDialog } from "@/components/field/project/ProjectFilePreviewDialog";
+import type { ChangeEvent } from "react";
+import { Eye, FileText, Loader2, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,6 +17,7 @@ interface CommsAttachmentFieldProps {
   errorMessage: string | null;
   onSelectFile: (file: File) => void;
   onRemoveAttachment: () => void;
+  onPreviewFile: (item: ProjectFilePreviewItem) => void;
 }
 
 export function CommsAttachmentField({
@@ -27,9 +27,8 @@ export function CommsAttachmentField({
   errorMessage,
   onSelectFile,
   onRemoveAttachment,
+  onPreviewFile,
 }: CommsAttachmentFieldProps) {
-  const [previewFile, setPreviewFile] = useState<ProjectFilePreviewItem | null>(null);
-
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
@@ -47,7 +46,7 @@ export function CommsAttachmentField({
         uploadedAt: null,
         contentPath: existingContentPath,
       },
-      setPreviewFile,
+      onPreviewFile,
     );
   };
 
@@ -65,19 +64,17 @@ export function CommsAttachmentField({
               <p className="truncate font-medium text-text-primary">{attachment.fileName}</p>
               <p className="text-text-secondary">
                 {Math.max(1, Math.round(attachment.sizeBytes / 1024))} KB
-                {existingContentPath && (
-                  <>
-                    {" · "}
-                    <button
-                      type="button"
-                      onClick={handleOpenExisting}
-                      className="text-text-primary underline"
-                    >
-                      Lihat lampiran
-                    </button>
-                  </>
-                )}
               </p>
+              {existingContentPath && (
+                <button
+                  type="button"
+                  onClick={handleOpenExisting}
+                  className="mt-1.5 inline-flex min-h-10 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-xs font-medium text-text-primary transition-colors hover:bg-surface-active md:mt-1 md:min-h-7 md:px-2"
+                >
+                  <Eye className="size-3.5" aria-hidden="true" />
+                  Lihat lampiran
+                </button>
+              )}
             </div>
           </div>
           <Button
@@ -121,7 +118,6 @@ export function CommsAttachmentField({
       )}
 
       {errorMessage && <p className="text-status-danger-fg text-xs">{errorMessage}</p>}
-      <ProjectFilePreviewDialog file={previewFile} onClose={() => setPreviewFile(null)} />
     </div>
   );
 }

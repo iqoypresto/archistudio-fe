@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, type ChangeEvent } from "react";
-import { ImageIcon, Loader2, Trash2, Upload } from "lucide-react";
-import { ProjectFilePreviewDialog } from "@/components/field/project/ProjectFilePreviewDialog";
+import type { ChangeEvent } from "react";
+import { Eye, ImageIcon, Loader2, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +16,7 @@ interface PaymentProofFieldProps {
   errorMessage: string | null;
   onSelectFile: (file: File) => void;
   onRemoveProof: () => void;
+  onPreviewFile: (item: ProjectFilePreviewItem) => void;
 }
 
 export function PaymentProofField({
@@ -26,9 +26,8 @@ export function PaymentProofField({
   errorMessage,
   onSelectFile,
   onRemoveProof,
+  onPreviewFile,
 }: PaymentProofFieldProps) {
-  const [previewFile, setPreviewFile] = useState<ProjectFilePreviewItem | null>(null);
-
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
@@ -46,7 +45,7 @@ export function PaymentProofField({
         uploadedAt: null,
         contentPath: existingContentPath,
       },
-      setPreviewFile,
+      onPreviewFile,
     );
   };
 
@@ -62,19 +61,17 @@ export function PaymentProofField({
               <p className="truncate font-medium text-text-primary">{proof.fileName}</p>
               <p className="text-text-secondary">
                 {Math.max(1, Math.round(proof.sizeBytes / 1024))} KB
-                {existingContentPath && (
-                  <>
-                    {" · "}
-                    <button
-                      type="button"
-                      onClick={handleOpenExisting}
-                      className="text-text-primary underline"
-                    >
-                      Lihat bukti
-                    </button>
-                  </>
-                )}
               </p>
+              {existingContentPath && (
+                <button
+                  type="button"
+                  onClick={handleOpenExisting}
+                  className="mt-1.5 inline-flex min-h-10 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-xs font-medium text-text-primary transition-colors hover:bg-surface-active md:mt-1 md:min-h-7 md:px-2"
+                >
+                  <Eye className="size-3.5" aria-hidden="true" />
+                  Lihat bukti
+                </button>
+              )}
             </div>
           </div>
           <Button
@@ -118,7 +115,6 @@ export function PaymentProofField({
       )}
 
       {errorMessage && <p className="text-status-danger-fg text-xs">{errorMessage}</p>}
-      <ProjectFilePreviewDialog file={previewFile} onClose={() => setPreviewFile(null)} />
     </div>
   );
 }

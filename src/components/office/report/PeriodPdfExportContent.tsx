@@ -9,8 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { PageInfoDialog } from "@/components/ui/PageInfoDialog";
+import { useFetchDailyReportRangePdfMutation, useFetchMonthlyReportPdfMutation } from "@/hooks/dashboard.hooks";
 import { useProjectDetailQuery } from "@/hooks/project.hooks";
-import { pdfExportApi } from "@/lib/api/pdf-export.api";
+import type { GeneratedPdfFile } from "@/lib/api/pdf-export.api";
 import type { ProjectFilePreviewItem } from "@/types/project-file.types";
 import { MonthYearSelect } from "./MonthYearSelect";
 import { PeriodPdfSummaryCard } from "./PeriodPdfSummaryCard";
@@ -49,50 +50,42 @@ export function PeriodPdfExportContent({ projectId, mode }: { projectId: string;
   const [month, setMonth] = useState(() => getMonthPreset(0));
   const [fromDate, setFromDate] = useState(() => shiftDate(getTodayInTimeZone(), -6));
   const [toDate, setToDate] = useState(() => getTodayInTimeZone());
-  const [isPending, setIsPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [previewFile, setPreviewFile] = useState<ProjectFilePreviewItem | null>(null);
+  const monthlyMutation = useFetchMonthlyReportPdfMutation();
+  const dailyRangeMutation = useFetchDailyReportRangePdfMutation();
 
   const rangeDays = fromDate && toDate ? inclusiveDays(fromDate, toDate) : 0;
   const validRange = rangeDays > 0 && rangeDays <= 7;
   const isMonthly = mode === "monthly";
+  const activeMutation = isMonthly ? monthlyMutation : dailyRangeMutation;
+  const isPending = activeMutation.isPending;
+  const error = activeMutation.error instanceof Error
+    ? activeMutation.error.message
+    : activeMutation.isError ? "Gagal membuat PDF. Silakan coba lagi." : null;
 
   const applyDailyPreset = (preset: "last7" | "thisWeek" | "lastWeek") => {
     const today = getTodayInTimeZone(projectTimeZone);
     const dayOfWeek = new Date(`${today}T00:00:00Z`).getUTCDay();
     const daysSinceMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-    if (preset === "last7") {
-      setFromDate(shiftDate(today, -6));
-      setToDate(today);
-    } else if (preset === "thisWeek") {
-      setFromDate(shiftDate(today, -daysSinceMonday));
-      setToDate(today);
-    } else {
-      const lastMonday = shiftDate(today, -daysSinceMonday - 7);
-      setFromDate(lastMonday);
-      setToDate(shiftDate(lastMonday, 6));
-    }
-    setError(null);
+    const lastMonday = shiftDate(today, -daysSinceMonday - 7);
+    if (preset === "last7") { setFromDate(shiftDate(today, -6)); setToDate(today); }
+    else if (preset === "thisWeek") { setFromDate(shiftDate(today, -daysSinceMonday)); setToDate(today); }
+    else { setFromDate(lastMonday); setToDate(shiftDate(lastMonday, 6)); }
+    dailyRangeMutation.reset();
   };
 
-  async function openPreview(event: FormEvent<HTMLFormElement>) {
+  const handleGeneratedPdf = (generated: GeneratedPdfFile) => {
+    setPreviewFile({
+      id: `${mode}:${projectId}:${Date.now()}`, fileName: generated.fileName,
+      mimeType: "application/pdf", sizeBytes: generated.blob.size,
+      uploadedAt: null, contentPath: "", blob: generated.blob,
+    });
+  };
+
+  function openPreview(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError(null);
-    setIsPending(true);
-    try {
-      const generated = isMonthly
-        ? await pdfExportApi.fetchMonthlyReportPdf({ projectId, month })
-        : await pdfExportApi.fetchDailyReportRangePdf({ projectId, fromDate, toDate });
-      setPreviewFile({
-        id: `${mode}:${projectId}:${Date.now()}`, fileName: generated.fileName,
-        mimeType: "application/pdf", sizeBytes: generated.blob.size,
-        uploadedAt: null, contentPath: "", blob: generated.blob,
-      });
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Gagal membuat PDF. Silakan coba lagi.");
-    } finally {
-      setIsPending(false);
-    }
+    if (isMonthly) monthlyMutation.mutate({ projectId, month }, { onSuccess: handleGeneratedPdf });
+    else dailyRangeMutation.mutate({ projectId, fromDate, toDate }, { onSuccess: handleGeneratedPdf });
   }
 
   return (

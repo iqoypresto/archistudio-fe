@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-import { ChevronLeft, ChevronRight, Download, ExternalLink, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight, Download, ExternalLink, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -28,6 +28,7 @@ export function DrawingPreviewModal({
   onChangeIndex,
 }: DrawingPreviewModalProps) {
   const drawing = activeIndex === null ? null : (drawings[activeIndex] ?? null);
+  const [pendingAction, setPendingAction] = useState<"open" | "download" | null>(null);
 
   useEffect(() => {
     if (activeIndex === null || drawings.length < 2) return;
@@ -44,6 +45,17 @@ export function DrawingPreviewModal({
   const move = (step: -1 | 1) => {
     if (activeIndex === null || drawings.length < 2) return;
     onChangeIndex((activeIndex + step + drawings.length) % drawings.length);
+  };
+
+  const handleFileAction = async (action: "open" | "download") => {
+    if (!drawing || pendingAction) return;
+    setPendingAction(action);
+    try {
+      if (action === "open") await fileApi.openContent(drawing.contentPath);
+      else await fileApi.downloadContent(drawing.contentPath, drawing.fileName);
+    } finally {
+      setPendingAction(null);
+    }
   };
 
   return (
@@ -122,19 +134,25 @@ export function DrawingPreviewModal({
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => void fileApi.openContent(drawing.contentPath)}
-                  className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-3 text-xs font-medium text-white transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                  disabled={pendingAction !== null}
+                  onClick={() => void handleFileAction("open")}
+                  className="inline-flex h-11 items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-3 text-xs font-medium text-white transition-colors hover:bg-white/20 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:h-10"
                 >
-                  <ExternalLink className="size-3.5" />
-                  Tab Baru
+                  {pendingAction === "open"
+                    ? <Loader2 className="size-3.5 animate-spin" />
+                    : <ExternalLink className="size-3.5" />}
+                  {pendingAction === "open" ? "Membuka..." : "Tab Baru"}
                 </button>
                 <button
                   type="button"
-                  onClick={() => void fileApi.downloadContent(drawing.contentPath, drawing.fileName)}
-                  className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-white/20 bg-white/20 px-3.5 text-xs font-medium text-white transition-colors hover:bg-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                  disabled={pendingAction !== null}
+                  onClick={() => void handleFileAction("download")}
+                  className="inline-flex h-11 items-center gap-1.5 rounded-lg border border-white/20 bg-white/20 px-3.5 text-xs font-medium text-white transition-colors hover:bg-white/30 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:h-10"
                 >
-                  <Download className="size-3.5" />
-                  Unduh
+                  {pendingAction === "download"
+                    ? <Loader2 className="size-3.5 animate-spin" />
+                    : <Download className="size-3.5" />}
+                  {pendingAction === "download" ? "Mengunduh..." : "Unduh"}
                 </button>
               </div>
             </div>

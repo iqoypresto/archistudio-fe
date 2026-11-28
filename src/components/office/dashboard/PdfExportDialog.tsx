@@ -102,9 +102,12 @@ export function PdfExportDialog({
               </Label>
               <Select
                 value={selectedProjectId}
-                onValueChange={(val: string | null) => setSelectedProjectId(val ?? "")}
+                onValueChange={(val: string | null) => {
+                  setSelectedProjectId(val ?? "");
+                  exportMutation.reset();
+                }}
               >
-                <SelectTrigger id="pdfProjectId" className="h-9 text-xs">
+                <SelectTrigger id="pdfProjectId" className="h-11 sm:h-9 sm:text-xs">
                   <SelectValue placeholder="Pilih proyek">{selectedProjectLabel}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
@@ -126,8 +129,11 @@ export function PdfExportDialog({
                 type="date"
                 required
                 value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="h-9 text-xs tabular-nums"
+                onChange={(e) => {
+                  setSelectedDate(e.target.value);
+                  exportMutation.reset();
+                }}
+                className="h-11 tabular-nums sm:h-9 sm:text-xs"
               />
             </div>
           </div>
@@ -148,14 +154,14 @@ export function PdfExportDialog({
           )}
 
             <DialogFooter className="gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={onClose} className="h-9">
+              <Button type="button" variant="outline" size="sm" onClick={onClose} className="h-11 sm:h-9">
                 Batal
               </Button>
               <Button
                 type="submit"
                 size="sm"
                 disabled={exportMutation.isPending || !selectedProjectId || !selectedDate}
-                className="h-9 gap-1.5"
+                className="h-11 gap-1.5 sm:h-9"
               >
                 <Eye className="size-3.5" />
                 {exportMutation.isPending ? "Menyiapkan PDF..." : "Pratinjau & Unduh PDF"}

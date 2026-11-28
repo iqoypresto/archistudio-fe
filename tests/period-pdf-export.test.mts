@@ -44,4 +44,28 @@ describe("TASK-18 Frontend PDF periodik", () => {
       api.defaults.adapter = previous;
     }
   });
+
+  it("[AC-21.1 / AC-21.2] fetchMonthlyReportPdf & fetchDailyReportRangePdf mengembalikan Blob dan fallback filename", async () => {
+    const previous = api.defaults.adapter;
+    api.defaults.adapter = async (config) => ({
+      config,
+      status: 200,
+      statusText: "OK",
+      headers: {},
+      data: new Blob(["%PDF-1.4"], { type: "application/pdf" }),
+    });
+    try {
+      const monthly = await pdfExportApi.fetchMonthlyReportPdf({ projectId, month: "2026-11" });
+      assert.equal(monthly.fileName, "laporan-bulanan-2026-11.pdf");
+      assert.equal(monthly.blob.type, "application/pdf");
+
+      const range = await pdfExportApi.fetchDailyReportRangePdf({
+        projectId, fromDate: "2026-11-01", toDate: "2026-11-05",
+      });
+      assert.equal(range.fileName, "laporan-harian-2026-11-01-2026-11-05.pdf");
+      assert.equal(range.blob.type, "application/pdf");
+    } finally {
+      api.defaults.adapter = previous;
+    }
+  });
 });
