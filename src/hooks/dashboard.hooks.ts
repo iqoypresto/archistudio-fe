@@ -54,6 +54,16 @@ export function useUnlockAreaMutation() {
   });
 }
 
+export function useFetchDailyReportPdfMutation() {
+  return useMutation({
+    mutationFn: (params: ExportPdfParams) => pdfExportApi.fetchDailyReportPdf(params),
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : "Gagal menyiapkan pratinjau PDF laporan.";
+      toast.error(message);
+    },
+  });
+}
+
 export function useExportDailyReportPdfMutation() {
   return useMutation({
     mutationFn: (params: ExportPdfParams) => pdfExportApi.downloadDailyReportPdf(params),

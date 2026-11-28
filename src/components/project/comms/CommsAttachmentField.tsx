@@ -1,13 +1,15 @@
 "use client";
 
-import type { ChangeEvent } from "react";
+import { useState, type ChangeEvent } from "react";
 import { FileText, Loader2, Trash2, Upload } from "lucide-react";
+import { ProjectFilePreviewDialog } from "@/components/field/project/ProjectFilePreviewDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { openProjectFile } from "@/lib/utils/project-file";
 import { COMMS_ATTACHMENT_ACCEPT } from "@/lib/validation/comms.validation";
 import type { CommsAttachmentPayload } from "@/types/api/comms.types";
-import { fileApi } from "@/lib/api/file.api";
+import type { ProjectFilePreviewItem } from "@/types/project-file.types";
 
 interface CommsAttachmentFieldProps {
   attachment: CommsAttachmentPayload | null;
@@ -26,10 +28,27 @@ export function CommsAttachmentField({
   onSelectFile,
   onRemoveAttachment,
 }: CommsAttachmentFieldProps) {
+  const [previewFile, setPreviewFile] = useState<ProjectFilePreviewItem | null>(null);
+
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (file) onSelectFile(file);
+  };
+
+  const handleOpenExisting = () => {
+    if (!attachment || !existingContentPath) return;
+    openProjectFile(
+      {
+        id: attachment.storedFileId,
+        fileName: attachment.fileName,
+        mimeType: attachment.mimeType,
+        sizeBytes: attachment.sizeBytes,
+        uploadedAt: null,
+        contentPath: existingContentPath,
+      },
+      setPreviewFile,
+    );
   };
 
   return (
@@ -51,10 +70,10 @@ export function CommsAttachmentField({
                     {" · "}
                     <button
                       type="button"
-                      onClick={() => void fileApi.openContent(existingContentPath)}
+                      onClick={handleOpenExisting}
                       className="text-text-primary underline"
                     >
-                      Buka lampiran
+                      Lihat lampiran
                     </button>
                   </>
                 )}
@@ -102,6 +121,7 @@ export function CommsAttachmentField({
       )}
 
       {errorMessage && <p className="text-status-danger-fg text-xs">{errorMessage}</p>}
+      <ProjectFilePreviewDialog file={previewFile} onClose={() => setPreviewFile(null)} />
     </div>
   );
 }

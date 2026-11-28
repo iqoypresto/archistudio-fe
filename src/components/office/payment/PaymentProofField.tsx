@@ -1,12 +1,14 @@
 "use client";
 
-import type { ChangeEvent } from "react";
+import { useState, type ChangeEvent } from "react";
 import { ImageIcon, Loader2, Trash2, Upload } from "lucide-react";
+import { ProjectFilePreviewDialog } from "@/components/field/project/ProjectFilePreviewDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { openProjectFile } from "@/lib/utils/project-file";
 import type { PaymentProofPayload } from "@/types/api/payment.types";
-import { fileApi } from "@/lib/api/file.api";
+import type { ProjectFilePreviewItem } from "@/types/project-file.types";
 
 interface PaymentProofFieldProps {
   proof: PaymentProofPayload | null;
@@ -25,10 +27,27 @@ export function PaymentProofField({
   onSelectFile,
   onRemoveProof,
 }: PaymentProofFieldProps) {
+  const [previewFile, setPreviewFile] = useState<ProjectFilePreviewItem | null>(null);
+
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (file) onSelectFile(file);
+  };
+
+  const handleOpenExisting = () => {
+    if (!proof || !existingContentPath) return;
+    openProjectFile(
+      {
+        id: proof.storedFileId,
+        fileName: proof.fileName,
+        mimeType: proof.mimeType,
+        sizeBytes: proof.sizeBytes,
+        uploadedAt: null,
+        contentPath: existingContentPath,
+      },
+      setPreviewFile,
+    );
   };
 
   return (
@@ -48,7 +67,7 @@ export function PaymentProofField({
                     {" · "}
                     <button
                       type="button"
-                      onClick={() => void fileApi.openContent(existingContentPath)}
+                      onClick={handleOpenExisting}
                       className="text-text-primary underline"
                     >
                       Lihat bukti
@@ -99,6 +118,7 @@ export function PaymentProofField({
       )}
 
       {errorMessage && <p className="text-status-danger-fg text-xs">{errorMessage}</p>}
+      <ProjectFilePreviewDialog file={previewFile} onClose={() => setPreviewFile(null)} />
     </div>
   );
 }

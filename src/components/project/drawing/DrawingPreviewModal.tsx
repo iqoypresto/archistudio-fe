@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { ChevronLeft, ChevronRight, ExternalLink, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, ExternalLink, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -119,14 +119,24 @@ export function DrawingPreviewModal({
               <span className="text-xs font-medium text-white/80 tabular-nums" aria-live="polite">
                 {activeIndex + 1} / {drawings.length}
               </span>
-              <button
-                type="button"
-                onClick={() => void fileApi.openContent(drawing.contentPath)}
-                className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-3.5 text-xs font-medium text-white transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-              >
-                <ExternalLink className="size-3.5" />
-                Buka Gambar di Tab Baru
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => void fileApi.openContent(drawing.contentPath)}
+                  className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-3 text-xs font-medium text-white transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                >
+                  <ExternalLink className="size-3.5" />
+                  Tab Baru
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void fileApi.downloadContent(drawing.contentPath, drawing.fileName)}
+                  className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-white/20 bg-white/20 px-3.5 text-xs font-medium text-white transition-colors hover:bg-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                >
+                  <Download className="size-3.5" />
+                  Unduh
+                </button>
+              </div>
             </div>
           </div>
         )}

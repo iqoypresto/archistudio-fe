@@ -20,7 +20,7 @@ export function PdfDocumentCanvas({ file, pageNumber, zoom, fitRevision, onPageI
   const [error, setError] = useState<string | null>(null);
   const [sizeVersion, setSizeVersion] = useState(0);
 
-  useEffect(() => loadPdf(file.contentPath, onPageInfo, setDocument, setError, setIsLoading), [file.contentPath, onPageInfo]);
+  useEffect(() => loadPdf(file.contentPath, file.blob, onPageInfo, setDocument, setError, setIsLoading), [file.contentPath, file.blob, onPageInfo]);
   useEffect(() => observeSize(containerRef.current, () => setSizeVersion((value) => value + 1)), []);
   useEffect(() => renderPdfPage(document, pageNumber, zoom, containerRef.current, canvasRef.current, setError),
     [document, pageNumber, zoom, fitRevision, sizeVersion]);
@@ -41,7 +41,7 @@ function observeSize(element: HTMLDivElement | null, update: () => void): () => 
   return () => observer.disconnect();
 }
 
-function loadPdf(path: string, onPageInfo: (page: number, count: number) => void,
+function loadPdf(path: string, preloadedBlob: Blob | undefined, onPageInfo: (page: number, count: number) => void,
   setDocument: (value: PDFDocumentProxy | null) => void, setError: (value: string | null) => void,
   setLoading: (value: boolean) => void): () => void {
   let active = true;
@@ -52,7 +52,7 @@ function loadPdf(path: string, onPageInfo: (page: number, count: number) => void
       const workerUrl = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
       pdfjs.GlobalWorkerOptions.workerSrc ||= workerUrl;
       pdfjs.GlobalWorkerOptions.rendererSrc ||= workerUrl;
-      const blob = await fileApi.getContent(path);
+      const blob = preloadedBlob ?? await fileApi.getContent(path);
       task = pdfjs.getDocument({ data: new Uint8Array(await blob.arrayBuffer()) });
       const loaded = await task.promise;
       if (!active) return;

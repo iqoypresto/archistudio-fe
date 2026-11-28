@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { Check, Download } from "lucide-react";
+import { Eye } from "lucide-react";
+import { ProjectFilePreviewDialog } from "@/components/field/project/ProjectFilePreviewDialog";
 import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { PageInfoDialog } from "@/components/ui/PageInfoDialog";
 import { useProjectDetailQuery } from "@/hooks/project.hooks";
 import { pdfExportApi } from "@/lib/api/pdf-export.api";
+import type { ProjectFilePreviewItem } from "@/types/project-file.types";
 import { MonthYearSelect } from "./MonthYearSelect";
 import { PeriodPdfSummaryCard } from "./PeriodPdfSummaryCard";
 import { PeriodDailyPreviewPanel, PeriodMonthlyPreviewPanel } from "./PeriodReportPreviewPanel";
@@ -49,7 +51,7 @@ export function PeriodPdfExportContent({ projectId, mode }: { projectId: string;
   const [toDate, setToDate] = useState(() => getTodayInTimeZone());
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [completed, setCompleted] = useState(false);
+  const [previewFile, setPreviewFile] = useState<ProjectFilePreviewItem | null>(null);
 
   const rangeDays = fromDate && toDate ? inclusiveDays(fromDate, toDate) : 0;
   const validRange = rangeDays > 0 && rangeDays <= 7;
@@ -70,19 +72,22 @@ export function PeriodPdfExportContent({ projectId, mode }: { projectId: string;
       setFromDate(lastMonday);
       setToDate(shiftDate(lastMonday, 6));
     }
-    setCompleted(false);
     setError(null);
   };
 
-  async function download(event: FormEvent<HTMLFormElement>) {
+  async function openPreview(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
-    setCompleted(false);
     setIsPending(true);
     try {
-      if (isMonthly) await pdfExportApi.downloadMonthlyReportPdf({ projectId, month });
-      else await pdfExportApi.downloadDailyReportRangePdf({ projectId, fromDate, toDate });
-      setCompleted(true);
+      const generated = isMonthly
+        ? await pdfExportApi.fetchMonthlyReportPdf({ projectId, month })
+        : await pdfExportApi.fetchDailyReportRangePdf({ projectId, fromDate, toDate });
+      setPreviewFile({
+        id: `${mode}:${projectId}:${Date.now()}`, fileName: generated.fileName,
+        mimeType: "application/pdf", sizeBytes: generated.blob.size,
+        uploadedAt: null, contentPath: "", blob: generated.blob,
+      });
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Gagal membuat PDF. Silakan coba lagi.");
     } finally {
@@ -108,7 +113,7 @@ export function PeriodPdfExportContent({ projectId, mode }: { projectId: string;
       />
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start">
-        <form id="period-pdf-form" onSubmit={download} className="space-y-4 rounded-xl border border-border bg-surface p-4 sm:p-5">
+        <form id="period-pdf-form" onSubmit={openPreview} className="space-y-4 rounded-xl border border-border bg-surface p-4 sm:p-5">
           <div className="space-y-2">
             <p className="text-xs font-medium text-text-secondary">Pilih Cepat Periode</p>
             <div className="flex flex-wrap gap-2">
@@ -158,14 +163,9 @@ export function PeriodPdfExportContent({ projectId, mode }: { projectId: string;
 
           <div className="flex flex-wrap items-center gap-3 pt-1">
             <Button type="submit" disabled={isPending || (isMonthly ? !month : !validRange)} className="h-11 w-full gap-1.5 text-xs sm:h-9 sm:w-auto">
-              <Download className="size-3.5" />
-              {isPending ? "Menyiapkan PDF..." : isMonthly ? "Unduh PDF Bulanan" : "Unduh PDF Rentang"}
+              <Eye className="size-3.5" />
+              {isPending ? "Menyiapkan Pratinjau PDF..." : isMonthly ? "Pratinjau & Unduh PDF Bulanan" : "Pratinjau & Unduh PDF Rentang"}
             </Button>
-            {completed && (
-              <span role="status" className="inline-flex items-center gap-1.5 text-xs text-status-success-fg">
-                <Check className="size-3.5" /> PDF berhasil diunduh.
-              </span>
-            )}
           </div>
         </form>
 
@@ -191,6 +191,7 @@ export function PeriodPdfExportContent({ projectId, mode }: { projectId: string;
           validRange={validRange}
         />
       )}
+      <ProjectFilePreviewDialog file={previewFile} onClose={() => setPreviewFile(null)} />
     </div>
   );
 }

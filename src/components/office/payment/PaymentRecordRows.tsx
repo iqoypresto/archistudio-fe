@@ -1,13 +1,16 @@
 "use client";
 
-import { ExternalLink } from "lucide-react";
+import { useState } from "react";
+import { Eye } from "lucide-react";
+import { ProjectFilePreviewDialog } from "@/components/field/project/ProjectFilePreviewDialog";
 import { Button } from "@/components/ui/button";
 import { StatusIndicator } from "@/components/ui/StatusIndicator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { fileApi } from "@/lib/api/file.api";
 import { formatIdDate, getTodayInJakarta } from "@/lib/utils/office-format";
+import { openProjectFile } from "@/lib/utils/project-file";
 import { formatCurrencyIdr } from "@/lib/validation/payment.validation";
 import type { PaymentRecordItem } from "@/types/api/payment.types";
+import type { ProjectFilePreviewItem } from "@/types/project-file.types";
 
 interface PaymentRecordRowsProps {
   items: PaymentRecordItem[];
@@ -24,7 +27,23 @@ function getStatusDisplay(record: PaymentRecordItem, today: string) {
 }
 
 export function PaymentRecordRows({ items, onEditRecord }: PaymentRecordRowsProps) {
+  const [previewFile, setPreviewFile] = useState<ProjectFilePreviewItem | null>(null);
   const today = getTodayInJakarta();
+
+  const openProof = (record: PaymentRecordItem) => {
+    if (!record.proofContentPath) return;
+    openProjectFile(
+      {
+        id: record.proofStoredFileId ?? record.id,
+        fileName: record.proofFileName ?? "Bukti Pembayaran",
+        mimeType: record.proofMimeType ?? "image/jpeg",
+        sizeBytes: record.proofSizeBytes ?? 0,
+        uploadedAt: record.recordDate,
+        contentPath: record.proofContentPath,
+      },
+      setPreviewFile,
+    );
+  };
 
   return (
     <div className="border-t border-border">
@@ -34,12 +53,8 @@ export function PaymentRecordRows({ items, onEditRecord }: PaymentRecordRowsProp
           return (
             <div key={record.id} className="space-y-2.5 p-4">
               <div className="flex items-start justify-between gap-2">
-                <p className="text-sm font-semibold text-text-primary">
-                  {formatCurrencyIdr(record.amount)}
-                </p>
-                <StatusIndicator tone={tone} className="shrink-0 text-xs">
-                  {label}
-                </StatusIndicator>
+                <p className="text-sm font-semibold text-text-primary">{formatCurrencyIdr(record.amount)}</p>
+                <StatusIndicator tone={tone} className="shrink-0 text-xs">{label}</StatusIndicator>
               </div>
               <div className="space-y-0.5 text-xs">
                 <p className="text-text-secondary">Tanggal: {formatIdDate(record.recordDate)}</p>
@@ -53,20 +68,14 @@ export function PaymentRecordRows({ items, onEditRecord }: PaymentRecordRowsProp
                 {record.proofContentPath && (
                   <button
                     type="button"
-                    onClick={() => void fileApi.openContent(record.proofContentPath!)}
+                    onClick={() => openProof(record)}
                     className="inline-flex h-10 flex-1 items-center justify-center gap-1.5 rounded-lg border border-border bg-surface-input px-3 text-xs font-medium text-text-primary transition-colors hover:bg-surface-active"
                   >
-                    <ExternalLink className="size-3.5" />
+                    <Eye className="size-3.5" />
                     Lihat Bukti
                   </button>
                 )}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-10 flex-1 text-xs text-text-primary"
-                  onClick={() => onEditRecord(record)}
-                >
+                <Button type="button" variant="outline" size="sm" className="h-10 flex-1 text-xs text-text-primary" onClick={() => onEditRecord(record)}>
                   Ubah Catatan
                 </Button>
               </div>
@@ -90,9 +99,7 @@ export function PaymentRecordRows({ items, onEditRecord }: PaymentRecordRowsProp
               const { isOverdue, tone, label } = getStatusDisplay(record, today);
               return (
                 <TableRow key={record.id} className="border-border/60 hover:bg-surface-input/40">
-                  <TableCell className="px-4 py-3 text-[13px] font-semibold text-text-primary">
-                    {formatCurrencyIdr(record.amount)}
-                  </TableCell>
+                  <TableCell className="px-4 py-3 text-[13px] font-semibold text-text-primary">{formatCurrencyIdr(record.amount)}</TableCell>
                   <TableCell className="px-4 py-3">
                     <p className="text-[13px] text-text-primary">{formatIdDate(record.recordDate)}</p>
                     <p className={`mt-0.5 text-xs ${isOverdue ? "font-medium text-status-danger-fg" : "text-text-muted"}`}>
@@ -101,28 +108,20 @@ export function PaymentRecordRows({ items, onEditRecord }: PaymentRecordRowsProp
                         : "Tanpa jatuh tempo"}
                     </p>
                   </TableCell>
-                  <TableCell className="px-4 py-3">
-                    <StatusIndicator tone={tone}>{label}</StatusIndicator>
-                  </TableCell>
+                  <TableCell className="px-4 py-3"><StatusIndicator tone={tone}>{label}</StatusIndicator></TableCell>
                   <TableCell className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       {record.proofContentPath && (
                         <button
                           type="button"
-                          onClick={() => void fileApi.openContent(record.proofContentPath!)}
+                          onClick={() => openProof(record)}
                           className="inline-flex h-8 items-center gap-1 rounded-lg border border-border bg-surface-input px-2.5 text-xs font-medium text-text-secondary transition-colors hover:bg-surface-active hover:text-text-primary"
                         >
-                          <ExternalLink className="size-3" />
+                          <Eye className="size-3.5" />
                           Bukti
                         </button>
                       )}
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="h-8 px-2.5 text-xs text-text-secondary hover:text-text-primary"
-                        onClick={() => onEditRecord(record)}
-                      >
+                      <Button type="button" variant="outline" size="sm" className="h-8 px-2.5 text-xs text-text-secondary hover:text-text-primary" onClick={() => onEditRecord(record)}>
                         Ubah
                       </Button>
                     </div>
@@ -133,6 +132,8 @@ export function PaymentRecordRows({ items, onEditRecord }: PaymentRecordRowsProp
           </TableBody>
         </Table>
       </div>
+
+      <ProjectFilePreviewDialog file={previewFile} onClose={() => setPreviewFile(null)} />
     </div>
   );
 }
