@@ -1,6 +1,6 @@
 "use client";
 
-import { PanelLeft, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -17,6 +17,7 @@ export function Sidebar({ children, className }: { children: ReactNode; classNam
       <Sheet open={openMobile} onOpenChange={setOpenMobile}>
         <SheetContent
           side="left"
+          showCloseButton={false}
           className={cn(
             "sidebar-scrollable data-[side=left]:inset-y-4 data-[side=left]:left-4 data-[side=left]:h-[calc(100dvh-2rem)] data-[side=left]:w-[min(18rem,calc(100vw-2rem))] gap-0 overflow-y-auto rounded-3xl border border-sidebar-border bg-sidebar p-0 shadow-2xl",
             className,
@@ -47,7 +48,7 @@ export function Sidebar({ children, className }: { children: ReactNode; classNam
 export function SidebarTrigger({ className, ...props }: ComponentProps<typeof Button>) {
   const { open, isMobile, setOpen, setOpenMobile } = useSidebar();
   const label = isMobile ? "Buka menu navigasi" : open ? "Ciutkan sidebar" : "Buka sidebar";
-  const Icon = isMobile ? PanelLeft : open ? PanelLeftClose : PanelLeftOpen;
+  const Icon = isMobile ? Menu : open ? PanelLeftClose : PanelLeftOpen;
 
   return (
     <Button

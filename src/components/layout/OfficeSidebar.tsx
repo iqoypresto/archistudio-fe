@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { LogOut, PanelLeftOpen, UserRound } from "lucide-react";
+import { LogOut, PanelLeftOpen, UserRound, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sidebar,
@@ -86,7 +86,7 @@ function SidebarBrandHeader({
   projectTitle: string;
   onNavigate: () => void;
 }) {
-  const { open, isMobile, setOpen } = useSidebar();
+  const { open, isMobile, setOpen, setOpenMobile } = useSidebar();
   const isCollapsed = !open && !isMobile;
 
   if (isCollapsed) {
@@ -129,7 +129,19 @@ function SidebarBrandHeader({
           <p className="truncate text-[11px] leading-tight text-text-muted">{projectTitle}</p>
         </div>
       </Link>
-      {!isMobile && (
+      {isMobile ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label="Tutup menu navigasi"
+          title="Tutup menu navigasi"
+          onClick={() => setOpenMobile(false)}
+          className="size-11 shrink-0 rounded-xl border border-border bg-surface-input/90 text-text-secondary hover:bg-surface-active/70 hover:text-text-primary"
+        >
+          <X className="size-4" aria-hidden="true" />
+        </Button>
+      ) : (
         <SidebarTrigger className="size-11 rounded-xl border border-border bg-surface-input/90 hover:bg-surface-active/70" />
       )}
     </div>
