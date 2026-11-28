@@ -10,6 +10,9 @@ import {
   DashboardAreaToolbar, DashboardSupervisorToolbar, type DisciplineTier,
 } from "@/components/office/dashboard/DashboardPanelToolbars";
 import { DashboardSystemOverviewPanel } from "@/components/office/dashboard/DashboardSystemOverviewPanel";
+import {
+  countDashboardSystemAlerts, DashboardSystemStatusBanner,
+} from "@/components/office/dashboard/DashboardSystemStatusBanner";
 import { PdfExportDialog } from "@/components/office/dashboard/PdfExportDialog";
 import { SupervisorLatenessTable } from "@/components/office/dashboard/SupervisorLatenessTable";
 import { AsyncStateView } from "@/components/ui/AsyncStateView";
@@ -17,34 +20,22 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { UnderlineTabsBar } from "@/components/ui/UnderlineTabsNav";
 import { useDashboardSummary, useSupervisorLateness } from "@/hooks/dashboard.hooks";
 import { getTodayInJakarta } from "@/lib/utils/office-format";
-import { formatCurrencyIdr } from "@/lib/validation/payment.validation";
 import type { DashboardAreaStatusItem, DashboardStatusFilter, SupervisorLatenessItem } from "@/types/api/dashboard.types";
 
 type DashboardTab = "areas" | "supervisors" | "system";
 
-function filterAreas(
-  areas: DashboardAreaStatusItem[],
-  statusFilter: DashboardStatusFilter,
-  query: string,
-): DashboardAreaStatusItem[] {
+function filterAreas(areas: DashboardAreaStatusItem[], statusFilter: DashboardStatusFilter, query: string): DashboardAreaStatusItem[] {
   const q = query.trim().toLowerCase();
   return areas.filter((area) => {
     if (statusFilter === "UNREPORTED" && area.status !== "BELUM_LAPOR") return false;
     if (statusFilter === "LATE" && area.status !== "TERLAMBAT") return false;
     if (statusFilter === "OVERDUE_GT_3_DAYS" && !area.isOverdueMoreThan3Days) return false;
-    if (!q) return true;
-    const text = `${area.areaCode} ${area.areaName} ${area.projectCode} ${area.projectName} ${area.supervisor?.name ?? ""}`.toLowerCase();
-    return text.includes(q);
+    return !q || `${area.areaCode} ${area.areaName} ${area.projectCode} ${area.projectName} ${area.supervisor?.name ?? ""}`.toLowerCase().includes(q);
   });
 }
 
-function filterSupervisors(
-  items: SupervisorLatenessItem[],
-  tier: DisciplineTier,
-): SupervisorLatenessItem[] {
-  if (tier === "GOOD") return items.filter((i) => i.onTimePercentage >= 80);
-  if (tier === "LOW") return items.filter((i) => i.onTimePercentage < 60);
-  return items;
+function filterSupervisors(items: SupervisorLatenessItem[], tier: DisciplineTier): SupervisorLatenessItem[] {
+  return tier === "GOOD" ? items.filter((i) => i.onTimePercentage >= 80) : tier === "LOW" ? items.filter((i) => i.onTimePercentage < 60) : items;
 }
 
 export function DashboardContent() {
@@ -64,11 +55,7 @@ export function DashboardContent() {
     date: targetDate || undefined,
   });
   const latenessQuery = useSupervisorLateness(
-    {
-      projectId: projectId || undefined,
-      dateFrom: dateFrom || undefined,
-      dateTo: dateTo || undefined,
-    },
+    { projectId: projectId || undefined, dateFrom: dateFrom || undefined, dateTo: dateTo || undefined },
     { enabled: activeTab === "supervisors" },
   );
 
@@ -111,12 +98,7 @@ export function DashboardContent() {
       >
         {(summary) => {
           const overview = summary.systemOverview;
-          const systemAlertCount = overview
-            ? overview.projects.withoutSiteManager +
-              overview.team.unassignedAreasCount +
-              overview.team.areasWithInactiveSupervisorCount +
-              (overview.payments?.overdueUnpaidCount ?? 0)
-            : 0;
+          const systemAlertCount = countDashboardSystemAlerts(overview);
 
           return (
             <div className="space-y-5">
@@ -136,51 +118,11 @@ export function DashboardContent() {
               />
 
               {overview && (
-                <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 rounded-xl border border-border bg-surface px-4 py-3 text-xs text-text-secondary tabular-nums">
-                  <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5">
-                    <span>
-                      Tim aktif:{" "}
-                      <strong className="font-semibold text-text-primary">
-                        {overview.team.totalActive} akun
-                      </strong>
-                    </span>
-                    <span>
-                      Aktivitas {overview.recentActivity.days} hari:{" "}
-                      <strong className="font-semibold text-text-primary">
-                        {overview.recentActivity.commsInCount + overview.recentActivity.commsOutCount} comms
-                      </strong>{" "}
-                      ·{" "}
-                      <strong className="font-semibold text-text-primary">
-                        {overview.recentActivity.drawingsCount} drawing
-                      </strong>
-                    </span>
-                    {overview.payments && (
-                      <span>
-                        Tagihan HR belum lunas:{" "}
-                        <strong
-                          className={`font-semibold ${
-                            overview.payments.overdueUnpaidCount > 0
-                              ? "text-status-danger-fg"
-                              : overview.payments.unpaidCount > 0
-                                ? "text-status-warning-fg"
-                                : "text-text-primary"
-                          }`}
-                        >
-                          {formatCurrencyIdr(overview.payments.totalUnpaidAmount)} ({overview.payments.unpaidCount})
-                        </strong>
-                      </span>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("system")}
-                    className="inline-flex min-h-10 items-center text-xs font-medium text-text-primary underline-offset-4 hover:underline sm:min-h-0"
-                  >
-                    {systemAlertCount > 0
-                      ? `${systemAlertCount} perhatian sistem`
-                      : "Lihat ringkasan sistem"}
-                  </button>
-                </div>
+                <DashboardSystemStatusBanner
+                  overview={overview}
+                  alertCount={systemAlertCount}
+                  onOpenSystemTab={() => setActiveTab("system")}
+                />
               )}
 
               <section className="overflow-hidden rounded-xl border border-border bg-surface">
@@ -190,19 +132,9 @@ export function DashboardContent() {
                   onChange={setActiveTab}
                   items={[
                     { value: "areas", label: "Status Area & Pelaporan", count: summary.areas.length },
-                    {
-                      value: "supervisors",
-                      label: "Kedisiplinan Pengawas",
-                      count: latenessQuery.data?.length,
-                    },
+                    { value: "supervisors", label: "Kedisiplinan Pengawas", count: latenessQuery.data?.length },
                     ...(overview
-                      ? [
-                          {
-                            value: "system" as const,
-                            label: "Ringkasan Sistem",
-                            count: systemAlertCount > 0 ? systemAlertCount : undefined,
-                          },
-                        ]
+                      ? [{ value: "system" as const, label: "Ringkasan Sistem", count: systemAlertCount > 0 ? systemAlertCount : undefined }]
                       : []),
                   ]}
                 />
@@ -249,11 +181,7 @@ export function DashboardContent() {
         }}
       </AsyncStateView>
 
-      <AreaUnlockModal
-        isOpen={Boolean(selectedUnlockArea)}
-        area={selectedUnlockArea}
-        onClose={() => setSelectedUnlockArea(null)}
-      />
+      <AreaUnlockModal isOpen={Boolean(selectedUnlockArea)} area={selectedUnlockArea} onClose={() => setSelectedUnlockArea(null)} />
 
       {isPdfExportOpen && (
         <PdfExportDialog

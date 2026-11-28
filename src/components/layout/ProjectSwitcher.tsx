@@ -89,7 +89,7 @@ export function ProjectSwitcher({
           aria-label="Cari dan pilih project"
           placeholder="Cari project..."
           showClear={Boolean(search)}
-          className={`w-full rounded-lg border-border bg-surface-input text-sm text-text-primary placeholder:text-text-muted focus-within:ring-2 focus-within:ring-ring ${compact ? "h-9" : "h-10"}`}
+          className={`w-full rounded-lg border-border bg-surface-input text-base text-text-primary placeholder:text-text-muted focus-within:ring-2 focus-within:ring-ring md:text-sm ${compact ? "h-11 md:h-9" : "h-11 md:h-10"}`}
         />
         <ComboboxContent className="overflow-hidden rounded-lg border border-border bg-surface p-1 text-text-primary shadow-lg">
           <ComboboxEmpty className="px-3 py-2 text-sm text-text-muted">

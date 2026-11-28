@@ -16,7 +16,7 @@ export const DEFAULT_PAGE_SIZE_OPTIONS = [10, 25, 50, 100] as const;
 const paginationButtonTheme =
   "border-[var(--project-border,rgba(255,255,255,0.12))] bg-[var(--project-surface,var(--surface-input))] text-[var(--project-action,var(--secondary-foreground))] hover:border-[var(--project-action,rgba(255,255,255,0.24))] hover:bg-[var(--project-canvas,var(--surface-active))] hover:text-[var(--project-action-hover,var(--text-primary))]";
 const activePaginationButtonTheme =
-  "border-[var(--project-action,rgba(255,255,255,0.38))] bg-[var(--project-action,#2e323c)] text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08)] hover:bg-[var(--project-action-hover,#383d49)] hover:text-white";
+  "border-[var(--project-action,rgba(255,255,255,0.38))] bg-[var(--project-action,var(--primary))] text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08)] hover:bg-[var(--project-action-hover,var(--primary-hover))] hover:text-white";
 
 export interface ServerPaginationProps {
   meta: PaginationMeta;

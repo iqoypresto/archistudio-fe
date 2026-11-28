@@ -98,7 +98,7 @@ export function ReportPhotoGallery({
         </div>
       </section>
 
-      <Dialog open={activeIndex !== null} onOpenChange={(open) => !open && setActiveIndex(null)}>
+      <Dialog open={Boolean(activePhoto)} onOpenChange={(open) => !open && setActiveIndex(null)}>
         <DialogContent
           showCloseButton={false}
           overlayClassName="bg-black/95 supports-backdrop-filter:backdrop-blur-[2px]"
